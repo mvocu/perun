@@ -61,7 +61,11 @@ public class TaskExecutorEngineImpl implements TaskExecutorEngine {
 	@Autowired
 	private SchedulingPool schedulingPool;
 
+<<<<<<< HEAD
 	final int MAX_RUNNING_GEN = 20;
+=======
+	final int MAX_RUNNING_GEN = 10;
+>>>>>>> raise limit of concurrent tasks to 1000
 	final int MAX_RUNNING = 1000;
 	
 	@Override
