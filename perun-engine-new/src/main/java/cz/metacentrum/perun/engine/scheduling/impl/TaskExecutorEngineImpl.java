@@ -61,7 +61,7 @@ public class TaskExecutorEngineImpl implements TaskExecutorEngine {
 	@Autowired
 	private SchedulingPool schedulingPool;
 
-	final int MAX_RUNNING_GEN = 10;
+	final int MAX_RUNNING_GEN = 20;
 	final int MAX_RUNNING = 1000;
 	
 	@Override
