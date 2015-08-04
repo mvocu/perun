@@ -14,6 +14,7 @@ import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.PerunPrincipal;
 import cz.metacentrum.perun.core.api.PerunSession;
+import cz.metacentrum.perun.core.api.ServicesManager;
 import cz.metacentrum.perun.core.api.exceptions.FacilityNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
@@ -93,21 +94,27 @@ public class TaskSchedulerImpl implements TaskScheduler {
 		 
 		 // check if we have destinations for this task
 		List<Destination> destinations = task.getDestinations();
-		if (destinations == null || destinations.isEmpty()) {
+		if (task.getExecService().getExecServiceType().equals(ExecServiceType.SEND) 
+				&& destinations == null || destinations.isEmpty()) {
 			// refetch the destination list from central database
 			log.debug("No destinations for task " + task.toString()
 					+ ", trying to query the database...");
 			try {
-				destinations = perun.getServicesManager().getDestinations(
+				ServicesManager serviceManager = perun.getServicesManager();
+				if(serviceManager == null) {
+					log.error("Error getting ServicesManager, unable to continue.");
+					throw new InternalErrorException("ServicesManager not available");
+				}
+				destinations = serviceManager.getDestinations(
 						perunSession, task.getExecService().getService(),
 						task.getFacility());
+				task.setDestinations(destinations);
 			} catch (ServiceNotExistsException e) {
-				log.error("No destinations found for task " + task.toString());
+				log.error("Service for task does not exist" + task.toString());
 				// TODO: remove the task?
 				return;
 			} catch (FacilityNotExistsException e) {
-				log.error("Facility for task does not exist..."
-						+ task.toString());
+				log.error("Facility for task does not exist..." + task.toString());
 				// TODO: remove the task?
 				return;
 			} catch (PrivilegeException e) {
@@ -118,7 +125,6 @@ public class TaskSchedulerImpl implements TaskScheduler {
 				log.error("Internal error: " + e.getMessage());
 				return;
 			}
-			task.setDestinations(destinations);
 		}
 		if (task.getExecService().getExecServiceType().equals(ExecServiceType.SEND)
 				&& (destinations == null || destinations.isEmpty())) {
@@ -126,6 +132,7 @@ public class TaskSchedulerImpl implements TaskScheduler {
 					task.getId());
 			schedulingPool.setTaskStatus(task, TaskStatus.DONE);
 		} else {
+			log.debug("Setting task " + task.getId() + " status to PLANNED");
 			schedulingPool.setTaskStatus(task, TaskStatus.PLANNED);
 			taskStatusManager.clearTaskStatus(task);
 			task.setSchedule(time);
@@ -164,11 +171,12 @@ public class TaskSchedulerImpl implements TaskScheduler {
 		 * propagateService(pair.getLeft(), new
 		 * Date(System.currentTimeMillis()), pair.getRight()); }
 		 */
+		log.debug("Begin scheduling cycle for " + schedulingPool.getNewTasks().size() + " tasks.");
 		for (Task task : schedulingPool.getNewTasks()) {
-			log.debug("Propagating ExecService:Facility : "
-					+ task.getExecServiceId() + ":" + task.getFacilityId());
+			log.debug("Propagating task: " + task.toString());
 			propagateService(task, new Date(System.currentTimeMillis()));
 		}
+		log.debug("End of this scheduling cycle.");
 	}
 
 	@Override

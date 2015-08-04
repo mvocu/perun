@@ -107,12 +107,14 @@ public class SchedulingPoolImpl implements SchedulingPool, TaskResultListener {
 
 	@Override
 	public void setTaskStatus(Task task, TaskStatus status) {
-		TaskStatus old = task.getStatus();
-		task.setStatus(status);
-		// move task to the appropriate place
-		if (!old.equals(status)) {
-			pool.get(old).remove(task);
-			pool.get(status).add(task);
+		synchronized(pool) {
+			TaskStatus old = task.getStatus();
+			task.setStatus(status);
+			// move task to the appropriate place
+			if (!old.equals(status)) {
+				pool.get(old).remove(task);
+				pool.get(status).add(task);
+			}
 		}
 		taskManager.updateTask(task, 0);
 	}
