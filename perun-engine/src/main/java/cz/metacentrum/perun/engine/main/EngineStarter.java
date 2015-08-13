@@ -55,7 +55,7 @@ public class EngineStarter {
 		} catch (HeadlessException e) {
 			// Doesn't matter... (We can't show splash screen on a server :-))
 		} catch (Exception e) {
-			log.error(e.toString());
+			log.error(e.getMessage());
 		}
 	}
 
