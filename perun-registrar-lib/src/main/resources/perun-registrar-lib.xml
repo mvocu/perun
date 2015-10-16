@@ -57,6 +57,21 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 		</bean>
 	</beans>
 
+	<beans profile="perftest">
+		<bean id="registrarProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+			<property name="locations">
+				<list>
+					<value>file:${perun.conf}perun-registrar-lib.properties</value>
+					<value>file:${perun.conf.custom}perun-registrar-lib.properties</value>
+				</list>
+			</property>
+			<property name="ignoreResourceNotFound">
+				<value>true</value>
+			</property>
+		</bean>
+	</beans>
+
+
 	<beans profile="default">
 		<bean id="registrarProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 			<property name="properties">
