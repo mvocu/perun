@@ -217,7 +217,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 		</bean>
 	
 		<!-- THIS BEAN STARTS THE WHOLE DISPATCHER COMPONENT -->
-		<bean id="dispatcherStarter" class="cz.metacentrum.perun.dispatcher.main.DispatcherStarter" init-method="init" />
+		<bean id="dispatcherStarter" class="cz.metacentrum.perun.dispatcher.integration.DispatcherPerformanceTest" init-method="init" />
 
     	</beans>
     
