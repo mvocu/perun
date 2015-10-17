@@ -1,4 +1,4 @@
-package cz.metacentrum.perun.dispatcher.integration;
+package cz.metacentrum.perun.dispatcher.perftest;
 
 import java.util.Properties;
 
