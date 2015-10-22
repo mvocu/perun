@@ -245,8 +245,6 @@ public class Utils {
 
 		String url = "";
 	
-		log.debug("Utils JDBC DB type: " + dbType);
-
 		// try to deduce database type from jdbc connection metadata
 		try {
 			if (jdbc instanceof JdbcTemplate) {
@@ -257,7 +255,6 @@ public class Utils {
 			}
 		} catch (Exception e) {
 		}
-		log.debug("Utils JDBC Url: " + url);
 		
 		if(url.matches("hsqldb")) {
 			dbType = "hsqldb";
@@ -266,7 +263,6 @@ public class Utils {
 		} else if(url.matches("postgresql")) {
 			dbType = "postgresql";
 		}	
-		log.debug("Utils JDBC DB type: " + dbType);
 		
 		String query = "";
 		if (dbType.equals("oracle")) {

@@ -226,12 +226,17 @@ public class DispatcherPerformanceTest {
 		PerunPrincipal pp = new PerunPrincipal("perunTests", ExtSourcesManager.EXTSOURCE_NAME_INTERNAL, ExtSourcesManager.EXTSOURCE_INTERNAL);
 		PerunSession sess = perun.getPerunSession(pp);
 
+		ResourcesManager rm = perun.getResourcesManager();
 		FacilitiesManager fm = perun.getFacilitiesManager();
 		for(Integer id : testFacilities) {
 			facility1 = fm.getFacilityById(sess, id);
+			for(Resource resource1 : fm.getAssignedResources(sess, facility1)) {
+				rm.removeService(sess, resource1, service1);
+				rm.removeGroupFromResource(sess, group1, resource1);
+				rm.deleteResource(sess, resource1);
+			}
 			fm.deleteFacility(sess, facility1);
 		}
-		perun.getResourcesManager().deleteAllResources(sess, vo1);
 		generalServiceManager.deleteExecService(execservice2);
 		generalServiceManager.deleteExecService(execservice1);
 		perun.getServicesManager().deleteService(sess, service1);
