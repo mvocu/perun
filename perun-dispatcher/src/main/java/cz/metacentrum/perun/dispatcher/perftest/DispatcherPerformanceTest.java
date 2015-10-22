@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.dispatcher.perftest;
 
+import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.annotation.PreDestroy;
@@ -13,9 +14,41 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
 
+import cz.metacentrum.perun.controller.service.GeneralServiceManager;
+import cz.metacentrum.perun.core.api.ExtSourcesManager;
+import cz.metacentrum.perun.core.api.FacilitiesManager;
+import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Group;
+import cz.metacentrum.perun.core.api.Member;
+import cz.metacentrum.perun.core.api.Perun;
+import cz.metacentrum.perun.core.api.PerunPrincipal;
+import cz.metacentrum.perun.core.api.PerunSession;
+import cz.metacentrum.perun.core.api.Resource;
+import cz.metacentrum.perun.core.api.ResourcesManager;
+import cz.metacentrum.perun.core.api.Service;
+import cz.metacentrum.perun.core.api.User;
+import cz.metacentrum.perun.core.api.Vo;
+import cz.metacentrum.perun.core.api.exceptions.AlreadyMemberException;
+import cz.metacentrum.perun.core.api.exceptions.GroupAlreadyAssignedException;
+import cz.metacentrum.perun.core.api.exceptions.GroupExistsException;
+import cz.metacentrum.perun.core.api.exceptions.GroupNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
+import cz.metacentrum.perun.core.api.exceptions.MemberNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.NotMemberOfParentGroupException;
+import cz.metacentrum.perun.core.api.exceptions.PerunException;
+import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
+import cz.metacentrum.perun.core.api.exceptions.ResourceNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.ServiceAlreadyAssignedException;
+import cz.metacentrum.perun.core.api.exceptions.ServiceExistsException;
+import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.VoExistsException;
+import cz.metacentrum.perun.core.api.exceptions.VoNotExistsException;
+import cz.metacentrum.perun.core.api.exceptions.WrongAttributeValueException;
+import cz.metacentrum.perun.core.api.exceptions.WrongReferenceAttributeValueException;
 import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 import cz.metacentrum.perun.dispatcher.main.DispatcherStarter;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
+import cz.metacentrum.perun.taskslib.model.ExecService;
 
 public class DispatcherPerformanceTest {
 	private final static Logger log = LoggerFactory.getLogger(DispatcherPerformanceTest.class);
@@ -28,6 +61,24 @@ public class DispatcherPerformanceTest {
 	@Autowired
 	@Qualifier("perunScheduler")
 	private SchedulerFactoryBean perunScheduler;
+
+	@Autowired
+	Perun perun;
+	
+	@Autowired
+	GeneralServiceManager generalServiceManager;
+
+	protected PerunSession sess;
+	protected Group group1;
+	protected Vo vo1;
+	protected User user1;
+	protected Facility facility1;
+	protected Resource resource1;
+	protected Service service1;
+	protected Member member1;
+	protected ExecService execservice1;
+	protected ExecService execservice2;
+	protected ArrayList<Integer> testFacilities;
 	
 	/**
 	 * Initialize integrated dispatcher.
@@ -59,6 +110,7 @@ public class DispatcherPerformanceTest {
 			// not for perftest: dispatcherManager.startProcessingEvents();
 
 			// populate task database
+			createTestTasks();
 			
 			// get current time -> start time
 			
@@ -70,6 +122,7 @@ public class DispatcherPerformanceTest {
 			
 			// print results and (wait for) exit
 
+			
 		} catch (PerunHornetQServerException e) {
 			log.error(e.toString(), e);
 		} catch (Exception e) {
@@ -77,6 +130,7 @@ public class DispatcherPerformanceTest {
 		}
 
 	}
+
 
 	@PreDestroy
 	public void destroy() {
@@ -89,10 +143,95 @@ public class DispatcherPerformanceTest {
 			log.error("Unable to stop dispatcher scheduler: {}", ex);
 		}
 		// stop currently running jobs
-		dispatcherManager.stopProcessingEvents();
-		dispatcherManager.stopParsingData();
+		//dispatcherManager.stopProcessingEvents();
+		//dispatcherManager.stopParsingData();
 		dispatcherManager.stopProcessingSystemMessages();
 		dispatcherManager.stopPerunHornetQServer();
+		try {
+			removeTestTasks();
+		} catch(PerunException e) {
+			log.error(e.toString(), e);
+		}
 	}
 
+
+	private void createTestTasks() throws PerunException {
+		PerunPrincipal pp = new PerunPrincipal("perunTests", ExtSourcesManager.EXTSOURCE_NAME_INTERNAL, ExtSourcesManager.EXTSOURCE_INTERNAL);
+		PerunSession sess = perun.getPerunSession(pp);
+
+		testFacilities = new ArrayList<Integer>();
+		
+		// create VO for tests
+		vo1 = new Vo(0, "testVo", "testVo");
+		vo1 = perun.getVosManager().createVo(sess, vo1);
+		// create some group in there
+		group1 = new Group("falcon", "desc");
+		group1 = perun.getGroupsManager().createGroup(sess, vo1, group1);
+		// create user in the VO
+		// skip the xEntry (authorization check),
+		// could skip the xBl a go directly to xImpl to avoid writing audit
+		// log
+		user1 = new User(0, "firstName", "lastName", "", "", "");
+		user1 = perun.getUsersManager().createUser(sess, user1);
+		// make the user the member of the group
+		member1 = perun.getMembersManager().createMember(sess, vo1, user1);
+		member1.setStatus("VALID");
+		perun.getGroupsManager().addMember(sess, group1, member1);
+		// create service
+		service1 = new Service(0, "testService");
+		service1 = perun.getServicesManager().createService(sess, service1);
+		// create execService
+		execservice1 = new ExecService();
+		execservice1.setDefaultDelay(1);
+		execservice1.setScript("/bin/true");
+		execservice1.setEnabled(true);
+		execservice1.setExecServiceType(ExecService.ExecServiceType.GENERATE);
+		execservice1.setService(service1);
+		int id = generalServiceManager.insertExecService(sess, execservice1);
+		// stash back the created id (this should be really done somewhere else)
+		execservice1.setId(id);
+		// create execService
+		execservice2 = new ExecService();
+		execservice2.setDefaultDelay(1);
+		execservice2.setScript("/bin/true");
+		execservice2.setEnabled(true);
+		execservice2.setExecServiceType(ExecService.ExecServiceType.SEND);
+		execservice2.setService(service1);
+		id = generalServiceManager.insertExecService(sess, execservice2);
+		// stash back the created id (this should be really done somewhere else)
+		execservice2.setId(id);
+		generalServiceManager.createDependency(execservice2, execservice1);
+		for(int i = 0; i < 1000; i++) {
+			// now create some facility
+			facility1 = new Facility(0, "testFacility", "desc");
+			facility1 = perun.getFacilitiesManager().createFacility(sess, facility1);
+			// create a resource
+			resource1 = new Resource(0, "testResource", "test resource", facility1.getId(), vo1.getId());
+			resource1 = perun.getResourcesManager().createResource(sess, resource1, vo1, facility1);
+			// assign the group to this resource
+			perun.getResourcesManager().assignGroupToResource(sess, group1, resource1);
+			// assign service to the resource
+			perun.getResourcesManager().assignService(sess, resource1, service1);
+			testFacilities.add(facility1.getId());
+		}
+	}
+
+	private void removeTestTasks() throws PerunException {
+		PerunPrincipal pp = new PerunPrincipal("perunTests", ExtSourcesManager.EXTSOURCE_NAME_INTERNAL, ExtSourcesManager.EXTSOURCE_INTERNAL);
+		PerunSession sess = perun.getPerunSession(pp);
+
+		FacilitiesManager fm = perun.getFacilitiesManager();
+		for(Integer id : testFacilities) {
+			facility1 = fm.getFacilityById(sess, id);
+			fm.deleteFacility(sess, facility1);
+		}
+		perun.getResourcesManager().deleteAllResources(sess, vo1);
+		generalServiceManager.deleteExecService(execservice2);
+		generalServiceManager.deleteExecService(execservice1);
+		perun.getServicesManager().deleteService(sess, service1);
+		perun.getMembersManager().deleteMember(sess, member1);
+		perun.getGroupsManager().deleteGroup(sess, group1);
+		perun.getUsersManager().deleteUser(sess, user1);
+		perun.getVosManager().deleteVo(sess, vo1);
+	}
 }
