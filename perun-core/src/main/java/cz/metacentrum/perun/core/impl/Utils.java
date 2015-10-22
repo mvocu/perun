@@ -264,7 +264,8 @@ public class Utils {
 		} else if(url.matches("postgresql")) {
 			dbType = "postgresql";
 		}	
-
+		log.debug("Utils JDBC DB type: " + dbType);
+		
 		String query = "";
 		if (dbType.equals("oracle")) {
 			query = "select " + sequenceName + ".nextval from dual";
