@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.annotation.PreDestroy;
+import javax.sql.DataSource;
 
+import org.apache.tomcat.dbcp.dbcp.BasicDataSource;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +66,8 @@ public class DispatcherPerformanceTest {
 
 	@Autowired
 	Perun perun;
+	@Autowired
+	BasicDataSource dataSource;
 	
 	@Autowired
 	GeneralServiceManager generalServiceManager;
@@ -109,6 +113,8 @@ public class DispatcherPerformanceTest {
 			// Start Event Processor
 			// not for perftest: dispatcherManager.startProcessingEvents();
 
+			log.debug("JDBC url: " + dataSource.getUrl());
+			
 			// populate task database
 			createTestTasks();
 			
