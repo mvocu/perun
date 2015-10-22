@@ -255,6 +255,8 @@ public class Utils {
 			}
 		} catch (Exception e) {
 		}
+		log.debug("Utils JDBC Url: " + url);
+		
 		if(url.matches("hsqldb")) {
 			dbType = "hsqldb";
 		} else if(url.matches("oracle")) {
