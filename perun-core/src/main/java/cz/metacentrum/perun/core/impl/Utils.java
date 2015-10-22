@@ -245,6 +245,8 @@ public class Utils {
 
 		String url = "";
 	
+		log.debug("Utils JDBC DB type: " + dbType);
+
 		// try to deduce database type from jdbc connection metadata
 		try {
 			if (jdbc instanceof JdbcTemplate) {
