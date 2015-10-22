@@ -209,7 +209,7 @@ public class DispatcherPerformanceTest {
 		generalServiceManager.createDependency(execservice2, execservice1);
 		for(int i = 0; i < 1000; i++) {
 			// now create some facility
-			facility1 = new Facility(0, "testFacility", "desc");
+			facility1 = new Facility(0, "testFacility" + i, "desc");
 			facility1 = perun.getFacilitiesManager().createFacility(sess, facility1);
 			// create a resource
 			resource1 = new Resource(0, "testResource", "test resource", facility1.getId(), vo1.getId());
