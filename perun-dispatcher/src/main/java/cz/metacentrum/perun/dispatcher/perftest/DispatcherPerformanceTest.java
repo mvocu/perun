@@ -6,6 +6,8 @@ import java.util.Properties;
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 
+import oracle.sql.DATE;
+
 import org.apache.tomcat.dbcp.dbcp.BasicDataSource;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -49,6 +51,8 @@ import cz.metacentrum.perun.core.api.exceptions.WrongAttributeValueException;
 import cz.metacentrum.perun.core.api.exceptions.WrongReferenceAttributeValueException;
 import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 import cz.metacentrum.perun.dispatcher.main.DispatcherStarter;
+import cz.metacentrum.perun.dispatcher.model.Event;
+import cz.metacentrum.perun.dispatcher.processing.EventQueue;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 
@@ -65,13 +69,15 @@ public class DispatcherPerformanceTest {
 	private SchedulerFactoryBean perunScheduler;
 
 	@Autowired
-	Perun perun;
+	private Perun perun;
 	@Autowired
-	BasicDataSource dataSource;
+	private BasicDataSource dataSource;
 	
 	@Autowired
-	GeneralServiceManager generalServiceManager;
-
+	private GeneralServiceManager generalServiceManager;
+	@Autowired
+	private EventQueue eventQueue;
+	
 	protected PerunSession sess;
 	protected Group group1;
 	protected Vo vo1;
@@ -111,7 +117,7 @@ public class DispatcherPerformanceTest {
 			// Start parsers (mining data both from Grouper and PerunDB)
 			// not for perftest: dispatcherManager.startParsingData();
 			// Start Event Processor
-			// not for perftest: dispatcherManager.startProcessingEvents();
+			dispatcherManager.startProcessingEvents();
 
 			log.debug("JDBC url: " + dataSource.getUrl());
 			
@@ -119,8 +125,16 @@ public class DispatcherPerformanceTest {
 			createTestTasks();
 			
 			// get current time -> start time
-			
+			log.debug("PERFTEST starting propagations: " + System.currentTimeMillis() );
+
 			// start propagation
+			String message = member1.serializeToString() + " added to " + group1.serializeToString() + ".";
+
+			Event event = new Event();
+			event.setTimeStamp(System.currentTimeMillis());
+			event.setHeader("portishead");
+			event.setData(message);
+			eventQueue.add(event);
 			
 			// wait for all propagations to complete
 			
