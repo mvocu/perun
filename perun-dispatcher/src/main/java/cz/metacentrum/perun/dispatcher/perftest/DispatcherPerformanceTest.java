@@ -89,6 +89,39 @@ public class DispatcherPerformanceTest {
 	protected ExecService execservice1;
 	protected ExecService execservice2;
 	protected ArrayList<Integer> testFacilities;
+
+	final String cleanupQuery = 
+			"rollback; " +
+			" delete from perun.tasks where facility_id in " + 
+			"(select id from perun.facilities where name like 'testFacility%');" +
+			"delete from perun.service_dependencies where exec_service_id in" +  
+			"(select es.id from perun.exec_services es left join perun.services s on es.service_id = s.id" + 
+			"where s.name = 'testService');" +
+			"delete from perun.resource_services where resource_id in" + 
+			"(select id from perun.resources where name = 'testResource');" +
+			"delete from perun.groups_resources where resource_id in" + 
+			"(select id from perun.resources where name = 'testResource');" + 
+			"delete from perun.facilities where name like 'testFacility%';" +
+			"delete from perun.resources where name = 'testResource';" +
+			"delete from perun.exec_services where id in" + 
+			"(select es.id from perun.exec_services es left join perun.services s on es.service_id = s.id" + 
+			"where s.name = 'testService');" +
+			"delete from perun.services where name = 'testService';" +
+			"delete from perun.groups_members where member_id in" + 
+			"(select m.id from perun.members m left join perun.users u on m.user_id = u.id" + 
+			"where u.first_name = 'firstName');" +
+			"delete from perun.groups_members where group_id in" + 
+			"(select id from perun.groups where name = 'falcon');" +
+			"delete from perun.members where user_id in" +
+			"(select id from perun.users where first_name = 'firstName');" +
+			"delete from perun.user_ext_sources where user_id in" + 
+			"(select id from perun.users where first_name = 'firstName');" +
+			"delete from perun.users where first_name = 'firstName';" +
+			"delete from perun.groups where vo_id in (select id from perun.vos where name = 'testVo');" +
+			"delete from perun.groups where vo_id in (select id from perun.vos where name = 'testVo');" +
+			"delete from perun.groups where name = 'falcon';" +
+			"delete from perun.vos where name = 'testVo';" +
+			"commit;";
 	
 	/**
 	 * Initialize integrated dispatcher.
@@ -141,7 +174,7 @@ public class DispatcherPerformanceTest {
 			// get current time -> end time
 			
 			// print results and (wait for) exit
-
+			removeTestTasks();
 			
 		} catch (PerunHornetQServerException e) {
 			log.error(e.toString(), e);
