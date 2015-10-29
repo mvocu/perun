@@ -284,6 +284,7 @@ public class DispatcherPerformanceTest {
 			}
 			fm.deleteFacility(sess, facility1);
 		}
+		generalServiceManager.removeDependency(execservice2, execservice1);
 		generalServiceManager.deleteExecService(execservice2);
 		generalServiceManager.deleteExecService(execservice1);
 		perun.getServicesManager().deleteService(sess, service1);
