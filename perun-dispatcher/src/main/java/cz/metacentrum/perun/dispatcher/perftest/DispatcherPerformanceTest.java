@@ -53,6 +53,7 @@ import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 import cz.metacentrum.perun.dispatcher.main.DispatcherStarter;
 import cz.metacentrum.perun.dispatcher.model.Event;
 import cz.metacentrum.perun.dispatcher.processing.EventQueue;
+import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 
@@ -67,7 +68,8 @@ public class DispatcherPerformanceTest {
 	@Autowired
 	@Qualifier("perunScheduler")
 	private SchedulerFactoryBean perunScheduler;
-
+	@Autowired
+	private SchedulingPool schedulingPool;
 	@Autowired
 	private Perun perun;
 	@Autowired
@@ -170,8 +172,21 @@ public class DispatcherPerformanceTest {
 			eventQueue.add(event);
 			
 			// wait for all propagations to complete
+			while(true) {
+				if(schedulingPool.getWaitingTasks().isEmpty() &&
+						schedulingPool.getPlannedTasks().isEmpty() &&
+						schedulingPool.getProcessingTasks().isEmpty()) {
+					break;
+				} else {
+					log.debug("There are " + schedulingPool.getProcessingTasks().size() + " processing tasks");
+					Thread.sleep(5000);
+				}
+			}
 			
 			// get current time -> end time
+			log.debug("PERFTEST end propagations: " + System.currentTimeMillis());
+			log.debug("   " + schedulingPool.getDoneTasks() + " done");
+			log.debug("   " + schedulingPool.getErrorTasks() + " failed");
 			
 			// print results and (wait for) exit
 			removeTestTasks();
@@ -254,7 +269,7 @@ public class DispatcherPerformanceTest {
 		// stash back the created id (this should be really done somewhere else)
 		execservice2.setId(id);
 		generalServiceManager.createDependency(execservice2, execservice1);
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 100; i++) {
 			// now create some facility
 			facility1 = new Facility(0, "testFacility" + i, "desc");
 			facility1 = perun.getFacilitiesManager().createFacility(sess, facility1);
