@@ -19,6 +19,7 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
 
 import cz.metacentrum.perun.controller.service.GeneralServiceManager;
+import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.ExtSourcesManager;
 import cz.metacentrum.perun.core.api.FacilitiesManager;
 import cz.metacentrum.perun.core.api.Facility;
@@ -87,6 +88,7 @@ public class DispatcherPerformanceTest {
 	protected Facility facility1;
 	protected Resource resource1;
 	protected Service service1;
+	protected Destination destination1;
 	protected Member member1;
 	protected ExecService execservice1;
 	protected ExecService execservice2;
@@ -173,7 +175,8 @@ public class DispatcherPerformanceTest {
 			
 			// wait for all propagations to complete
 			while(true) {
-				if(schedulingPool.getWaitingTasks().isEmpty() &&
+				if(schedulingPool.getSize() > 0 &&
+						schedulingPool.getWaitingTasks().isEmpty() &&
 						schedulingPool.getPlannedTasks().isEmpty() &&
 						schedulingPool.getProcessingTasks().isEmpty()) {
 					break;
@@ -248,6 +251,11 @@ public class DispatcherPerformanceTest {
 		// create service
 		service1 = new Service(0, "testService");
 		service1 = perun.getServicesManager().createService(sess, service1);
+		// create destination
+		destination1 = new Destination();
+		destination1.setDestination("testDestination");
+		destination1.setType(Destination.DESTINATIONHOSTTYPE);
+		destination1.setPropagationType(Destination.PROPAGATIONTYPE_PARALLEL);
 		// create execService
 		execservice1 = new ExecService();
 		execservice1.setDefaultDelay(1);
@@ -281,6 +289,8 @@ public class DispatcherPerformanceTest {
 			// assign service to the resource
 			perun.getResourcesManager().assignService(sess, resource1, service1);
 			testFacilities.add(facility1.getId());
+			// add destination
+			perun.getServicesManager().addDestination(sess, service1, facility1, destination1);
 		}
 	}
 
@@ -297,6 +307,7 @@ public class DispatcherPerformanceTest {
 				rm.removeGroupFromResource(sess, group1, resource1);
 				rm.deleteResource(sess, resource1);
 			}
+			perun.getServicesManager().removeAllDestinations(sess, service1, facility1);
 			fm.deleteFacility(sess, facility1);
 		}
 		generalServiceManager.removeDependency(execservice2, execservice1);

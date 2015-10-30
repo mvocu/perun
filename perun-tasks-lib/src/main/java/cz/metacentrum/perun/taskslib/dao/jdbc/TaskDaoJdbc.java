@@ -113,6 +113,7 @@ public class TaskDaoJdbc extends JdbcDaoSupport implements TaskDao {
 		int newTaskId = 0;
 		try {
 			newTaskId = Utils.getNewId(this.getJdbcTemplate(), "tasks_id_seq");
+			log.debug("  got new id from sequence: " + newTaskId);
 			this.getJdbcTemplate().update(
 					"insert into tasks(id, exec_service_id, facility_id, schedule, recurrence, delay, status, engine_id) values (?,?,?, " + Compatibility.toDate("?","'DD-MM-YYYY HH24:MI:SS'") + ",?,?,?,?)",
 					newTaskId, task.getExecServiceId(), task.getFacilityId(), getDateFormatter().format(task.getSchedule()), task.getRecurrence(), task.getDelay(), task.getStatus().toString(), engineID);
