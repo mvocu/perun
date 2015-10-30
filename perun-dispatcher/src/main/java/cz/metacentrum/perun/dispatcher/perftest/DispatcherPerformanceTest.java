@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -75,6 +76,8 @@ public class DispatcherPerformanceTest {
 	private Perun perun;
 	@Autowired
 	private BasicDataSource dataSource;
+	@Autowired
+	private TaskExecutor taskExecutor;
 	
 	@Autowired
 	private GeneralServiceManager generalServiceManager;
@@ -105,8 +108,10 @@ public class DispatcherPerformanceTest {
 			"(select id from perun.resources where name = 'testResource');" +
 			"delete from perun.groups_resources where resource_id in" + 
 			"(select id from perun.resources where name = 'testResource');" + 
-			"delete from perun.facilities where name like 'testFacility%';" +
+			"delete from perun.facility_service_destinations where service_id in" +
+			"(select id from perun.services where name = 'testService');" +
 			"delete from perun.resources where name = 'testResource';" +
+			"delete from perun.facilities where name like 'testFacility%';" +
 			"delete from perun.exec_services where id in" + 
 			"(select es.id from perun.exec_services es left join perun.services s on es.service_id = s.id" + 
 			"where s.name = 'testService');" +
@@ -127,6 +132,7 @@ public class DispatcherPerformanceTest {
 			"delete from perun.vos where name = 'testVo';" +
 			"commit;";
 	
+
 	/**
 	 * Initialize integrated dispatcher.
 	 */
@@ -158,41 +164,54 @@ public class DispatcherPerformanceTest {
 
 			log.debug("JDBC url: " + dataSource.getUrl());
 			
-			// populate task database
-			createTestTasks();
 			
-			// get current time -> start time
-			log.debug("PERFTEST starting propagations: " + System.currentTimeMillis() );
+			taskExecutor.execute(new Runnable() {
 
-			// start propagation
-			String message = member1.serializeToString() + " added to " + group1.serializeToString() + ".";
+				@Override
+				public void run() {
+					try {
+					// populate task database
+					createTestTasks();
+					
+					// get current time -> start time
+					log.debug("PERFTEST starting propagations: " + System.currentTimeMillis() );
 
-			Event event = new Event();
-			event.setTimeStamp(System.currentTimeMillis());
-			event.setHeader("portishead");
-			event.setData(message);
-			eventQueue.add(event);
-			
-			// wait for all propagations to complete
-			while(true) {
-				if(schedulingPool.getSize() > 0 &&
-						schedulingPool.getWaitingTasks().isEmpty() &&
-						schedulingPool.getPlannedTasks().isEmpty() &&
-						schedulingPool.getProcessingTasks().isEmpty()) {
-					break;
-				} else {
-					log.debug("There are " + schedulingPool.getProcessingTasks().size() + " processing tasks");
-					Thread.sleep(5000);
+					// start propagation
+					String message = member1.serializeToString() + " added to " + group1.serializeToString() + ".";
+
+					Event event = new Event();
+					event.setTimeStamp(System.currentTimeMillis());
+					event.setHeader("portishead");
+					event.setData(message);
+					eventQueue.add(event);
+					
+					// wait for all propagations to complete
+					while(true) {
+						if(schedulingPool.getSize() > 0 &&
+								schedulingPool.getWaitingTasks().isEmpty() &&
+								schedulingPool.getPlannedTasks().isEmpty() &&
+								schedulingPool.getProcessingTasks().isEmpty()) {
+							break;
+						} else {
+							log.debug("There are " + schedulingPool.getProcessingTasks().size() + " processing tasks");
+							Thread.sleep(5000);
+						}
+					}
+					
+					// get current time -> end time
+					log.debug("PERFTEST end propagations: " + System.currentTimeMillis());
+					log.debug("   " + schedulingPool.getDoneTasks() + " done");
+					log.debug("   " + schedulingPool.getErrorTasks() + " failed");
+					
+					// print results and (wait for) exit
+					removeTestTasks();
+					} catch (Exception e) {
+						log.error(e.toString(), e);
+					}
 				}
-			}
-			
-			// get current time -> end time
-			log.debug("PERFTEST end propagations: " + System.currentTimeMillis());
-			log.debug("   " + schedulingPool.getDoneTasks() + " done");
-			log.debug("   " + schedulingPool.getErrorTasks() + " failed");
-			
-			// print results and (wait for) exit
-			removeTestTasks();
+				
+			});
+
 			
 		} catch (PerunHornetQServerException e) {
 			log.error(e.toString(), e);
