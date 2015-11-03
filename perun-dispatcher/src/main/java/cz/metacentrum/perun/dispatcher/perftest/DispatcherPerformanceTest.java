@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -59,7 +60,7 @@ import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 
-public class DispatcherPerformanceTest {
+public class DispatcherPerformanceTest extends JdbcDaoSupport {
 	private final static Logger log = LoggerFactory.getLogger(DispatcherPerformanceTest.class);
 
 	private DispatcherManager dispatcherManager;
@@ -99,6 +100,9 @@ public class DispatcherPerformanceTest {
 
 	final String cleanupQuery = 
 			"rollback; " +
+			"delete from perun.tasks_results where task_id in" +
+			"(select t.id from perun.tasks t left join perun.facilities f on t.facility_id = f.id" +
+			"where f.name like 'testFacility%');" +
 			" delete from perun.tasks where facility_id in " + 
 			"(select id from perun.facilities where name like 'testFacility%');" +
 			"delete from perun.service_dependencies where exec_service_id in" +  
@@ -314,6 +318,8 @@ public class DispatcherPerformanceTest {
 	}
 
 	private void removeTestTasks() throws PerunException {
+		this.getJdbcTemplate().update(cleanupQuery);
+/*
 		PerunPrincipal pp = new PerunPrincipal("perunTests", ExtSourcesManager.EXTSOURCE_NAME_INTERNAL, ExtSourcesManager.EXTSOURCE_INTERNAL);
 		PerunSession sess = perun.getPerunSession(pp);
 
@@ -337,5 +343,6 @@ public class DispatcherPerformanceTest {
 		perun.getGroupsManager().deleteGroup(sess, group1);
 		perun.getUsersManager().deleteUser(sess, user1);
 		perun.getVosManager().deleteVo(sess, vo1);
+*/		
 	}
 }
