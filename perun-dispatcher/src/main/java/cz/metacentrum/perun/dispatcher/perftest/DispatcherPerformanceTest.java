@@ -100,41 +100,41 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 	protected ArrayList<Integer> testFacilities;
 
 	final String cleanupQuery = 
-			"rollback; " +
-			"delete from perun.tasks_results where task_id in" +
-			"(select t.id from perun.tasks t left join perun.facilities f on t.facility_id = f.id" +
-			"where f.name like 'testFacility%');" +
-			" delete from perun.tasks where facility_id in " + 
-			"(select id from perun.facilities where name like 'testFacility%');" +
-			"delete from perun.service_dependencies where exec_service_id in" +  
-			"(select es.id from perun.exec_services es left join perun.services s on es.service_id = s.id" + 
-			"where s.name = 'testService');" +
-			"delete from perun.resource_services where resource_id in" + 
-			"(select id from perun.resources where name = 'testResource');" +
-			"delete from perun.groups_resources where resource_id in" + 
-			"(select id from perun.resources where name = 'testResource');" + 
-			"delete from perun.facility_service_destinations where service_id in" +
-			"(select id from perun.services where name = 'testService');" +
-			"delete from perun.resources where name = 'testResource';" +
-			"delete from perun.facilities where name like 'testFacility%';" +
-			"delete from perun.exec_services where id in" + 
-			"(select es.id from perun.exec_services es left join perun.services s on es.service_id = s.id" + 
-			"where s.name = 'testService');" +
-			"delete from perun.services where name = 'testService';" +
-			"delete from perun.groups_members where member_id in" + 
-			"(select m.id from perun.members m left join perun.users u on m.user_id = u.id" + 
-			"where u.first_name = 'firstName');" +
-			"delete from perun.groups_members where group_id in" + 
-			"(select id from perun.groups where name = 'falcon');" +
-			"delete from perun.members where user_id in" +
-			"(select id from perun.users where first_name = 'firstName');" +
-			"delete from perun.user_ext_sources where user_id in" + 
-			"(select id from perun.users where first_name = 'firstName');" +
-			"delete from perun.users where first_name = 'firstName';" +
-			"delete from perun.groups where vo_id in (select id from perun.vos where name = 'testVo');" +
-			"delete from perun.groups where vo_id in (select id from perun.vos where name = 'testVo');" +
-			"delete from perun.groups where name = 'falcon';" +
-			"delete from perun.vos where name = 'testVo';" +
+			"rollback;  " +
+			"delete from perun.tasks_results where task_id in  " +
+			"(select t.id from perun.tasks t left join perun.facilities f on t.facility_id = f.id  " +
+			"where f.name like 'testFacility%');  " +
+			" delete from perun.tasks where facility_id in  " + 
+			"(select id from perun.facilities where name like 'testFacility%');  " +
+			"delete from perun.service_dependencies where exec_service_id in  " +  
+			"(select es.id from perun.exec_services es left join perun.services s on es.service_id = s.id  " + 
+			"where s.name = 'testService');  " +
+			"delete from perun.resource_services where resource_id in  " + 
+			"(select id from perun.resources where name = 'testResource');  " +
+			"delete from perun.groups_resources where resource_id in  " + 
+			"(select id from perun.resources where name = 'testResource'); " + 
+			"delete from perun.facility_service_destinations where service_id in " +
+			"(select id from perun.services where name = 'testService'); " +
+			"delete from perun.resources where name = 'testResource'; " +
+			"delete from perun.facilities where name like 'testFacility%'; " +
+			"delete from perun.exec_services where id in " + 
+			"(select es.id from perun.exec_services es left join perun.services s on es.service_id = s.id " + 
+			"where s.name = 'testService'); " +
+			"delete from perun.services where name = 'testService'; " +
+			"delete from perun.groups_members where member_id in " + 
+			"(select m.id from perun.members m left join perun.users u on m.user_id = u.id " + 
+			"where u.first_name = 'firstName'); " +
+			"delete from perun.groups_members where group_id in " + 
+			"(select id from perun.groups where name = 'falcon'); " +
+			"delete from perun.members where user_id in " +
+			"(select id from perun.users where first_name = 'firstName'); " +
+			"delete from perun.user_ext_sources where user_id in " + 
+			"(select id from perun.users where first_name = 'firstName'); " +
+			"delete from perun.users where first_name = 'firstName'; " +
+			"delete from perun.groups where vo_id in (select id from perun.vos where name = 'testVo'); " +
+			"delete from perun.groups where vo_id in (select id from perun.vos where name = 'testVo'); " +
+			"delete from perun.groups where name = 'falcon'; " +
+			"delete from perun.vos where name = 'testVo'; " +
 			"commit;";
 	
 
@@ -170,7 +170,7 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 			// Start Event Processor
 			dispatcherManager.startProcessingEvents();
 
-			log.debug("JDBC url: " + dataSource.getUrl());
+			log.debug("JDBC url:  " + dataSource.getUrl());
 			
 			
 			taskExecutor.execute(new Runnable() {
@@ -182,10 +182,10 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 					createTestTasks();
 					
 					// get current time -> start time
-					log.debug("PERFTEST starting propagations: " + System.currentTimeMillis() );
+					log.debug("PERFTEST starting propagations:  " + System.currentTimeMillis() );
 
 					// start propagation
-					String message = member1.serializeToString() + " added to " + group1.serializeToString() + ".";
+					String message = member1.serializeToString() + " added to  " + group1.serializeToString() + ".";
 
 					Event event = new Event();
 					event.setTimeStamp(System.currentTimeMillis());
@@ -202,15 +202,15 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 								schedulingPool.getProcessingTasks().isEmpty()) {
 							finished = true;
 						} else {
-							log.debug("There are " + schedulingPool.getProcessingTasks().size() + " processing tasks");
+							log.debug("There are  " + schedulingPool.getProcessingTasks().size() + " processing tasks");
 							Thread.sleep(5000);
 						}
 					}
 					
 					// get current time -> end time
-					log.debug("PERFTEST end propagations: " + System.currentTimeMillis());
-					log.debug("   " + schedulingPool.getDoneTasks() + " done");
-					log.debug("   " + schedulingPool.getErrorTasks() + " failed");
+					log.debug("PERFTEST end propagations:  " + System.currentTimeMillis());
+					log.debug("    " + schedulingPool.getDoneTasks() + " done");
+					log.debug("    " + schedulingPool.getErrorTasks() + " failed");
 					
 					// print results and (wait for) exit
 					removeTestTasks();
