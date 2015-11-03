@@ -190,12 +190,13 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 					eventQueue.add(event);
 					
 					// wait for all propagations to complete
-					while(true) {
+					Boolean finished = false;
+					while(!finished) {
 						if(schedulingPool.getSize() > 0 &&
 								schedulingPool.getWaitingTasks().isEmpty() &&
 								schedulingPool.getPlannedTasks().isEmpty() &&
 								schedulingPool.getProcessingTasks().isEmpty()) {
-							break;
+							finished = true;
 						} else {
 							log.debug("There are " + schedulingPool.getProcessingTasks().size() + " processing tasks");
 							Thread.sleep(5000);
