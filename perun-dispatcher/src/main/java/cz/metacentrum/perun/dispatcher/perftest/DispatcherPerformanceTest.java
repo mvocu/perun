@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import oracle.sql.DATE;
 
 import org.apache.tomcat.dbcp.dbcp.BasicDataSource;
+import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +151,9 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 			} else {
 				springCtx.registerShutdownHook();
 			}
+			
+			removeTestTasks();
+			
 			// Register into the database
 			// DO NOT: dispatcherStarter.dispatcherManager.registerDispatcher();
 			// Start HornetQ server
