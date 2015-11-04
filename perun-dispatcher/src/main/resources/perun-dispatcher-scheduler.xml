@@ -17,7 +17,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 	<bean id="perunScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
-				<ref bean="maintenanceJobTrigger" />
+				<!-- <ref bean="maintenanceJobTrigger" /> -->
 				<!-- <ref bean="checkInJobTrigger" /> -->
 				<ref bean="processPoolJobTrigger" />
 				<ref bean="propagationMaintainerJobTrigger" />
