@@ -60,10 +60,14 @@ import cz.metacentrum.perun.dispatcher.processing.EventQueue;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
 import cz.metacentrum.perun.taskslib.model.ExecService;
+import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
+import cz.metacentrum.perun.taskslib.model.Task;
 
 public class DispatcherPerformanceTest extends JdbcDaoSupport {
 	private final static Logger log = LoggerFactory.getLogger(DispatcherPerformanceTest.class);
 
+	private static final int TEST_SIZE = 100;
+	
 	private DispatcherManager dispatcherManager;
 	@Autowired
 	private AbstractApplicationContext springCtx;
@@ -197,16 +201,24 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 					Boolean finished = false;
 					while(!finished) {
 						if(schedulingPool.getSize() > 0 &&
-								schedulingPool.getWaitingTasks().isEmpty() &&
+								schedulingPool.getDoneTasks().size() == TEST_SIZE && /* SEND */
+								schedulingPool.getWaitingTasks().size() == TEST_SIZE && /* GET */
 								schedulingPool.getPlannedTasks().isEmpty() &&
 								schedulingPool.getProcessingTasks().isEmpty()) {
 							finished = true;
+							for(Task task: schedulingPool.getDoneTasks()) {
+								if(task.getExecService().getExecServiceType().equals(ExecServiceType.GENERATE)) {
+									finished = false;
+									break;
+								}
+							}
 						} else {
 							log.debug("There are  " + schedulingPool.getProcessingTasks().size() + " processing tasks");
 							log.debug("There are  " + schedulingPool.getWaitingTasks().size() + " waiting tasks");
 							log.debug("There are  " + schedulingPool.getPlannedTasks().size() + " planned tasks");
 							log.debug("There are  " + schedulingPool.getDoneTasks().size() + " done tasks");
 							log.debug("There are  " + schedulingPool.getErrorTasks().size() + " error tasks");
+							log.debug("There are  " + schedulingPool.getSize() + " total tasks");
 							Thread.sleep(5000);
 						}
 					}
@@ -309,7 +321,7 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 		// stash back the created id (this should be really done somewhere else)
 		execservice2.setId(id);
 		generalServiceManager.createDependency(execservice2, execservice1);
-		for(int i = 0; i < 100; i++) {
+		for(int i = 0; i < TEST_SIZE; i++) {
 			// now create some facility
 			facility1 = new Facility(0, "testFacility" + i, "desc");
 			facility1 = perun.getFacilitiesManager().createFacility(sess, facility1);
