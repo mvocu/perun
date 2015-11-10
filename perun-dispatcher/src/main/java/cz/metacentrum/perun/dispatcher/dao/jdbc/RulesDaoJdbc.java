@@ -24,8 +24,7 @@ public class RulesDaoJdbc extends JdbcDaoSupport implements RulesDao {
 
 		public EngineRules mapRow(ResultSet rs, int i) throws SQLException {
 			EngineRules engineRules = new EngineRules();
-			// Integer clientID = rs.getInt("engine_id");
-			Integer clientID = 2;
+			Integer clientID = rs.getInt("engine_id");
 			engineRules.setEngineID(clientID);
 			engineRules.setRoutingRules(loadRoutingRulesForEngine(clientID));
 			return engineRules;

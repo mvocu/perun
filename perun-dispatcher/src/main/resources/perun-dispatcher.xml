@@ -190,7 +190,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 		
 	</beans>
 
-    	<beans profile="perftest">
+    <beans profile="perftest">
 		<bean id="dispatcherPropertiesBean" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 			<property name="locations">
 				<list>
@@ -221,7 +221,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 			<property name="dataSource" ref="dataSource"/>
 		</bean>
 
-    	</beans>
+    </beans>
     
 	<beans profile="default">
 		<bean id="dispatcherPropertiesBean" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
