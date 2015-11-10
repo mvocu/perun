@@ -203,6 +203,10 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 							finished = true;
 						} else {
 							log.debug("There are  " + schedulingPool.getProcessingTasks().size() + " processing tasks");
+							log.debug("There are  " + schedulingPool.getWaitingTasks().size() + " waiting tasks");
+							log.debug("There are  " + schedulingPool.getPlannedTasks().size() + " planned tasks");
+							log.debug("There are  " + schedulingPool.getDoneTasks().size() + " done tasks");
+							log.debug("There are  " + schedulingPool.getErrorTasks().size() + " error tasks");
 							Thread.sleep(5000);
 						}
 					}
