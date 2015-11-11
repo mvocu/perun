@@ -201,7 +201,7 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 					Boolean finished = false;
 					while(!finished) {
 						if(schedulingPool.getSize() > 0 &&
-								schedulingPool.getDoneTasks().size() == TEST_SIZE && /* SEND */
+								schedulingPool.getDoneTasks().size() + schedulingPool.getErrorTasks().size() == TEST_SIZE && /* SEND */
 								schedulingPool.getWaitingTasks().size() == TEST_SIZE && /* GET */
 								schedulingPool.getPlannedTasks().isEmpty() &&
 								schedulingPool.getProcessingTasks().isEmpty()) {
