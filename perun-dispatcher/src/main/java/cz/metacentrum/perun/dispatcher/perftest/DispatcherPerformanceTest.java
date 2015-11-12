@@ -160,13 +160,16 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 			}
 			
 			removeTestTasks();
-
-			String testSize_s = BeansUtils.getPropertyFromConfiguration("engine.perf.testsize");
-			if(testSize_s != null && !testSize_s.isEmpty()) {
-				testSize = Integer.parseInt(testSize_s);
-				if(testSize <= 0) {
-					testSize = TEST_SIZE;
+			try { 
+				String testSize_s = BeansUtils.getPropertyFromConfiguration("engine.perf.testsize");
+				if(testSize_s != null && !testSize_s.isEmpty()) {
+					testSize = Integer.parseInt(testSize_s);
+					if(testSize <= 0) {
+						testSize = TEST_SIZE;
+					}
 				}
+			} catch (Exception e) {
+				// nothing happens
 			}
 			// Register into the database
 			// DO NOT: dispatcherStarter.dispatcherManager.registerDispatcher();
