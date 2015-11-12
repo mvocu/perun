@@ -22,6 +22,7 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
 
 import cz.metacentrum.perun.controller.service.GeneralServiceManager;
+import cz.metacentrum.perun.core.api.BeansUtils;
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.ExtSourcesManager;
 import cz.metacentrum.perun.core.api.FacilitiesManager;
@@ -102,6 +103,8 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 	protected ExecService execservice1;
 	protected ExecService execservice2;
 	protected ArrayList<Integer> testFacilities;
+	
+	private int testSize = TEST_SIZE;
 
 	final String cleanupQuery = 
 			"rollback;  " +
@@ -157,7 +160,14 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 			}
 			
 			removeTestTasks();
-			
+
+			String testSize_s = BeansUtils.getPropertyFromConfiguration("engine.perf.testsize");
+			if(testSize_s != null && !testSize_s.isEmpty()) {
+				testSize = Integer.parseInt(testSize_s);
+				if(testSize <= 0) {
+					testSize = TEST_SIZE;
+				}
+			}
 			// Register into the database
 			// DO NOT: dispatcherStarter.dispatcherManager.registerDispatcher();
 			// Start HornetQ server
@@ -201,8 +211,8 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 					Boolean finished = false;
 					while(!finished) {
 						if(schedulingPool.getSize() > 0 &&
-								schedulingPool.getDoneTasks().size() + schedulingPool.getErrorTasks().size() == TEST_SIZE && /* SEND */
-								schedulingPool.getWaitingTasks().size() == TEST_SIZE && /* GET */
+								schedulingPool.getDoneTasks().size() + schedulingPool.getErrorTasks().size() == testSize && /* SEND */
+								schedulingPool.getWaitingTasks().size() == testSize && /* GET */
 								schedulingPool.getPlannedTasks().isEmpty() &&
 								schedulingPool.getProcessingTasks().isEmpty()) {
 							finished = true;
@@ -321,7 +331,7 @@ public class DispatcherPerformanceTest extends JdbcDaoSupport {
 		// stash back the created id (this should be really done somewhere else)
 		execservice2.setId(id);
 		generalServiceManager.createDependency(execservice2, execservice1);
-		for(int i = 0; i < TEST_SIZE; i++) {
+		for(int i = 0; i < testSize; i++) {
 			// now create some facility
 			facility1 = new Facility(0, "testFacility" + i, "desc");
 			facility1 = perun.getFacilitiesManager().createFacility(sess, facility1);
