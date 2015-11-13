@@ -67,7 +67,7 @@ import cz.metacentrum.perun.taskslib.model.Task;
 public class DispatcherPerformanceTest extends JdbcDaoSupport {
 	private final static Logger log = LoggerFactory.getLogger(DispatcherPerformanceTest.class);
 
-	private static final int TEST_SIZE = 20;
+	private static final int TEST_SIZE = 500;
 	
 	private DispatcherManager dispatcherManager;
 	@Autowired
