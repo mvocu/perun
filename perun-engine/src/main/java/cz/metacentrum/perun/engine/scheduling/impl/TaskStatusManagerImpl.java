@@ -75,8 +75,10 @@ public class TaskStatusManagerImpl implements TaskStatusManager,
 				log.error("Error setting DONE status for task " + task.toString()
 						+ ": " + e.getMessage());
 			}
+			log.debug("TASK " + task.getId() + " status for destination " + destination + " set to DONE");
 			if (taskStatus.isTaskFinished()) {
 				schedulingPool.setTaskStatus(task, taskStatus.getTaskStatus());
+				log.debug("TASK " + task.getId() + " status set to DONE");
 			}
 		}
 		// report success on forced propagations immediately...
