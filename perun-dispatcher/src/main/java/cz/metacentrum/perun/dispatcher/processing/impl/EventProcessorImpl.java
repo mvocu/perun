@@ -207,7 +207,7 @@ public class EventProcessorImpl implements EventProcessor {
 						schedulingPool.addToPool(task, dispatcherQueue);
 						log.debug("  Created new task " + task.getId() + " and added to the pool.");
 					}
-					if (event.getData().contains("force propagation:")) {
+					if (true || event.getData().contains("force propagation:")) {
 						task.setPropagationForced(true);
 						final Task task_final = task;
 						// expedite task processing
