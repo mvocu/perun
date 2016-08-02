@@ -100,6 +100,7 @@ public class TaskSchedulerImpl implements TaskScheduler {
 	}
 
 	// TODO ensure dependant tasks with scope DESTINATION go to the same engine
+	// TODO Is there problem a problem with other threads calling this method?
 	@Override
 	public void scheduleTask(Task task) {
 		ExecService execService = task.getExecService();
