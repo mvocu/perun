@@ -14,7 +14,6 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 		<property name="triggers">
 			<list>
 				<ref bean="maintenanceJobTrigger" />
-				<ref bean="processPoolJobTrigger" />
 				<ref bean="propagationMaintainerJobTrigger" />
 				<ref bean="cleanTaskResultsJobTrigger" />
 			</list>
