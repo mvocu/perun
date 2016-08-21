@@ -1,18 +1,7 @@
 package cz.metacentrum.perun.engine.jms;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
+import cz.metacentrum.perun.taskslib.model.SendTask;
+import cz.metacentrum.perun.taskslib.model.Task;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -23,20 +12,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 
-import cz.metacentrum.perun.core.api.Destination;
-import cz.metacentrum.perun.taskslib.model.Task;
-import cz.metacentrum.perun.taskslib.model.TaskResult;
+import javax.jms.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- * 
  * @author Michal Karm Babacek JavaDoc coming soon...
- * 
  */
 @org.springframework.stereotype.Service(value = "jmsQueueManager")
 public class JMSQueueManager {
 	private final static Logger log = LoggerFactory
 			.getLogger(JMSQueueManager.class);
-
+	private static final String systemQueueName = "systemQueue";
 	@Autowired
 	private Properties propertiesBean;
 	@Autowired
@@ -46,7 +34,6 @@ public class JMSQueueManager {
 	@Autowired
 	private MessageReceiver messageReceiver;
 	private boolean receivingMessages = false;
-	private static final String systemQueueName = "systemQueue";
 	private Session session = null;
 	private Connection connection = null;
 	private boolean needToConnect = true;
@@ -60,14 +47,9 @@ public class JMSQueueManager {
 				// contains the knowledge of what transport to use,
 				// The server port etc.
 				Map<String, Object> connectionParams = new HashMap<String, Object>();
-				if (log.isDebugEnabled()) {
-					log.debug("Gonna connect to the host["
-							+ propertiesBean
-									.getProperty("dispatcher.ip.address")
-							+ "] on port["
-							+ propertiesBean.getProperty("dispatcher.port")
-							+ "]...");
-				}
+				log.debug("Gonna connect to the host[{}] on port[{}].",
+						propertiesBean.getProperty("dispatcher.ip.address"),
+						propertiesBean.getProperty("dispatcher.port"));
 				connectionParams.put(TransportConstants.PORT_PROP_NAME,
 						Integer.parseInt(propertiesBean
 								.getProperty("dispatcher.port")));
@@ -99,8 +81,7 @@ public class JMSQueueManager {
 				// If unable to connect to the server...
 				needToConnect = true;
 				waitTime = waitTime + 10000;
-				log.error("Connection failed. We gonna wait "
-						+ (waitTime / 1000) + " s and try again...", e);
+				log.error("Connection failed. We gonna wait {} s and try again.", (waitTime / 1000), e);
 				try {
 					Thread.sleep(waitTime);
 				} catch (InterruptedException e1) {
@@ -123,8 +104,7 @@ public class JMSQueueManager {
 
 			// Step 8. Send the Message
 			producer.send(message);
-			log.debug("Registration message[" + message.getText()
-					+ "] has been sent...");
+			log.debug("Registration message[{}] has been sent.", message.getText());
 			Thread.sleep(1000);
 
 			// Execute receiver
@@ -164,28 +144,30 @@ public class JMSQueueManager {
 
 	}
 
-	public void reportFinishedTask(Task task, String destinations)
-			throws JMSException {
+	public void reportGenTask(int id, String status) throws JMSException {
 		TextMessage message = session.createTextMessage("task:"
 				+ propertiesBean.getProperty("engine.unique.id") + ":"
-				+ task.getId() + ":" + task.getStatus().toString() + ":"
-				+ task.getEndTime().getTime() + ":" + destinations);
-		// + ":" + task.getId() + ":DONE:Destinations []");
-		//message.setJMSPriority(6);
-		producer.send(message, DeliveryMode.PERSISTENT, 6, 0);
-		log.debug("Task result message [" + message.getText()
-				+ "] has been sent...");
+				+ id + ":" + status);
+		producer.send(message);
+		log.debug("Task gen message [{}] sent.", message.getText());
 	}
 
-	public void reportFinishedDestination(Task task, Destination destination, TaskResult result) throws JMSException {
-		TextMessage message = session.createTextMessage("taskresult:"
-				+ propertiesBean.getProperty("engine.unique.id") + ":"
-				+ (result == null ? "" : result.serializeToString()));
-		//message.setJMSPriority(2);
-		producer.send(message, DeliveryMode.PERSISTENT, 2, 0);
-		log.debug("Task destination result message [" + message.getText()
-				+ "] has been sent...");
+	public void reportGenTask(Task task) throws JMSException {
+		reportGenTask(task.getId(), task.getStatus().toString());
 	}
+
+	public void reportSendTask(int id, String status, String destination) throws JMSException {
+		TextMessage message = session.createTextMessage("sendTask:"
+				+ propertiesBean.getProperty("engine.unieuq.id") + ":"
+				+ id + ":" + status + ":" + destination);
+		producer.send(message);
+		log.debug("Task send message [{}] sent.", message.getText());
+	}
+
+	public void reportSendTask(SendTask task) throws JMSException {
+		reportSendTask(task.getId().getLeft(), task.getStatus().toString(), task.getId().getRight().toString());
+	}
+
 
 	public void sendGoodByeAndClose() {
 		try {
@@ -208,12 +190,12 @@ public class JMSQueueManager {
 		return receivingMessages;
 	}
 
-	public void setPropertiesBean(Properties propertiesBean) {
-		this.propertiesBean = propertiesBean;
-	}
-
 	public Properties getPropertiesBean() {
 		return propertiesBean;
+	}
+
+	public void setPropertiesBean(Properties propertiesBean) {
+		this.propertiesBean = propertiesBean;
 	}
 
 	public TaskExecutor getTaskExecutorMessageProcess() {

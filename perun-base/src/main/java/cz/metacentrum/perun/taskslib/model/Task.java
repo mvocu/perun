@@ -9,23 +9,24 @@ import cz.metacentrum.perun.core.api.Facility;
 
 /**
  *
- * @author Michal Karm Babacek JavaDoc coming soon...
- *
+ * @author Michal Karm Babacek
  */
 public class Task implements Serializable {
 
 	private static final long serialVersionUID = -1809998673612582742L;
 
 	public static enum TaskStatus {
-		NONE, PLANNED, PROCESSING, DONE, ERROR, WARN
+		WAITING, PLANNED, GENERATING, GENERROR, GENERATED, SENDING, DONE, SENDERROR
 	}
 
 	private int id;
 	private int delay;
 	private int recurrence;
 	private Date startTime;
+	private Date sendStartTime;
 	private Date schedule;
-	private Date endTime;
+	private Date genEndTime;
+	private Date sendEndTime;
 	private ExecService execService;
 	private Facility facility;
 	private List<Destination> destinations;
@@ -99,13 +100,6 @@ public class Task implements Serializable {
 		this.schedule = schedule;
 	}
 
-	public Date getEndTime() {
-		return endTime;
-	}
-
-	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
-	}
 
 	public int getExecServiceId() {
 		if (execService != null) {
@@ -129,6 +123,30 @@ public class Task implements Serializable {
 		} else {
 			return -1;
 		}
+	}
+
+	public Date getGenEndTime() {
+		return genEndTime;
+	}
+
+	public void setGenEndTime(Date genEndTime) {
+		this.genEndTime = genEndTime;
+	}
+
+	public Date getSendEndTime() {
+		return sendEndTime;
+	}
+
+	public void setSendEndTime(Date sendEndTime) {
+		this.sendEndTime = sendEndTime;
+	}
+
+	public Date getSendStartTime() {
+		return sendStartTime;
+	}
+
+	public void setSendStartTime(Date sendStartTime) {
+		this.sendStartTime = sendStartTime;
 	}
 
 	public Facility getFacility() {
@@ -161,8 +179,18 @@ public class Task implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Task [id=" + id + ", delay=" + delay + ", recurrence=" + recurrence + ", startTime=" + startTime + ", schedule=" + schedule + ", endTime=" + endTime + ", execService="
-			+ execService + ", facility=" + facility + ", destinations=" + destinations + ", status=" + status + "]";
+		return "Task [id=" + id +
+				", delay=" + delay +
+				", recurrence=" + recurrence +
+				", startTime=" + startTime +
+				", sendStartTime=" + sendStartTime +
+				", schedule=" + schedule +
+				", genEndTime=" + genEndTime +
+				", sendEndTime=" + sendEndTime+
+				", execService=" + execService +
+				", facility=" + facility +
+				", destinations=" + destinations +
+				", status=" + status + "]";
 	}
 
 	public boolean isSourceUpdated() {

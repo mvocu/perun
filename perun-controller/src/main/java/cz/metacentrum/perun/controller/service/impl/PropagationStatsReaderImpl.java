@@ -137,14 +137,14 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 		for (Task task : tasks) {
 			// save previous facility state
 			FacilityPropagationState facState = state.getState();
-			// PROCESSING and not ERROR before
-			if (TaskStatus.PROCESSING.equals(task.getStatus()) && (facState!=FacilityPropagationState.ERROR)) {
-				state.setState(FacilityPropagationState.PROCESSING);
-			}
-			// ERROR - set ERROR
-			else if (TaskStatus.ERROR.equals(task.getStatus())) {
-				state.setState(FacilityPropagationState.ERROR);
-			}
+//			// PROCESSING and not ERROR before
+//			if (TaskStatus.PROCESSING.equals(task.getStatus()) && (facState!=FacilityPropagationState.ERROR)) {
+//				state.setState(FacilityPropagationState.PROCESSING);
+//			}
+//			// ERROR - set ERROR
+//			else if (TaskStatus.ERROR.equals(task.getStatus())) {
+//				state.setState(FacilityPropagationState.ERROR);
+//			}
 
 			// get destination status
 			if (task.getExecService().getExecServiceType().equals(ExecService.ExecServiceType.SEND)) {

@@ -124,7 +124,9 @@ public class ServiceState {
 	 * @return status of GEN Task
 	 */
 	public Task.TaskStatus getGenStatus() {
-		return (genTask != null) ? genTask.getStatus() : Task.TaskStatus.NONE;
+		// TODO: figure out
+		// return (genTask != null) ? genTask.getStatus() : Task.TaskStatus.NONE;
+		return null;
 	}
 
 	/**
@@ -133,7 +135,9 @@ public class ServiceState {
 	 * @return status of SEND Task
 	 */
 	public Task.TaskStatus getSendStatus() {
-		return (sendTask != null) ? sendTask.getStatus() : Task.TaskStatus.NONE;
+		// TODO: figure out
+		// return (sendTask != null) ? sendTask.getStatus() : Task.TaskStatus.NONE;
+		return null;
 	}
 
 	/**
@@ -178,7 +182,7 @@ public class ServiceState {
 	 * @return time when GEN task ended
 	 */
 	public Date getGenEndTime() {
-		return (genTask != null) ? genTask.getEndTime() : null;
+		return (genTask != null) ? genTask.getGenEndTime() : null;
 	}
 
 	/**
@@ -187,7 +191,7 @@ public class ServiceState {
 	 * @return time when SEND task ended
 	 */
 	public Date getSendEndTime() {
-		return (sendTask != null) ? sendTask.getEndTime() : null;
+		return (sendTask != null) ? sendTask.getSendEndTime() : null;
 	}
 
 	/**

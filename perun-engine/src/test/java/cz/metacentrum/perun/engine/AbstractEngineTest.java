@@ -73,10 +73,14 @@ public abstract class AbstractEngineTest {
 		facility = perun.getFacilitiesManagerBl().createFacility(sess, new Facility(0, "EngineTestFacility"));
 		service = perun.getServicesManagerBl().createService(sess, new Service(0, "test_service"));
 
-		destination1 = perun.getServicesManagerBl().addDestination(sess, service, facility, new Destination(0, "par_dest1", "host", "PARALLEL"));
-		destination2 = perun.getServicesManagerBl().addDestination(sess, service, facility, new Destination(0, "par_dest2", "host", "PARALLEL"));
-		destination3 = perun.getServicesManagerBl().addDestination(sess, service, facility, new Destination(0, "one_dest1", "host", "ONE"));
-		destination4 = perun.getServicesManagerBl().addDestination(sess, service, facility, new Destination(0, "one_dest2", "host", "ONE"));
+		destination1 = perun.getServicesManagerBl().addDestination(
+				sess, service, facility, new Destination(0, "par_dest1", "host", "PARALLEL"));
+		destination2 = perun.getServicesManagerBl().addDestination(
+				sess, service, facility, new Destination(0, "par_dest2", "host", "PARALLEL"));
+		destination3 = perun.getServicesManagerBl().addDestination(
+				sess, service, facility, new Destination(0, "one_dest1", "host", "ONE"));
+		destination4 = perun.getServicesManagerBl().addDestination(
+				sess, service, facility, new Destination(0, "one_dest2", "host", "ONE"));
 
 		execService1 = new ExecService();
 		execService1.setService(service);
@@ -116,7 +120,7 @@ public abstract class AbstractEngineTest {
 		task1.setFacility(facility);
 		task1.setExecService(execService1);
 		task1.setSchedule(new Date());
-		task1.setStatus(Task.TaskStatus.NONE);
+		task1.setStatus(Task.TaskStatus.WAITING);
 		task1.setId(taskDaoCore.scheduleNewTask(task1, engineId));
 
 		task2 = new Task();
@@ -124,7 +128,7 @@ public abstract class AbstractEngineTest {
 		task2.setFacility(facility);
 		task2.setExecService(execService2);
 		task2.setSchedule(new Date());
-		task2.setStatus(Task.TaskStatus.NONE);
+		task2.setStatus(Task.TaskStatus.WAITING);
 		task2.setId(taskDaoCore.scheduleNewTask(task2, engineId));
 
 		task_gen = new Task();
@@ -132,7 +136,7 @@ public abstract class AbstractEngineTest {
 		task_gen.setFacility(facility);
 		task_gen.setExecService(execService_gen);
 		task_gen.setSchedule(new Date());
-		task_gen.setStatus(Task.TaskStatus.NONE);
+		task_gen.setStatus(Task.TaskStatus.WAITING);
 		task_gen.setId(taskDaoCore.scheduleNewTask(task_gen, engineId));
 
 	}

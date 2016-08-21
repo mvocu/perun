@@ -16,9 +16,9 @@ import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.service.TaskManager;
 
 /**
- * @author Michal Karm Babacek JavaDoc coming soon...
+ * @author Michal Karm Babacek
  * @author Michal Voců
- * @authro Pavel Zlámal <zlamal@cesnet.cz>
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 @org.springframework.stereotype.Service(value = "engineManager")
 public class EngineManagerImpl implements EngineManager {
@@ -79,7 +79,7 @@ public class EngineManagerImpl implements EngineManager {
 		 */
 
 		/* we set everything found to error to report it back to dispatcher */
-		for (Task task : schedulingPool.getDoneTasks()) {
+		/*for (Task task : schedulingPool.getDoneTasks()) {
 			ExecService execService = task.getExecService();
 
 			if (execService.getExecServiceType().equals(ExecServiceType.GENERATE)) {
@@ -95,7 +95,7 @@ public class EngineManagerImpl implements EngineManager {
 			log.debug("Setting task " + task.toString() + " to ERROR");
 			schedulingPool.setTaskStatus(task, TaskStatus.ERROR);
 		}
-		log.info("I'm done with it.");
+		log.info("I'm done with it.");*/
 	}
 
 	public SchedulingPool getSchedulingPool() {

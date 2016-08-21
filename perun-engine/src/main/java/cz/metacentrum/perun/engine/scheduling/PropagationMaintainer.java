@@ -1,11 +1,6 @@
 package cz.metacentrum.perun.engine.scheduling;
 
-import java.util.List;
-
-import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
-import cz.metacentrum.perun.engine.model.Statistics;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 
 /**
  *
@@ -14,19 +9,7 @@ import cz.metacentrum.perun.taskslib.model.ExecService;
  */
 public interface PropagationMaintainer {
 
-	/**
-	 * Check finished Tasks and return them to Dispatcher.
-	 * Check stuck Tasks and end them with error.
-	 */
-	void checkResults();
-
-	Statistics getStatistics();
-
-	void setAllGenerateDependenciesToNone(List<ExecService> dependencies,
-			Facility facility);
-
-	void setAllGenerateDependenciesToNone(List<ExecService> dependencies,
-			int facilityId);
+	void endStuckTasks();
 
 	void setJmsQueueManager(JMSQueueManager jmsQueueManager);
 }

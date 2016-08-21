@@ -1,86 +1,48 @@
 package cz.metacentrum.perun.engine.scheduling;
 
-import java.util.List;
-
-import cz.metacentrum.perun.core.api.Facility;
-import cz.metacentrum.perun.engine.model.Pair;
-import cz.metacentrum.perun.taskslib.model.ExecService;
+import cz.metacentrum.perun.core.api.Destination;
+import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
-import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
+
+import java.util.List;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.Future;
 
 /**
- * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ * This class groups all Task queues from Engine, providing means to add new Tasks, cancel/remove present ones, etc.
  */
 public interface SchedulingPool {
 
-	/**
-	 * Add to the pool
-	 * 
-	 * @param pair
-	 * @return current pool size
-	 */
-	@Deprecated
-	int addToPool(Pair<ExecService, Facility> pair);
-
-	/**
-	 * Get all pairs from the pool. NOTE: This action will empty the pool!
-	 * 
-	 * @return
-	 */
-	@Deprecated
-	List<Pair<ExecService, Facility>> emptyPool();
-
-	/**
-	 * Size
-	 * 
-	 * @return current pool size
-	 */
 	int getSize();
 
-	void close();
+	Task addToPool(Task task);
 
-	/**
-	 * Add Task to the waiting list.
-	 * 
-	 * @param task
-	 * @return
-	 */
-	int addToPool(Task task);
+	Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture);
 
-	/**
-	 * Get list of Tasks in Planned state
-	 * 
-	 * @return list of tasks
-	 */
-	List<Task> getPlannedTasks();
+	Integer addSendTaskCount(int taskId, int count);
 
-	/**
-	 * Get list of Tasks to be scheduled
-	 * 
-	 * @return list of tasks
-	 */
-	List<Task> getNewTasks();
+	Integer decreaseSendTaskCount(int taskId, int decrease);
 
-	List<Task> getProcessingTasks();
+	List<Task> getWaitingTasks();
 
-	List<Task> getErrorTasks();
+	List<Task> getGeneratedTasks();
 
-	List<Task> getDoneTasks();
+	BlockingDeque<Task> getNewTasksQueue();
 
-	/**
-	 * Set status of given task
-	 * 
-	 * @param task
-	 * @param status
-	 */
-	void setTaskStatus(Task task, TaskStatus status);
+	BlockingDeque<Task> getGeneratedTasksQueue();
+
+	BlockingBoundedMap<Integer, Task> getGeneratingTasks();
+
+	BlockingBoundedMap<Pair<Integer, Destination>, SendTask> getSendingSendTasks();
+
+	Future<Task> getTaskFutureById(int id);
 
 	Task getTaskById(int id);
 
-	void removeTask(Task task);
+	boolean removeTask(Task task);
 
-	void reloadTasks(int engineID);
+	Future<SendTask> removeSendTaskFuture(int taskId, Destination destination);
 
+	void modifyTask(Task task, List<Destination> destinations, boolean propagationForced);
 }

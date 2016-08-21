@@ -12,7 +12,6 @@ import cz.metacentrum.perun.engine.scheduling.PropagationMaintainer;
  * @author Michal Karm Babacek JavaDoc coming soon...
  * 
  */
-// TODO: Service, no need to be concurrent...?
 @org.springframework.stereotype.Service(value = "propagationMaintainerJob")
 public class PropagationMaintainerJob implements PerunEngineJob {
 
@@ -24,9 +23,9 @@ public class PropagationMaintainerJob implements PerunEngineJob {
 
 	@Override
 	public void doTheJob() {
-		log.info("Entering PropagationMaintainerJob: propagationMaintainer.checkResults().");
-		propagationMaintainer.checkResults();
-		log.info("PropagationMaintainerJob done: propagationMaintainer.checkResults() has completed.");
+		log.info("Beginning cleanup of stuck Tasks.");
+		propagationMaintainer.endStuckTasks();
+		log.info("Stuck Tasks cleanup finished.");
 	}
 
 	public PropagationMaintainer getPropagationMaintainer() {
