@@ -7,10 +7,13 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import cz.metacentrum.perun.dispatcher.exceptions.MessageFormatException;
+import cz.metacentrum.perun.dispatcher.hornetq.PerunHornetQServer;
+
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 
 /**
  *
@@ -25,6 +28,10 @@ public class SystemQueueReceiver implements Runnable {
 
 	@Autowired
 	private SystemQueueProcessor systemQueueProcessor;
+	@Autowired 
+	private PerunHornetQServer hornetQServer;
+	@Autowired
+	private TaskExecutor taskExecutor;
 	private MessageConsumer messageConsumer = null;
 	private Queue queue = null;
 	private boolean running = true;
@@ -41,6 +48,23 @@ public class SystemQueueReceiver implements Runnable {
 		this.session = session;
 	}
 
+	private class RestartJMS implements Runnable {
+
+		@Override
+		public void run() {
+			log.info("Going to restart JMS subsystem.");
+			systemQueueProcessor.stopProcessingSystemMessages();
+			if(hornetQServer.isServerRunning()) {
+				hornetQServer.stopServer();
+			}
+			log.debug("Both JMS client and server have stopped. Trying to start again...");
+			hornetQServer.startServer();
+			// NOTE: this starts another SystemQueueReceiver thread 
+			systemQueueProcessor.startProcessingSystemMessages();
+		}
+		
+	}
+	
 	@Override
 	public void run() {
 		log.debug("SystemQueueReceiver has started...");
@@ -90,21 +114,17 @@ public class SystemQueueReceiver implements Runnable {
 					}
 				}
 				Thread.sleep(periodicity);
+				throw new JMSException("Forcing restart");
 			} catch (JMSException e) {
 				log.error(e.toString(), e);
-				systemQueueProcessor.stopProcessingSystemMessages();
-				systemQueueProcessor.startProcessingSystemMessages();
-				try {
-					Thread.sleep(10000);
-				} catch (InterruptedException ex) {
-					log.error(ex.toString(), ex);
-					stop();
-				}
+				taskExecutor.execute(new RestartJMS());
+				stop();
 			} catch (InterruptedException e) {
 				log.error(e.toString(), e);
 				stop();
 			} catch (Exception e) {
 				log.error(e.toString(), e);
+				taskExecutor.execute(new RestartJMS());
 				stop();
 			}
 		}
