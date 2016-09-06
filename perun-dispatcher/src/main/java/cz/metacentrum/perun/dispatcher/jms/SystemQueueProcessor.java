@@ -60,6 +60,27 @@ public class SystemQueueProcessor {
 	private ConnectionFactory cf;
 	private Connection connection;
 	
+	private class RestartJMS implements Runnable {
+
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+			}
+			log.info("Going to restart JMS subsystem.");
+			stopProcessingSystemMessages();
+			if(perunHornetQServer.isServerRunning()) {
+				perunHornetQServer.stopServer();
+			}
+			log.debug("Both JMS client and server have stopped. Trying to start again...");
+			perunHornetQServer.startServer();
+			// NOTE: this starts another SystemQueueReceiver thread 
+			startProcessingSystemMessages();
+		}
+		
+	}
+
 	public void startProcessingSystemMessages() {
 		connection = null;
 		try {
@@ -148,6 +169,10 @@ public class SystemQueueProcessor {
 		 */
 	}
 
+	public void restartHornetQ() {
+		taskExecutor.execute(new RestartJMS());
+	}
+	
 	public boolean isProcessingMessages() {
 		return processingMessages;
 	}

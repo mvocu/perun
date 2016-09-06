@@ -28,10 +28,6 @@ public class SystemQueueReceiver implements Runnable {
 
 	@Autowired
 	private SystemQueueProcessor systemQueueProcessor;
-	@Autowired 
-	private PerunHornetQServer hornetQServer;
-	@Autowired
-	private TaskExecutor taskExecutor;
 	private MessageConsumer messageConsumer = null;
 	private Queue queue = null;
 	private boolean running = true;
@@ -48,22 +44,6 @@ public class SystemQueueReceiver implements Runnable {
 		this.session = session;
 	}
 
-	private class RestartJMS implements Runnable {
-
-		@Override
-		public void run() {
-			log.info("Going to restart JMS subsystem.");
-			systemQueueProcessor.stopProcessingSystemMessages();
-			if(hornetQServer.isServerRunning()) {
-				hornetQServer.stopServer();
-			}
-			log.debug("Both JMS client and server have stopped. Trying to start again...");
-			hornetQServer.startServer();
-			// NOTE: this starts another SystemQueueReceiver thread 
-			systemQueueProcessor.startProcessingSystemMessages();
-		}
-		
-	}
 	
 	@Override
 	public void run() {
@@ -117,14 +97,14 @@ public class SystemQueueReceiver implements Runnable {
 				throw new JMSException("Forcing restart");
 			} catch (JMSException e) {
 				log.error(e.toString(), e);
-				taskExecutor.execute(new RestartJMS());
+				systemQueueProcessor.restartHornetQ();
 				stop();
 			} catch (InterruptedException e) {
 				log.error(e.toString(), e);
 				stop();
 			} catch (Exception e) {
 				log.error(e.toString(), e);
-				taskExecutor.execute(new RestartJMS());
+				systemQueueProcessor.restartHornetQ();
 				stop();
 			}
 		}
