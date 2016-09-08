@@ -64,10 +64,6 @@ public class SystemQueueProcessor {
 
 		@Override
 		public void run() {
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-			}
 			log.info("Going to restart JMS subsystem.");
 			stopProcessingSystemMessages();
 			if(perunHornetQServer.isServerRunning()) {
@@ -78,6 +74,10 @@ public class SystemQueueProcessor {
 			} else {
 				log.debug("Both JMS client and server have stopped. Trying to start again...");
 				perunHornetQServer.startServer();
+			}
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
 			}
 			// NOTE: this starts another SystemQueueReceiver thread 
 			startProcessingSystemMessages();
