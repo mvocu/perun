@@ -174,7 +174,7 @@ public class SystemQueueProcessor {
 	}
 
 	public void restartHornetQ() {
-		taskExecutor.execute(new RestartJMS());
+		new Thread(new RestartJMS());
 	}
 	
 	public boolean isProcessingMessages() {
