@@ -73,8 +73,12 @@ public class SystemQueueProcessor {
 			if(perunHornetQServer.isServerRunning()) {
 				perunHornetQServer.stopServer();
 			}
-			log.debug("Both JMS client and server have stopped. Trying to start again...");
-			perunHornetQServer.startServer();
+			if(perunHornetQServer.isServerRunning()) {
+				log.error("HornetQ server still running. Leaving as is and starting client again.");
+			} else {
+				log.debug("Both JMS client and server have stopped. Trying to start again...");
+				perunHornetQServer.startServer();
+			}
 			// NOTE: this starts another SystemQueueReceiver thread 
 			startProcessingSystemMessages();
 		}
