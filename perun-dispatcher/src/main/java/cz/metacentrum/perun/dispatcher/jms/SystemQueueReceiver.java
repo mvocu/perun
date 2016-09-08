@@ -47,6 +47,7 @@ public class SystemQueueReceiver implements Runnable {
 	
 	@Override
 	public void run() {
+		bool restart = false;
 		log.debug("SystemQueueReceiver has started...");
 		try {
 
@@ -97,14 +98,16 @@ public class SystemQueueReceiver implements Runnable {
 				throw new JMSException("Forcing restart");
 			} catch (JMSException e) {
 				log.error(e.toString(), e);
-				systemQueueProcessor.restartHornetQ();
+				restart = true;
+				//systemQueueProcessor.restartHornetQ();
 				stop();
 			} catch (InterruptedException e) {
 				log.error(e.toString(), e);
 				stop();
 			} catch (Exception e) {
 				log.error(e.toString(), e);
-				systemQueueProcessor.restartHornetQ();
+				restart = true;
+				//systemQueueProcessor.restartHornetQ();
 				stop();
 			}
 		}
@@ -112,6 +115,9 @@ public class SystemQueueReceiver implements Runnable {
 			messageConsumer.close();
 		} catch (JMSException e) {
 			log.error(e.toString(), e);
+		}
+		if(restart) {
+			systemQueueProcessor.restartHornetQ();
 		}
 		messageConsumer = null;
 	}
