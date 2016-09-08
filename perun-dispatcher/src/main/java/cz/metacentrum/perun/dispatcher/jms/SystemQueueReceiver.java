@@ -47,7 +47,7 @@ public class SystemQueueReceiver implements Runnable {
 	
 	@Override
 	public void run() {
-		bool restart = false;
+		Boolean restart = false;
 		log.debug("SystemQueueReceiver has started...");
 		try {
 
