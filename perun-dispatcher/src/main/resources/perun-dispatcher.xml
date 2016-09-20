@@ -184,6 +184,8 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 					<prop key="dispatcher.cron.cleantaskresults">0 0 1 * * ?</prop>
 					<prop key="dispatcher.cron.maintenance">0 0 2 * * ?</prop>
 					<prop key="dispatcher.datadir">/tmp/perun-dispatcher-data</prop>
+					<prop key="perun.dispatcher.hornetq.user">perun</prop>
+					<prop key="perun.dispatcher.hornetq.password">tuze_tajne</prop>
 				</props>
 			</property>
 		</bean>

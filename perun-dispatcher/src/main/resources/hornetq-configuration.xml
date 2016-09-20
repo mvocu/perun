@@ -20,7 +20,9 @@
 		</acceptor>
 	</acceptors>
 
-	<security-enabled>false</security-enabled>
+    <cluster-user>${perun.dispatcher.hornetq.user:}</cluster-user>   
+    <cluster-password>${perun.dispatcher.hornetq.password:}</cluster-password>
+    <security-enabled>false</security-enabled>
 	<bindings-directory>${perun.dispatcher.hornetq.datadir:data}/bindings</bindings-directory>
 	<journal-directory>${perun.dispatcher.hornetq.datadir:data}/journal</journal-directory>
 	<large-messages-directory>${perun.dispatcher.hornetq.datadir:data}/largemessages</large-messages-directory>
