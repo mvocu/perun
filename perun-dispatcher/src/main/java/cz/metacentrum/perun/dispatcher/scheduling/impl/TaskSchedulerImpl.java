@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 
 import cz.metacentrum.perun.core.api.PerunClient;
+
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.PerunPrincipal;
 import cz.metacentrum.perun.core.api.PerunSession;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.ServicesManager;
 import cz.metacentrum.perun.core.api.exceptions.FacilityNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
@@ -85,6 +87,12 @@ public class TaskSchedulerImpl implements TaskScheduler {
 			return;
 		}
 
+		if(!validateTask(task)) {
+			log.warn("Task {} is no longer valid because either facility does not exist or the service is no longer assigned to it.",
+				task.getId());
+			schedulingPool.removeTask(task);
+		}
+		
 		log.debug("Scheduling TASK " + task.toString());
 		try {
 			dispatcherQueue = schedulingPool.getQueueForTask(task);
@@ -543,6 +551,26 @@ public class TaskSchedulerImpl implements TaskScheduler {
 		}
 	}
 
+	private Boolean validateTask(Task task) {
+		try {
+			initPerunSession();
+			List<Service> assignedServices = perun.getServicesManager().getAssignedServices(perunSession, task.getFacility());
+			if (assignedServices.contains(task.getExecService().getService())) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (FacilityNotExistsException e) {
+			return false;
+		} catch (InternalErrorException e) {
+			log.error("{}", e);
+		} catch (PrivilegeException e) {
+			log.error("Consistency error. {}", e);
+		}
+		return true;
+	}
+	
+	
 	@Override
 	public int getPoolSize() {
 		return schedulingPool.getSize();
