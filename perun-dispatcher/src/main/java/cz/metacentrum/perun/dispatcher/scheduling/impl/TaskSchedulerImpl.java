@@ -91,6 +91,7 @@ public class TaskSchedulerImpl implements TaskScheduler {
 			log.warn("Task {} is no longer valid because either facility does not exist or the service is no longer assigned to it.",
 				task.getId());
 			schedulingPool.removeTask(task);
+			return;
 		}
 		
 		log.debug("Scheduling TASK " + task.toString());
