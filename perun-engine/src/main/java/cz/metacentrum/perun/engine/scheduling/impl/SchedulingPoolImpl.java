@@ -12,9 +12,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
+
+import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.PLANNED;
 
 @org.springframework.stereotype.Service(value = "schedulingPool")
 public class SchedulingPoolImpl implements SchedulingPool {
@@ -40,7 +47,18 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		return genTaskFutures.put(id, taskFuture);
 	}
 
+	/**
+	 * Adds new Task to the SchedulingPool.
+	 * Only newly received Tasks with PLANNED status can be added.
+	 *
+	 * @param task Task that will be added to the pool.
+	 * @return Task that was added to the pool.
+	 */
 	public Task addToPool(Task task) {
+		if (task.getStatus() != PLANNED) {
+			throw new IllegalArgumentException("Only Tasks with PLANNED status can be added to SchedulingPool");
+		}
+
 		Task addedTask = tasks.put(task.getId(), task);
 		if (task.isPropagationForced()) {
 			try {
@@ -76,21 +94,27 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		}
 	}
 
+	@Override
+	public Collection<Task> getPlannedTasks() {
+		return getFromIterator(newTasksQueue.iterator());
+	}
+
+	@Override
+	public Collection<Task> getGeneratingTasks() {
+		return generatingTasks.values();
+	}
+
+	@Override
+	public Collection<Task> getGeneratedTasks() {
+		return getFromIterator(generatedTasksQueue.iterator());
+	}
+
 	private <E> List<E> getFromIterator(Iterator<E> iterator) {
 		List<E> list = new ArrayList<>();
 		while (iterator.hasNext()) {
 			list.add(iterator.next());
 		}
 		return list;
-	}
-
-	@Override
-	public List<Task> getWaitingTasks() {
-		return getFromIterator(getNewTasksQueue().iterator());
-	}
-
-	public List<Task> getGeneratedTasks() {
-		return getFromIterator(getGeneratedTasksQueue().iterator());
 	}
 
 	@Override
@@ -104,17 +128,22 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public BlockingBoundedMap<Integer, Task> getGeneratingTasks() {
+	public BlockingBoundedMap<Integer, Task> getGeneratingTasksBlockingMap() {
 		return generatingTasks;
 	}
 
 	@Override
-	public BlockingBoundedMap<Pair<Integer, Destination>, SendTask> getSendingSendTasks() {
+	public BlockingBoundedMap<Pair<Integer, Destination>, SendTask> getSendingSendTasksBlockingMap() {
 		return sendingSendTasks;
 	}
 
 	@Override
-	public Future<Task> getTaskFutureById(int id) {
+	public ConcurrentMap<Integer, Future<Task>> getGenTaskFuturesMap() {
+		return genTaskFutures;
+	}
+
+	@Override
+	public Future<Task> getGenTaskFutureById(int id) {
 		return genTaskFutures.get(id);
 	}
 

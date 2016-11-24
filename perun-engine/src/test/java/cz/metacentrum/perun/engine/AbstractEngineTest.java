@@ -120,7 +120,7 @@ public abstract class AbstractEngineTest {
 		task1.setFacility(facility);
 		task1.setExecService(execService1);
 		task1.setSchedule(new Date());
-		task1.setStatus(Task.TaskStatus.WAITING);
+		task1.setStatus(Task.TaskStatus.PLANNED);
 		task1.setId(taskDaoCore.scheduleNewTask(task1, engineId));
 
 		task2 = new Task();
@@ -128,17 +128,8 @@ public abstract class AbstractEngineTest {
 		task2.setFacility(facility);
 		task2.setExecService(execService2);
 		task2.setSchedule(new Date());
-		task2.setStatus(Task.TaskStatus.WAITING);
+		task2.setStatus(Task.TaskStatus.PLANNED);
 		task2.setId(taskDaoCore.scheduleNewTask(task2, engineId));
-
-		task_gen = new Task();
-		task_gen.setDestinations(destinations);
-		task_gen.setFacility(facility);
-		task_gen.setExecService(execService_gen);
-		task_gen.setSchedule(new Date());
-		task_gen.setStatus(Task.TaskStatus.WAITING);
-		task_gen.setId(taskDaoCore.scheduleNewTask(task_gen, engineId));
-
 	}
 
 }

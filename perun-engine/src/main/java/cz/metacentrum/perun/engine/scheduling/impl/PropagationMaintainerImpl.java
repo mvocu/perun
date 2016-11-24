@@ -25,8 +25,6 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 	private SchedulingPool schedulingPool;
 	@Autowired
 	private JMSQueueManager jmsQueueManager;
-	@Autowired
-	private Perun perun;
 
 	private void logJmsError(JMSException e, Object o) {
 		log.warn("Error occured trying to send {} to Dispatcher", o, e);
@@ -38,7 +36,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		long now = new Date(System.currentTimeMillis()).getTime();
 
 
-		for (Task task : schedulingPool.getGeneratingTasks().values()) {
+		for (Task task : schedulingPool.getGeneratingTasksBlockingMap().values()) {
 			if ((task.getStartTime().getTime() - now) > stuckTimeLimit) {
 				task.setStatus(TaskStatus.GENERROR);
 				boolean removed = schedulingPool.removeTask(task);
@@ -53,7 +51,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 			}
 		}
 
-		for (SendTask sendTask : schedulingPool.getSendingSendTasks().values()) {
+		for (SendTask sendTask : schedulingPool.getSendingSendTasksBlockingMap().values()) {
 			if ((sendTask.getStartTime().getTime() - now) > stuckTimeLimit) {
 				sendTask.setStatus(SendTaskStatus.ERROR);
 				Future<SendTask> sendTaskFuture = schedulingPool.removeSendTaskFuture(

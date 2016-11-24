@@ -5,8 +5,10 @@ import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 
 /**
@@ -24,19 +26,23 @@ public interface SchedulingPool {
 
 	Integer decreaseSendTaskCount(int taskId, int decrease);
 
-	List<Task> getWaitingTasks();
+	Collection<Task> getPlannedTasks();
 
-	List<Task> getGeneratedTasks();
+	Collection<Task> getGeneratingTasks();
+
+	Collection<Task> getGeneratedTasks();
 
 	BlockingDeque<Task> getNewTasksQueue();
 
 	BlockingDeque<Task> getGeneratedTasksQueue();
 
-	BlockingBoundedMap<Integer, Task> getGeneratingTasks();
+	BlockingBoundedMap<Integer, Task> getGeneratingTasksBlockingMap();
 
-	BlockingBoundedMap<Pair<Integer, Destination>, SendTask> getSendingSendTasks();
+	BlockingBoundedMap<Pair<Integer, Destination>, SendTask> getSendingSendTasksBlockingMap();
 
-	Future<Task> getTaskFutureById(int id);
+	ConcurrentMap<Integer, Future<Task>> getGenTaskFuturesMap();
+
+	Future<Task> getGenTaskFutureById(int id);
 
 	Task getTaskById(int id);
 
