@@ -86,8 +86,8 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		Integer count = sendTaskCount.get(taskId);
 		if (count == null) {
 			return null;
-		} else if (count <= 0) {
-			removeTaskById(taskId);
+		} else if (count <= 1) {
+			removeTask(taskId);
 			return 0;
 		} else {
 			return sendTaskCount.replace(taskId, count - decrease);
@@ -152,20 +152,19 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		return tasks.get(id);
 	}
 
-	private boolean removeTaskById(int id) {
-		Task task = tasks.get(id);
-		return removeTask(task);
+	@Override
+	public Task removeTask(Task task) {
+		return removeTask(task.getId());
 	}
 
 	@Override
-	public boolean removeTask(Task task) {
-		int id = task.getId();
-		boolean removed = tasks.remove(id, task);
+	public Task removeTask(int id) {
+		Task removed = tasks.remove(id);
 		Future<Task> taskFuture = genTaskFutures.get(id);
 		if (taskFuture != null) {
 			taskFuture.cancel(true);
 		}
-		if (removed) {
+		if (removed != null) {
 			cancelSendTasks(id);
 			sendTaskCount.remove(id);
 		}

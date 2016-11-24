@@ -39,8 +39,8 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		for (Task task : schedulingPool.getGeneratingTasksBlockingMap().values()) {
 			if ((task.getStartTime().getTime() - now) > stuckTimeLimit) {
 				task.setStatus(TaskStatus.GENERROR);
-				boolean removed = schedulingPool.removeTask(task);
-				if (!removed) {
+				Task removed = schedulingPool.removeTask(task);
+				if (removed != null) {
 					log.error("Stale Task {} was not removed.", task);
 				}
 				try {

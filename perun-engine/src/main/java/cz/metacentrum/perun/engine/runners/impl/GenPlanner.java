@@ -1,21 +1,23 @@
-package cz.metacentrum.perun.engine.scheduling.impl;
+package cz.metacentrum.perun.engine.runners.impl;
 
 
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.GenWorker;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
+import cz.metacentrum.perun.engine.scheduling.impl.BlockingGenExecutorCompletionService;
+import cz.metacentrum.perun.engine.scheduling.impl.GenWorkerImpl;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.JMSException;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Future;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERATING;
 
-public class GenPlanner implements Runnable {
+public class GenPlanner extends AbstractEngineRunner implements Runnable{
 	private final static Logger log = LoggerFactory
 			.getLogger(GenPlanner.class);
 	@Autowired
@@ -25,11 +27,21 @@ public class GenPlanner implements Runnable {
 	@Autowired
 	private JMSQueueManager jmsQueueManager;
 
+	public GenPlanner() {}
+
+	public GenPlanner(SchedulingPool schedulingPool, BlockingGenExecutorCompletionService genCompletionService, JMSQueueManager jmsQueueManager) {
+		this.schedulingPool = schedulingPool;
+		this.genCompletionService = genCompletionService;
+		this.jmsQueueManager = jmsQueueManager;
+	}
+
 	@Override
 	public void run() {
-		BlockingQueue<Task> newTasks = schedulingPool.getNewTasksQueue();
-		while (true) {
+		BlockingDeque<Task> newTasks = schedulingPool.getNewTasksQueue();
+		while (!shouldStop()) {
 			try {
+				log.debug("Getting new Task in the newTasks BlockingDeque");
+				System.out.println("Here");
 				Task task = newTasks.take();
 				GenWorker worker = new GenWorkerImpl(task);
 				Future<Task> taskFuture = genCompletionService.blockingSubmit(worker);

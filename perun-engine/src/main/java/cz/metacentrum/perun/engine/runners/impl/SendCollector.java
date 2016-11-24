@@ -1,4 +1,4 @@
-package cz.metacentrum.perun.engine.scheduling.impl;
+package cz.metacentrum.perun.engine.runners.impl;
 
 
 import cz.metacentrum.perun.core.api.Destination;
@@ -6,16 +6,18 @@ import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
+import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.JMSException;
+import java.util.Date;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.SENDERROR;
 
-public class SendCollector implements Runnable {
+public class SendCollector extends AbstractEngineRunner implements Runnable {
 	private final static Logger log = LoggerFactory
 			.getLogger(SendCollector.class);
 	@Autowired
@@ -25,11 +27,22 @@ public class SendCollector implements Runnable {
 	@Autowired
 	private JMSQueueManager jmsQueueManager;
 
+	public SendCollector() {
+	}
+
+	public SendCollector(BlockingSendExecutorCompletionService sendCompletionService, SchedulingPool schedulingPool, JMSQueueManager jmsQueueManager) {
+		this.sendCompletionService = sendCompletionService;
+		this.schedulingPool = schedulingPool;
+		this.jmsQueueManager = jmsQueueManager;
+	}
+
 	@Override
 	public void run() {
-		while (true) {
+		while (!shouldStop()) {
 			try {
 				SendTask sendTask = sendCompletionService.blockingTake();
+				sendTask.setStatus(SendTask.SendTaskStatus.SENT);
+				sendTask.setEndTime(new Date(System.currentTimeMillis()));
 				schedulingPool.decreaseSendTaskCount(sendTask.getId().getLeft(), 1);
 				try {
 					jmsQueueManager.reportSendTask(sendTask);

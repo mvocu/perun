@@ -46,7 +46,9 @@ public interface SchedulingPool {
 
 	Task getTaskById(int id);
 
-	boolean removeTask(Task task);
+	Task removeTask(Task task);
+
+	Task removeTask(int id);
 
 	Future<SendTask> removeSendTaskFuture(int taskId, Destination destination);
 

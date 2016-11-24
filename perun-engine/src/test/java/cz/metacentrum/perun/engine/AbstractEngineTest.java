@@ -3,8 +3,11 @@ package cz.metacentrum.perun.engine;
 import cz.metacentrum.perun.controller.service.GeneralServiceManager;
 import cz.metacentrum.perun.core.api.*;
 import cz.metacentrum.perun.core.bl.PerunBl;
+import cz.metacentrum.perun.engine.jms.JMSQueueManager;
+import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.taskslib.dao.TaskDao;
 import cz.metacentrum.perun.taskslib.model.ExecService;
+import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -18,6 +21,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
@@ -53,7 +59,13 @@ public abstract class AbstractEngineTest {
 	public ExecService execService_gen;
 	public Task task1;
 	public Task task2;
-	public Task task_gen;
+	public SendTask sendTask1;
+	public SendTask sendTask2;
+	public SendTask sendTask3;
+	public SendTask sendTask4;
+
+	public JMSQueueManager jmsQueueManagerMock;
+	public SchedulingPool schedulingPoolMock;
 
 	@Before
 	public void setup() throws Exception {
@@ -130,6 +142,26 @@ public abstract class AbstractEngineTest {
 		task2.setSchedule(new Date());
 		task2.setStatus(Task.TaskStatus.PLANNED);
 		task2.setId(taskDaoCore.scheduleNewTask(task2, engineId));
+
+		sendTask1 = new SendTask(task1, destination1);
+		sendTask1.setStartTime(new Date(System.currentTimeMillis()));
+		sendTask1.setStatus(SendTask.SendTaskStatus.SENDING);
+
+		sendTask2 = new SendTask(task1, destination2);
+		sendTask2.setStartTime(new Date(System.currentTimeMillis()));
+		sendTask2.setStatus(SendTask.SendTaskStatus.SENDING);
+
+		sendTask3 = new SendTask(task1, destination3);
+		sendTask3.setStartTime(new Date(System.currentTimeMillis()));
+		sendTask3.setStatus(SendTask.SendTaskStatus.SENDING);
+
+		sendTask4 = new SendTask(task1, destination4);
+		sendTask4.setStartTime(new Date(System.currentTimeMillis()));
+		sendTask4.setStatus(SendTask.SendTaskStatus.SENDING);
 	}
 
+	public void mockSetUp() throws Exception {
+		schedulingPoolMock = mock(SchedulingPool.class);
+		jmsQueueManagerMock = mock(JMSQueueManager.class);
+	}
 }

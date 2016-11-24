@@ -1,10 +1,12 @@
-package cz.metacentrum.perun.engine.scheduling.impl;
+package cz.metacentrum.perun.engine.runners.impl;
 
 
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.engine.scheduling.SendWorker;
+import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
+import cz.metacentrum.perun.engine.scheduling.impl.SendWorkerImpl;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
@@ -17,7 +19,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENDING;
 
-public class SendPlanner implements Runnable {
+public class SendPlanner extends AbstractEngineRunner implements Runnable {
 	private final static Logger log = LoggerFactory
 			.getLogger(SendPlanner.class);
 	@Autowired
@@ -27,19 +29,26 @@ public class SendPlanner implements Runnable {
 	@Autowired
 	private JMSQueueManager jmsQueueManager;
 
+	public SendPlanner() {
+	}
+
+	public SendPlanner(BlockingSendExecutorCompletionService sendCompletionService, SchedulingPool schedulingPool, JMSQueueManager jmsQueueManager) {
+		this.sendCompletionService = sendCompletionService;
+		this.schedulingPool = schedulingPool;
+		this.jmsQueueManager = jmsQueueManager;
+	}
+
 	@Override
 	public void run() {
 		BlockingQueue<Task> generatedTasks = schedulingPool.getGeneratedTasksQueue();
-		while (true) {
+		while (!shouldStop()) {
 			try {
 				Task task = generatedTasks.take();
 				task.setStatus(Task.TaskStatus.SENDING);
 				schedulingPool.addSendTaskCount(task.getId(), task.getDestinations().size());
 
 				for (Destination destination : task.getDestinations()) {
-					SendTask sendTask = new SendTask();
-					sendTask.setTask(task);
-					sendTask.setDestination(destination);
+					SendTask sendTask = new SendTask(task, destination);
 					SendWorker worker = new SendWorkerImpl(destination, sendTask);
 
 					sendCompletionService.blockingSubmit(worker);

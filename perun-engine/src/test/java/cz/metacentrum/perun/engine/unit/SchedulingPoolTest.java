@@ -106,4 +106,16 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 		assertEquals(task1, task);
 	}
 
+	@Test
+	public void removeSentTaskTest() {
+		schedulingPool.addSendTaskCount(task1.getId(), 2);
+		assertEquals(1, schedulingPool.getSize());
+
+		schedulingPool.decreaseSendTaskCount(task1.getId(), 1);
+		schedulingPool.decreaseSendTaskCount(task1.getId(), 1);
+
+		assertEquals("Task should be removed from pool when associated sendTask count reaches zero",
+				0, schedulingPool.getSize());
+	}
+
 }

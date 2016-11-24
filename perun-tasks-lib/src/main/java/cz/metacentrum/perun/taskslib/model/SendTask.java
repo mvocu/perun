@@ -5,10 +5,11 @@ import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Pair;
 import sun.security.krb5.internal.crypto.Des;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class SendTask {
-	//TODO: What is serialVersionUID ???
+public class SendTask implements Serializable{
+	private static final long serialVersionUID = 4795659061486919871L;
 
 	private Pair<Integer, Destination> id;
 	private SendTaskStatus status;
@@ -19,6 +20,12 @@ public class SendTask {
 	private Integer returnCode;
 	private String stdout;
 	private String stderr;
+
+	public SendTask(Task task, Destination destination) {
+		this.task = task;
+		this.destination = destination;
+		setId();
+	}
 
 	public Date getStartTime() {
 		return startTime;
