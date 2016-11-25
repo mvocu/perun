@@ -52,7 +52,7 @@ public class EventParserImpl implements EventParser {
 		 *  String eventParsingPattern =
 		 * "^event\\|([0-9]{1,6})\\|\\[([a-zA-Z0-9: ]+)\\]\\[([^\\]]+)\\]\\[(.*)\\]$";
 		 */
-		String eventParsingPattern = "^task\\|([0-9]{1,6})\\|\\[([0-9]+)\\]\\[([^\\]]+)\\]\\|\\[([^\\|]+)\\]\\|\\[([^\\|]+)\\]\\|\\[([^\\|]+)\\]\\|\\[(.*)\\]$";
+		String eventParsingPattern = "^task\\|([0-9]{1,6})\\|\\[([0-9]+)\\]\\[([^\\]]+)\\]\\|\\[([^\\|]+)\\]\\|\\[([^\\|]+)\\]\\|\\[([^\\|]+)\\]$";
 		Pattern pattern = Pattern.compile(eventParsingPattern);
 		Matcher matcher = pattern.matcher(event);
 		boolean matchFound = matcher.find();

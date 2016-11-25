@@ -39,7 +39,7 @@ public class EventParserImplTest extends AbstractEngineTest {
 		for (Destination destination : task1.getDestinations()) {
 			testEvent = testEvent.concat(destination.serializeToString() + ", ");
 		}
-		testEvent = testEvent.concat("]]|[]");
+		testEvent = testEvent.concat("]]");
 
 		Task task2 = eventParser.parseEvent(testEvent);
 
