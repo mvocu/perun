@@ -49,7 +49,7 @@ public class SendPlanner extends AbstractEngineRunner implements Runnable {
 
 				for (Destination destination : task.getDestinations()) {
 					SendTask sendTask = new SendTask(task, destination);
-					SendWorker worker = new SendWorkerImpl(destination, sendTask);
+					SendWorker worker = new SendWorkerImpl(sendTask);
 
 					sendCompletionService.blockingSubmit(worker);
 					sendTask.setStartTime(new Date(System.currentTimeMillis()));

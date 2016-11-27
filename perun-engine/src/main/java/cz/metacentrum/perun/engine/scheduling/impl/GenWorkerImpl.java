@@ -38,13 +38,15 @@ public class GenWorkerImpl extends AbstractWorker implements GenWorker {
 
 			getTask().setGenEndTime(new Date(System.currentTimeMillis()));
 			if (getReturnCode() != 0) {
-				log.info("GEN task failed. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
+				log.error("GEN task failed. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
 						new Object[]{getReturnCode(), getStdout(), getStderr(), getTask().getId()});
 				getTask().setStatus(GENERROR);
 				getTask().setGenEndTime(new Date(System.currentTimeMillis()));
 				throw new TaskExecutionException(task.getId(), getReturnCode(), getStdout(), getStderr());
 			} else {
 				getTask().setStatus(GENERATED);
+				log.info("GEN task finished. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
+						new Object[]{getReturnCode(), getStdout(), getStderr(), getTask()});
 				return getTask();
 			}
 		} catch (IOException e) {
@@ -56,10 +58,6 @@ public class GenWorkerImpl extends AbstractWorker implements GenWorker {
 			log.warn("Tasks {} execution interrupted.", task, e);
 			task.setStatus(GENERROR);
 			throw new TaskExecutionException(task.getId(), e);
-		} finally {
-			String ret = getReturnCode() == -1 ? "unknown" : String.valueOf(getReturnCode());
-			log.info("GEN task failed. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
-					new Object[]{ret, getStdout(), getStderr(), getTask().getId()});
 		}
 	}
 

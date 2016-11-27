@@ -14,10 +14,6 @@ public interface SendWorker extends EngineWorker<SendTask>{
 
 	void setDirectory(File directory);
 
-	Destination getDestination();
-
 	@Override
 	SendTask call() throws Exception;
-
-	Pair<Integer, Destination> getId();
 }

@@ -63,6 +63,7 @@ public abstract class AbstractEngineTest {
 	public SendTask sendTask2;
 	public SendTask sendTask3;
 	public SendTask sendTask4;
+	public SendTask sendTaskFalse;
 
 	public JMSQueueManager jmsQueueManagerMock;
 	public SchedulingPool schedulingPoolMock;
@@ -107,7 +108,7 @@ public abstract class AbstractEngineTest {
 		execService2.setExecServiceType(ExecService.ExecServiceType.SEND);
 		execService2.setEnabled(true);
 		execService2.setDefaultDelay(1);
-		execService2.setScript("/bin/true"); // this command always return true
+		execService2.setScript("/bin/false"); // this command always return true
 		execService2.setId(controller.insertExecService(sess, execService2));
 
 		execService_gen = new ExecService();
@@ -156,6 +157,10 @@ public abstract class AbstractEngineTest {
 		sendTask3.setStatus(SendTask.SendTaskStatus.SENDING);
 
 		sendTask4 = new SendTask(task1, destination4);
+		sendTask4.setStartTime(new Date(System.currentTimeMillis()));
+		sendTask4.setStatus(SendTask.SendTaskStatus.SENDING);
+
+		sendTaskFalse = new SendTask(task2, destination1);
 		sendTask4.setStartTime(new Date(System.currentTimeMillis()));
 		sendTask4.setStatus(SendTask.SendTaskStatus.SENDING);
 	}

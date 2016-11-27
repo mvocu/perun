@@ -21,26 +21,18 @@ import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERROR;
 public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 	private final static Logger log = LoggerFactory.getLogger(SendWorkerImpl.class);
 
-	private Destination destination;
 	private SendTask sendTask;
-	private Pair<Integer, Destination> id;
 
-	public SendWorkerImpl(Destination destination, SendTask sendTask) {
-		this.destination = destination;
+	public SendWorkerImpl(SendTask sendTask) {
 		this.sendTask = sendTask;
-
-	}
-
-	@Override
-	public Destination getDestination() {
-		return destination;
 	}
 
 	@Override
 	public SendTask call() throws TaskExecutionException {
 		Task task = sendTask.getTask();
 		ExecService execService = task.getExecService();
-		ProcessBuilder pb = new ProcessBuilder(execService.getScript(), task.getFacility().getName(), destination.getDestination(), destination.getType());
+		ProcessBuilder pb = new ProcessBuilder(execService.getScript(), task.getFacility().getName(),
+				sendTask.getDestination().getDestination(), sendTask.getDestination().getType());
 
 		try {
 			super.execute(pb);
@@ -51,12 +43,15 @@ public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 			sendTask.setEndTime(new Date(System.currentTimeMillis()));
 
 			if (getReturnCode() != 0) {
-				log.info("SEND task failed. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
+				log.error("SEND task failed. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
 						new Object[]{getReturnCode(), getStdout(), getStderr(), sendTask.getTask().getId()});
 				sendTask.setStatus(ERROR);
-				throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), getReturnCode(), getStdout(), getStderr());
+				throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), getReturnCode(),
+						getStdout(), getStderr());
 			} else {
 				sendTask.setStatus(SENT);
+				log.info("SEND task finished. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
+						new Object[]{getReturnCode(), getStdout(), getStderr(), sendTask.getTask().getId()});
 				return sendTask;
 			}
 
@@ -70,11 +65,6 @@ public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 			task.setStatus(GENERROR);
 			throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), e);
 		}
-	}
-
-	@Override
-	public Pair<Integer, Destination> getId() {
-		return id;
 	}
 
 	public SendTask getSendTask() {

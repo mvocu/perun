@@ -28,7 +28,7 @@ public class BlockingSendExecutorCompletionService implements BlockingCompletion
 	@Override
 	public Future<SendTask> blockingSubmit(EngineWorker<SendTask> taskWorker) throws InterruptedException {
 		SendWorker sendWorker = (SendWorker) taskWorker;
-		executingTasks.blockingPut(sendWorker.getId(), sendWorker.getSendTask());
+		executingTasks.blockingPut(sendWorker.getSendTask().getId(), sendWorker.getSendTask());
 		return completionService.submit(sendWorker);
 	}
 
