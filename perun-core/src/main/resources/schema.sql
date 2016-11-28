@@ -408,7 +408,6 @@ create table exec_services (
 	enabled char(1) not null,
 	default_recurrence integer not null,
 	script varchar(256) not null,
-	type varchar(10) not null,
 	created_at timestamp default now not null,
 	created_by varchar(1300) default user not null,
 	modified_at timestamp default now not null,
@@ -1363,7 +1362,6 @@ alter table services add constraint serv_u unique(name);
 
 alter table exec_services add constraint exsrv_pk primary key(id);
 alter table exec_services add constraint exsrv_srv_fk foreign key (service_id) references services(id);
-alter table exec_services add constraint exsrv_type_chk check (type in ('SEND','GENERATE'));
 
 alter table destinations add constraint dest_pk primary key (id);
 alter table destinations add constraint dest_u unique(destination,type);
