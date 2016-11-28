@@ -13,10 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.jms.JMSException;
 import java.util.concurrent.BlockingDeque;
 
-import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERATED;
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERROR;
 
-public class GenCollector extends AbstractEngineRunner implements Runnable {
+public class GenCollector extends AbstractRunner {
 	private final static Logger log = LoggerFactory
 			.getLogger(GenCollector.class);
 	@Autowired

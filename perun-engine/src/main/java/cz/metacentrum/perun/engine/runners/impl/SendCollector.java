@@ -17,7 +17,7 @@ import java.util.Date;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.SENDERROR;
 
-public class SendCollector extends AbstractEngineRunner implements Runnable {
+public class SendCollector extends AbstractRunner {
 	private final static Logger log = LoggerFactory
 			.getLogger(SendCollector.class);
 	@Autowired

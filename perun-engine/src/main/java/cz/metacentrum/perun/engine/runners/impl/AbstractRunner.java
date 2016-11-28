@@ -1,8 +1,8 @@
 package cz.metacentrum.perun.engine.runners.impl;
 
-import cz.metacentrum.perun.engine.runners.EngineRunner;
+import cz.metacentrum.perun.engine.runners.Runner;
 
-public abstract class AbstractEngineRunner implements EngineRunner{
+public abstract class AbstractRunner implements Runner {
 	private boolean stop = false;
 
 	@Override

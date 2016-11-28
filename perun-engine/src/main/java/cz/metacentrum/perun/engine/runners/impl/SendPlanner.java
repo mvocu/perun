@@ -19,7 +19,7 @@ import java.util.concurrent.BlockingQueue;
 
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENDING;
 
-public class SendPlanner extends AbstractEngineRunner implements Runnable {
+public class SendPlanner extends AbstractRunner {
 	private final static Logger log = LoggerFactory
 			.getLogger(SendPlanner.class);
 	@Autowired

@@ -1,6 +1,6 @@
 package cz.metacentrum.perun.engine.runners;
 
-public interface EngineRunner {
+public interface Runner extends Runnable {
 	public boolean shouldStop();
 	public void stop();
 }

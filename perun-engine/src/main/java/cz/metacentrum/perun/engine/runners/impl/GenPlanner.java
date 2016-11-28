@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERATING;
 
-public class GenPlanner extends AbstractEngineRunner implements Runnable{
+public class GenPlanner extends AbstractRunner {
 	private final static Logger log = LoggerFactory
 			.getLogger(GenPlanner.class);
 	@Autowired
