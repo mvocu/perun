@@ -17,7 +17,7 @@ public interface ExecServiceDao {
 	 *
 	 * @return list of all execServices
 	 */
-	public List<ExecService> listExecServices();
+	List<ExecService> listExecServices();
 
 	/**
 	 * List all execServices tied to a certain Service
@@ -25,14 +25,14 @@ public interface ExecServiceDao {
 	 * @param serviceId
 	 * @return list of execServices tied to a certain service
 	 */
-	public List<ExecService> listExecServices(int serviceId);
+	List<ExecService> listExecServices(int serviceId);
 
 	/**
 	 * Count execServices
 	 *
 	 * @return amount of execServices stored in the DB
 	 */
-	public int countExecServices();
+	int countExecServices();
 
 	/**
 	 * Inserts an ExecService.
@@ -42,7 +42,7 @@ public interface ExecServiceDao {
 	 * @return a new ExecService id
 	 * @throws InternalErrorException
 	 */
-	public int insertExecService(ExecService execService) throws InternalErrorException;
+	int insertExecService(ExecService execService) throws InternalErrorException;
 
 	/**
 	 * Update ExecService This methods updates all the ExecService attributes
@@ -51,7 +51,7 @@ public interface ExecServiceDao {
 	 *
 	 * @param execService
 	 */
-	public void updateExecService(ExecService execService);
+	void updateExecService(ExecService execService);
 
 	/**
 	 * Delete ExecService
@@ -59,14 +59,14 @@ public interface ExecServiceDao {
 	 *
 	 * @param execServiceId
 	 */
-	public void deleteExecService(int execServiceId);
+	void deleteExecService(int execServiceId);
 
 	/**
 	 * Deletes all the ExecServices that belongs to the given Service.
 	 *
 	 * @param serviceId
 	 */
-	public void deleteAllExecServicesByService(int serviceId);
+	void deleteAllExecServicesByService(int serviceId);
 
 	/**
 	 * Get execService by ID
@@ -74,5 +74,5 @@ public interface ExecServiceDao {
 	 * @param execServiceId
 	 * @return execService
 	 */
-	public ExecService getExecService(int execServiceId);
+	ExecService getExecService(int execServiceId);
 }

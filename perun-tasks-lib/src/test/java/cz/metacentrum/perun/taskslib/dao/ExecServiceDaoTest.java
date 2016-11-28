@@ -35,7 +35,6 @@ import cz.metacentrum.perun.core.api.exceptions.ServiceExistsException;
 import org.springframework.jdbc.core.JdbcPerunTemplate;
 import cz.metacentrum.perun.core.impl.Utils;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -110,7 +109,6 @@ public class ExecServiceDaoTest {
 			execService.setEnabled(true);
 			execService.setService(testService1);
 			execService.setScript("/hellish/test/script");
-			execService.setExecServiceType(ExecServiceType.GENERATE);
 
 			int newExecServiceId = execServiceDao.insertExecService(execService);
 
@@ -121,7 +119,6 @@ public class ExecServiceDaoTest {
 			execService2.setEnabled(true);
 			execService2.setService(testService1);
 			execService2.setScript("/hellish/test/script2");
-			execService2.setExecServiceType(ExecServiceType.SEND);
 			int newExecServiceId2 = execServiceDao.insertExecService(execService2);
 
 			// Test ExecService #3 (Parent:testService2)
@@ -131,7 +128,6 @@ public class ExecServiceDaoTest {
 			execService3.setEnabled(true);
 			execService3.setService(testService2);
 			execService3.setScript("/hellish/test/script3");
-			execService3.setExecServiceType(ExecServiceType.SEND);
 			int newExecServiceId3 = execServiceDao.insertExecService(execService3);
 
 			assertTrue(newExecServiceId > 0);
@@ -162,7 +158,6 @@ public class ExecServiceDaoTest {
 			execService.setEnabled(true);
 			execService.setService(testService1);
 			execService.setScript("/hellish/test/script");
-			execService.setExecServiceType(ExecServiceType.GENERATE);
 			execServiceDao.insertExecService(execService);
 
 			// Test ExecService #2 (Parent:testService1)
@@ -172,7 +167,6 @@ public class ExecServiceDaoTest {
 			execService2.setEnabled(true);
 			execService2.setService(testService1);
 			execService2.setScript("/hellish/test/script2");
-			execService2.setExecServiceType(ExecServiceType.SEND);
 			execServiceDao.insertExecService(execService2);
 
 			// Test ExecService #3 (Parent:testService2)
@@ -182,7 +176,6 @@ public class ExecServiceDaoTest {
 			execService3.setEnabled(true);
 			execService3.setService(testService2);
 			execService3.setScript("/hellish/test/script3");
-			execService3.setExecServiceType(ExecServiceType.SEND);
 			execServiceDao.insertExecService(execService3);
 
 			log.debug("testCountExecServices: Counting execExecServices...");
@@ -214,7 +207,6 @@ public class ExecServiceDaoTest {
 			execService.setEnabled(true);
 			execService.setService(testService1);
 			execService.setScript("/hellish/test/script");
-			execService.setExecServiceType(ExecServiceType.GENERATE);
 			execServiceDao.insertExecService(execService);
 
 			// Test ExecService #2 (Parent:testService1)
@@ -224,7 +216,6 @@ public class ExecServiceDaoTest {
 			execService2.setEnabled(true);
 			execService2.setService(testService1);
 			execService2.setScript("/hellish/test/script2");
-			execService2.setExecServiceType(ExecServiceType.SEND);
 			execServiceDao.insertExecService(execService2);
 
 			// Test ExecService #3 (Parent:testService2)
@@ -234,7 +225,6 @@ public class ExecServiceDaoTest {
 			execService3.setEnabled(true);
 			execService3.setService(testService2);
 			execService3.setScript("/hellish/test/script3");
-			execService3.setExecServiceType(ExecServiceType.SEND);
 			execServiceDao.insertExecService(execService3);
 
 			log.debug("testListExecServices: Retrieving all execExecServices...");
@@ -249,7 +239,6 @@ public class ExecServiceDaoTest {
 				log.debug("\tENABLED:" + s.isEnabled());
 				log.debug("\tSERVICE:" + s.getService().getName());
 				log.debug("\tSCRIPT:" + s.getScript());
-				log.debug("\tTYPE:" + s.getExecServiceType().toString());
 			}
 
 			assertEquals(execServices.size(), originalNumberOfExecServices + 3);
@@ -275,7 +264,6 @@ public class ExecServiceDaoTest {
 			execService.setEnabled(true);
 			execService.setService(testService1);
 			execService.setScript("/hellish/test/script");
-			execService.setExecServiceType(ExecServiceType.GENERATE);
 			execService.setId(execServiceDao.insertExecService(execService));
 
 			// Test ExecService #2 (Parent:testService1)
@@ -285,7 +273,6 @@ public class ExecServiceDaoTest {
 			execService2.setEnabled(true);
 			execService2.setService(testService1);
 			execService2.setScript("/hellish/test/script2");
-			execService2.setExecServiceType(ExecServiceType.SEND);
 			execService2.setId(execServiceDao.insertExecService(execService2));
 
 			// Test ExecService #3 (Parent:testService2)
@@ -295,7 +282,6 @@ public class ExecServiceDaoTest {
 			execService3.setEnabled(true);
 			execService3.setService(testService2);
 			execService3.setScript("/hellish/test/script3");
-			execService3.setExecServiceType(ExecServiceType.SEND);
 			execService3.setId(execServiceDao.insertExecService(execService3));
 
 			assertEquals(execServiceDao.getExecService(execService2.getId()).getScript(), execService2.getScript());
@@ -323,7 +309,6 @@ public class ExecServiceDaoTest {
 			execService.setEnabled(true);
 			execService.setService(testService1);
 			execService.setScript("/hellish/test/script");
-			execService.setExecServiceType(ExecServiceType.GENERATE);
 			execService.setId(execServiceDao.insertExecService(execService));
 
 			log.debug("testUpdateExecService: Updating execService...");
@@ -332,7 +317,6 @@ public class ExecServiceDaoTest {
 			execService.setDefaultRecurrence(2);
 			execService.setEnabled(true);
 			execService.setScript("/hellish/test/script2");
-			execService.setExecServiceType(ExecServiceType.GENERATE);
 
 			execServiceDao.updateExecService(execService);
 
@@ -341,7 +325,6 @@ public class ExecServiceDaoTest {
 			assertEquals(retrievedExecService.getDefaultDelay(), execService.getDefaultDelay());
 			assertEquals(retrievedExecService.getDefaultRecurrence(), execService.getDefaultRecurrence());
 			assertEquals(retrievedExecService.getScript(), execService.getScript());
-			assertEquals(retrievedExecService.getExecServiceType(), execService.getExecServiceType());
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -364,7 +347,6 @@ public class ExecServiceDaoTest {
 			execService.setEnabled(true);
 			execService.setService(testService1);
 			execService.setScript("/hellish/test/script");
-			execService.setExecServiceType(ExecServiceType.GENERATE);
 			execService.setId(execServiceDao.insertExecService(execService));
 
 			// Test ExecService #2 (Parent:testService1)
@@ -374,7 +356,6 @@ public class ExecServiceDaoTest {
 			execService2.setEnabled(true);
 			execService2.setService(testService1);
 			execService2.setScript("/hellish/test/script2");
-			execService2.setExecServiceType(ExecServiceType.SEND);
 			execService2.setId(execServiceDao.insertExecService(execService2));
 
 			// Test ExecService #3 (Parent:testService2)
@@ -384,7 +365,6 @@ public class ExecServiceDaoTest {
 			execService3.setEnabled(true);
 			execService3.setService(testService2);
 			execService3.setScript("/hellish/test/script3");
-			execService3.setExecServiceType(ExecServiceType.SEND);
 			execService3.setId(execServiceDao.insertExecService(execService3));
 
 			log.debug("testRemoveExecService: Deleting one of the execExecServices...");

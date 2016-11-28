@@ -22,7 +22,7 @@ public interface ExecServiceDenialDao {
 	 * 				The facility on which we want to ban the execService
 	 * @throws InternalErrorException
 	 */
-	public void banExecServiceOnFacility(int execServiceId, int facilityId) throws InternalErrorException;
+	void banExecServiceOnFacility(int execServiceId, int facilityId) throws InternalErrorException;
 
 	/**
 	 * Ban execService on destination
@@ -34,7 +34,7 @@ public interface ExecServiceDenialDao {
 	 * 			The destination on which we want to ban the execService
 	 * @throws InternalErrorException
 	 */
-	public void banExecServiceOnDestination(int execServiceId, int destinationId) throws InternalErrorException;
+	void banExecServiceOnDestination(int execServiceId, int destinationId) throws InternalErrorException;
 
 	/**
 	 * List denials for facility
@@ -43,7 +43,7 @@ public interface ExecServiceDenialDao {
 	 *
 	 * @return a list of execServices that are denied on the facility
 	 */
-	public List<ExecService> listDenialsForFacility(int facilityId);
+	List<ExecService> listDenialsForFacility(int facilityId);
 
 	/**
 	 * List denials for destination
@@ -52,7 +52,7 @@ public interface ExecServiceDenialDao {
 	 *
 	 * @return a list of execServices that are denied on the destination
 	 */
-	public List<ExecService> listDenialsForDestination(int destinationId);
+	List<ExecService> listDenialsForDestination(int destinationId);
 
 	/**
 	 * Is this execService denied on the facility?
@@ -65,7 +65,7 @@ public interface ExecServiceDenialDao {
 	 * 			false - in case the execService in NOT denied on the facility
 	 */
 
-	public boolean isExecServiceDeniedOnFacility(int execServiceId, int facilityId);
+	boolean isExecServiceDeniedOnFacility(int execServiceId, int facilityId);
 
 	/**
 	 * Is this execService denied on the destination?
@@ -77,7 +77,7 @@ public interface ExecServiceDenialDao {
 	 * @return	true - in case the execService is denied on the destination
 	 * 			false - in case the execService in NOT denied on the destination
 	 */
-	public boolean isExecServiceDeniedOnDestination(int execServiceId, int destinationId);
+	boolean isExecServiceDeniedOnDestination(int execServiceId, int destinationId);
 
 	/**
 	 * Free all denials on the facility
@@ -86,7 +86,7 @@ public interface ExecServiceDenialDao {
 	 * @param facility
 	 * 			Facility we want to clear of all the denials.
 	 */
-	public void freeAllDenialsOnFacility(int facility);
+	void freeAllDenialsOnFacility(int facility);
 
 	/**
 	 * Free all denials on the destination
@@ -95,7 +95,7 @@ public interface ExecServiceDenialDao {
 	 * @param destination
 	 * 			Destination we want to clear of all the denials.
 	 */
-	public void freeAllDenialsOnDestination(int destination);
+	void freeAllDenialsOnDestination(int destination);
 
 	/**
 	 * Free the denial of the execService on this facility.
@@ -107,7 +107,7 @@ public interface ExecServiceDenialDao {
 	 * @param facilityId
 	 * 			The facility on which we want to free the denial of the execService.
 	 */
-	public void freeDenialOfExecServiceOnFacility(int execServiceId, int facilityId);
+	void freeDenialOfExecServiceOnFacility(int execServiceId, int facilityId);
 
 	/**
 	 * Free the denial of the execService on this destination.
@@ -119,6 +119,6 @@ public interface ExecServiceDenialDao {
 	 * @param destinationId
 	 * 			The destination on which we want to free the denial of the execService.
 	 */
-	public void freeDenialOfExecServiceOnDestination(int execServiceId, int destinationId);
+	void freeDenialOfExecServiceOnDestination(int execServiceId, int destinationId);
 
 }

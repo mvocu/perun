@@ -27,9 +27,7 @@ import cz.metacentrum.perun.core.api.exceptions.ServiceExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.taskslib.dao.ExecServiceDao;
 import cz.metacentrum.perun.taskslib.dao.ExecServiceDenialDao;
-import cz.metacentrum.perun.taskslib.dao.ExecServiceDependencyDao;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 
 /**
  * @author Michal Karm Babacek
@@ -50,8 +48,6 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 	private ExecServiceDao execServiceDao;
 	@Autowired
 	private ExecServiceDenialDao execServiceDenialDao;
-	@Autowired
-	private ExecServiceDependencyDao execServiceDependencyDao;
 	@Autowired
 	private ServicesManager servicesManager;
 
@@ -159,36 +155,6 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 	}
 
 	@Override
-	public void createDependency(ExecService dependantExecService, ExecService execService) {
-		execServiceDependencyDao.createDependency(dependantExecService.getId(), execService.getId());
-	}
-
-	@Override
-	public void removeDependency(ExecService dependantExecService, ExecService execService) {
-		execServiceDependencyDao.removeDependency(dependantExecService.getId(), execService.getId());
-	}
-
-	@Override
-	public boolean isThereDependency(ExecService dependantExecService, ExecService execService) {
-		return execServiceDependencyDao.isThereDependency(dependantExecService.getId(), execService.getId());
-	}
-
-	@Override
-	public List<ExecService> listExecServicesDependingOn(PerunSession perunSession, ExecService execService) throws InternalErrorException {
-		return execServiceDependencyDao.listExecServicesDependingOn(execService.getId());
-	}
-
-	@Override
-	public List<ExecService> listExecServicesThisExecServiceDependsOn(PerunSession perunSession, ExecService dependantExecService) throws InternalErrorException {
-		return execServiceDependencyDao.listExecServicesThisExecServiceDependsOn(dependantExecService.getId());
-	}
-
-	@Override
-	public List<ExecService> listExecServicesThisExecServiceDependsOn(PerunSession perunSession, ExecService dependantExecService, ExecServiceType execServiceType) throws InternalErrorException {
-		return execServiceDependencyDao.listExecServicesThisExecServiceDependsOn(dependantExecService.getId(), execServiceType);
-	}
-
-	@Override
 	public boolean forceServicePropagation(PerunSession sess, Facility facility, Service service) throws ServiceNotExistsException, FacilityNotExistsException, InternalErrorException, PrivilegeException {
 		List<ExecService> listOfExecServices = listExecServices(sess, service.getId());
 		for(ExecService es: listOfExecServices) {
@@ -270,7 +236,8 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 			ServiceForGUI newService = new ServiceForGUI(service);
 			// get their exec services
 			List<ExecService> execs = execServiceDao.listExecServices(service.getId());
-			for (ExecService exec : execs){
+			// TODO: handle this !!
+			/*for (ExecService exec : execs){
 				// if generate
 				if (exec.getExecServiceType().equals(ExecService.ExecServiceType.GENERATE)){
 					if (execServiceDenialDao.isExecServiceDeniedOnFacility(exec.getId(), facility.getId()) == true) {
@@ -290,7 +257,7 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 					}
 					newService.setSendExecService(exec);
 				}
-			}
+			}*/
 			newService.setAllowedOnFacility(allowed);
 			result.add(newService);
 		}
@@ -313,14 +280,6 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 
 	public void setExecServiceDenialDao(ExecServiceDenialDao execServiceDenialDao) {
 		this.execServiceDenialDao = execServiceDenialDao;
-	}
-
-	public ExecServiceDependencyDao getExecServiceDependencyDao() {
-		return execServiceDependencyDao;
-	}
-
-	public void setExecServiceDependencyDao(ExecServiceDependencyDao execServiceDependencyDao) {
-		this.execServiceDependencyDao = execServiceDependencyDao;
 	}
 
 	public void setServicesManager(ServicesManager servicesManager) {
@@ -352,23 +311,12 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 			service = servicesManager.createService(perunSession, service);
 		}
 
-		ExecService genExecService = new ExecService();
-		genExecService.setService(service);
-		genExecService.setDefaultDelay(defaultDelay);
-		genExecService.setEnabled(enabled);
-		genExecService.setScript(scriptPath);
-		genExecService.setExecServiceType(ExecServiceType.GENERATE);
-		genExecService.setId(execServiceDao.insertExecService(genExecService));
-
-		ExecService sendExecService = new ExecService();
-		sendExecService.setService(service);
-		sendExecService.setDefaultDelay(defaultDelay);
-		sendExecService.setEnabled(enabled);
-		sendExecService.setScript(scriptPath);
-		sendExecService.setExecServiceType(ExecServiceType.SEND);
-		sendExecService.setId(execServiceDao.insertExecService(sendExecService));
-
-		this.createDependency(sendExecService, genExecService);
+		ExecService execService = new ExecService();
+		execService.setService(service);
+		execService.setDefaultDelay(defaultDelay);
+		execService.setEnabled(enabled);
+		execService.setScript(scriptPath);
+		execService.setId(execServiceDao.insertExecService(execService));
 
 		return service;
 

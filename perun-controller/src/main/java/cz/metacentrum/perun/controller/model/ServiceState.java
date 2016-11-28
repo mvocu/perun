@@ -193,12 +193,12 @@ public class ServiceState {
 	public Date getSendEndTime() {
 		return (sendTask != null) ? sendTask.getSendEndTime() : null;
 	}
-
-	/**
+//TODO: Handle this !!
+/*	*//**
 	 * Return time when was Task on Facility scheduled if ever for the last time.
 	 *
 	 * @return Time when was last task scheduled.
-	 */
+	 *//*
 	public Date getScheduled() {
 		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
 			return getGenScheduled();
@@ -207,11 +207,11 @@ public class ServiceState {
 		}
 	}
 
-	/**
+	*//**
 	 * Return time when was Task on Facility scheduled if ever for the last time.
 	 *
 	 * @return Time when was last task scheduled.
-	 */
+	 *//*
 	public Date getStartTime() {
 		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
 			return getGenStartTime();
@@ -220,11 +220,11 @@ public class ServiceState {
 		}
 	}
 
-	/**
+	*//**
 	 * Return time when was Task on Facility scheduled if ever for the last time.
 	 *
 	 * @return Time when was last task scheduled.
-	 */
+	 *//*
 	public Date getEndTime() {
 		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
 			return getGenEndTime();
@@ -233,14 +233,14 @@ public class ServiceState {
 		}
 	}
 
-	/**
+	*//**
 	 * Return status of service propagation (task status) based on current tasks states.
 	 * Method compares "scheduled" dates of tasks in order to determine, which is more relevant.
 	 *
 	 * If can't determine, TaskStatus.NONE is returned.
 	 *
 	 * @return TaskStatus of service on facility
-	 */
+	 *//*
 	public Task.TaskStatus getStatus() {
 		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
 			return getGenStatus();
@@ -249,12 +249,12 @@ public class ServiceState {
 		}
 	}
 
-	/**
+	*//**
 	 * Return type of Task which was last scheduled for facility.
 	 * If none GEN is returned.
 	 *
 	 * @return Return type of Task, which was last scheduled
-	 */
+	 *//*
 	public ExecService.ExecServiceType getLastScheduled() {
 		if (getGenScheduled() != null && getSendScheduled() != null) {
 			if (getGenScheduled().after(getSendScheduled())) {
@@ -271,7 +271,7 @@ public class ServiceState {
 		if (getSendScheduled() != null) return ExecService.ExecServiceType.SEND;
 		// no task was ever scheduled - make it generate
 		return ExecService.ExecServiceType.GENERATE;
-	}
+	}*/
 
 	public String getBeanName() {
 		return this.getClass().getSimpleName();

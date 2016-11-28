@@ -12,12 +12,10 @@ import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.exceptions.FacilityNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
-import cz.metacentrum.perun.dispatcher.scheduling.DependenciesResolver;
 import cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskResult;
@@ -38,8 +36,6 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 
 	@Autowired
 	private SchedulingPool schedulingPool;
-	@Autowired
-	private DependenciesResolver dependenciesResolver;
 	@Autowired
 	private TaskScheduler taskScheduler;
 	@Autowired

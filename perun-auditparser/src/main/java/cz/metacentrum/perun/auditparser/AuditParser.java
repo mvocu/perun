@@ -5,7 +5,6 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.cabinet.model.Authorship;
 import cz.metacentrum.perun.core.api.BeansUtils;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 import cz.metacentrum.perun.taskslib.model.TaskResult;
 import cz.metacentrum.perun.taskslib.model.TaskResult.TaskResultStatus;
 
@@ -500,7 +499,8 @@ public class AuditParser {
 			service = createService(serviceList.get(0).getRight());
 		}
 		execService.setService(service);
-		ExecService.ExecServiceType exType;
+		//TODO: handle this !!
+/*		ExecService.ExecServiceType exType;
 		if(beanAttr.get("type").equals("\\0")) exType = null;
 		else {
 			String type = beanAttr.get("type");
@@ -508,7 +508,7 @@ public class AuditParser {
 			else if(type.equals("SEND")) exType = ExecServiceType.SEND;
 			else exType = null;
 		}
-		execService.setExecServiceType(exType);
+		execService.setExecServiceType(exType);*/
 		return execService;
 	}
 

@@ -9,27 +9,22 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.impl.ServicesManagerImpl;
 import cz.metacentrum.perun.core.impl.Utils;
 import cz.metacentrum.perun.taskslib.dao.ExecServiceDao;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 
 /**
- *
  * @author Michal Karm Babacek
- *         JavaDoc coming soon...
- *
  */
 @Transactional
 public class ExecServiceDaoJdbc extends JdbcDaoSupport implements ExecServiceDao {
 
-	public final static String execServiceMappingSelectQuery = " exec_services.id as exec_services_id, exec_services.default_delay as exec_s_default_delay," +
-		" exec_services.default_recurrence as exec_s_default_recurrence, exec_services.enabled as exec_services_enabled," +
-		" exec_services.script as exec_services_script, exec_services.type as exec_services_type, " +
-		" exec_services.service_id as exec_services_service_id ";
+	public final static String execServiceMappingSelectQuery = " exec_services.id as exec_services_id, " +
+			"exec_services.default_delay as exec_s_default_delay, exec_services.default_recurrence as " +
+			"exec_s_default_recurrence, exec_services.enabled as exec_services_enabled, " +
+			"exec_services.script as exec_services_script, exec_services.service_id as exec_services_service_id ";
 
 	public static final RowMapper<ExecService> EXEC_SERVICE_ROWMAPPER = new RowMapper<ExecService>() {
 
@@ -47,14 +42,6 @@ public class ExecServiceDaoJdbc extends JdbcDaoSupport implements ExecServiceDao
 			}
 
 			execService.setScript(rs.getString("exec_services_script"));
-			if (rs.getString("exec_services_type").equalsIgnoreCase(ExecServiceType.GENERATE.toString())) {
-				execService.setExecServiceType(ExecServiceType.GENERATE);
-			} else if (rs.getString("exec_services_type").equalsIgnoreCase(ExecServiceType.SEND.toString())) {
-				execService.setExecServiceType(ExecServiceType.SEND);
-			} else {
-				throw new IllegalArgumentException("ExecService type unknown :-(");
-			}
-
 			execService.setService(ServicesManagerImpl.SERVICE_MAPPER.mapRow(rs, i));
 
 			return execService;
@@ -69,9 +56,10 @@ public class ExecServiceDaoJdbc extends JdbcDaoSupport implements ExecServiceDao
 			enabled = '1';
 		}
 		int newExecServiceId = Utils.getNewId(this.getJdbcTemplate(), "exec_services_id_seq");
-		this.getJdbcTemplate().update("insert into exec_services(id, default_delay, default_recurrence, enabled, script, type, service_id) values (?,?,?,?,?,?,?)", newExecServiceId,
-				execService.getDefaultDelay(), execService.getDefaultRecurrence(), "" + enabled, execService.getScript(), execService.getExecServiceType().toString(),
-				execService.getService().getId());
+		this.getJdbcTemplate().update("insert into exec_services(id, default_delay, default_recurrence, " +
+						"enabled, script, service_id) values (?,?,?,?,?,?)",
+				newExecServiceId, execService.getDefaultDelay(), execService.getDefaultRecurrence(),
+				Character.toString(enabled), execService.getScript(), execService.getService().getId());
 
 		return newExecServiceId;
 	}
@@ -114,8 +102,9 @@ public class ExecServiceDaoJdbc extends JdbcDaoSupport implements ExecServiceDao
 		if (execService.isEnabled()) {
 			enabled = '1';
 		}
-		this.getJdbcTemplate().update("update exec_services set default_delay = ?, default_recurrence = ?, enabled = ?, script = ?, type = ?, service_id = ? where id = ?",
-				execService.getDefaultDelay(), execService.getDefaultRecurrence(), "" + enabled, execService.getScript(), execService.getExecServiceType().toString(),
+		this.getJdbcTemplate().update("update exec_services set default_delay = ?, default_recurrence = ?, " +
+						"enabled = ?, script = ?, service_id = ? where id = ?", execService.getDefaultDelay(),
+				execService.getDefaultRecurrence(), Character.toString(enabled), execService.getScript(),
 				execService.getService().getId(), execService.getId());
 	}
 

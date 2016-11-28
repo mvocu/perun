@@ -31,8 +31,4 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
       <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="execServiceDependencyDao" class="cz.metacentrum.perun.taskslib.dao.jdbc.ExecServiceDependencyDaoJdbc">
-      <property name="dataSource" ref="dataSource"/>
-    </bean>
-
 </beans>

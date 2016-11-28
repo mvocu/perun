@@ -147,7 +147,8 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 //			}
 
 			// get destination status
-			if (task.getExecService().getExecServiceType().equals(ExecService.ExecServiceType.SEND)) {
+			//TODO: handle this !!
+			/*if (task.getExecService().getExecServiceType().equals(ExecService.ExecServiceType.SEND)) {
 				List<TaskResult> results = taskResultDao.getTaskResultsByTask(task.getId());
 
 				Map<Service, Map<Destination, TaskResult>> latestResults = new HashMap<Service, Map<Destination, TaskResult>>();
@@ -189,7 +190,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 					}
 
 				}
-			}
+			}*/
 
 		}
 		return state;
@@ -275,9 +276,10 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 			// filter SEND tasks
 			Iterator<Task> iterator = taskList.iterator();
 			while (iterator.hasNext()) {
-				if ( !(iterator.next().getExecService().getExecServiceType().equals(ExecService.ExecServiceType.SEND)) ) {
+				//TODO: handle this !!
+/*				if ( !(iterator.next().getExecService().getExecServiceType().equals(ExecService.ExecServiceType.SEND)) ) {
 					iterator.remove();
-				}
+				}*/
 			}
 
 			// create new resourceState
@@ -342,11 +344,12 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 			}
 
 			// fill service state
-			if (ExecService.ExecServiceType.GENERATE.equals(task.getExecService().getExecServiceType())) {
+			//TODO: handle this!!
+/*			if (ExecService.ExecServiceType.GENERATE.equals(task.getExecService().getExecServiceType())) {
 				serviceState.setGenTask(task);
 			} else {
 				serviceState.setSendTask(task);
-			}
+			}*/
 
 			if (!task.getExecService().isEnabled()) {
 				serviceStates.get(taskService).setBlockedGlobally(true);

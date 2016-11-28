@@ -8,7 +8,6 @@ import cz.metacentrum.perun.taskslib.model.ExecService;
  *
  * @author Pavel Zlámal <256627@mail.muni.cz>
  */
-
 public class ServiceForGUI extends Service {
 
 	// global service info calculated by GeneralServiceManager

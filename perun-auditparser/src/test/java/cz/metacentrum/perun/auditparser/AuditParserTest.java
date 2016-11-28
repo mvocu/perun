@@ -105,10 +105,8 @@ public class AuditParserTest {
 		candidate.setAdditionalUserExtSources(userExtSources);
 		exService1.setId(10);
 		exService1.setService(service);
-		exService1.setExecServiceType(ExecService.ExecServiceType.GENERATE);
 		exService2.setId(20);
 		exService2.setService(null);
-		exService2.setExecServiceType(null);
 		taskResult1.setId(1);
 		taskResult1.setDestinationId(2);
 		taskResult1.setErrorMessage("error");

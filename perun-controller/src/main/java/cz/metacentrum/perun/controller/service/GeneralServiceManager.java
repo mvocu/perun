@@ -15,7 +15,6 @@ import cz.metacentrum.perun.core.api.exceptions.ServiceAlreadyRemovedException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 
 /**
  * ExecService manager
@@ -251,72 +250,6 @@ public interface GeneralServiceManager {
 	 * @throws InternalErrorException
 	 */
 	public void freeDenialOfExecServiceOnDestination(PerunSession perunSession, ExecService execService, int destinationId) throws InternalErrorException;
-
-	/**
-	 * Create a dependency
-	 * The execService can not be executed if any of the execServices it depends on is in an unstable (not terminal) state.
-	 *
-	 * @param dependantExecService The execService depending on the other execService.
-	 * @param execService The execService the other execService depends on.
-	 */
-	public void createDependency(ExecService dependantExecService, ExecService execService);
-
-	/**
-	 * Removes a dependency.
-	 *
-	 * @param dependantExecService The execService depending on the other execService.
-	 * @param execService The execService the other execService depends on.
-	 */
-	public void removeDependency(ExecService dependantExecService, ExecService execService);
-
-	/**
-	 * Checks whether one execService depends on the other.
-	 *
-	 * @param dependantExecService The execService depending on the other execService.
-	 * @param execService The execService the other execService depends on.
-	 * @return true - yes, there is such a dependency false - no, there is not such a dependency
-	 */
-	public boolean isThereDependency(ExecService dependantExecService, ExecService execService);
-
-	/**
-	 * List execServices depending on the given execService
-	 *
-	 * @param perunSession
-	 * @param execService The execService which dependent execServices we want to look up.
-	 * @return A list of execServices that are depending on the given execService.
-	 *
-	 * @throws PrivilegeException
-	 * @throws InternalErrorException
-	 * @throws ServiceNotExistsException
-	 */
-	public List<ExecService> listExecServicesDependingOn(PerunSession perunSession, ExecService execService) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
-
-	/**
-	 * List execServices this execService depends on
-	 *
-	 * @param perunSession
-	 * @param dependantExecService execService which dependencies we want to look up
-	 * @return A list of execServices this execService depends on.
-	 *
-	 * @throws PrivilegeException
-	 * @throws InternalErrorException
-	 * @throws ServiceNotExistsException
-	 */
-	public List<ExecService> listExecServicesThisExecServiceDependsOn(PerunSession perunSession, ExecService dependantExecService) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
-
-	/**
-	 * List execServices this execService depends on which are of specified execServiceType
-	 *
-	 * @param perunSession
-	 * @param dependantExecService execService which dependencies we want to look up
-	 * @param execServiceType type of execServices to list
-	 * @return list of exec services this execService depends on
-	 *
-	 * @throws ServiceNotExistsException
-	 * @throws InternalErrorException
-	 * @throws PrivilegeException
-	 */
-	public List<ExecService> listExecServicesThisExecServiceDependsOn(PerunSession perunSession, ExecService dependantExecService, ExecServiceType execServiceType) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
 
 	/**
 	 * Forces service propagation on defined facility.

@@ -36,7 +36,6 @@ import cz.metacentrum.perun.core.api.exceptions.ServiceExistsException;
 import org.springframework.jdbc.core.JdbcPerunTemplate;
 import cz.metacentrum.perun.core.impl.Utils;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -120,7 +119,6 @@ public class ExecServiceDenialDaoTest {
 		testExecService1.setEnabled(true);
 		testExecService1.setService(testService1);
 		testExecService1.setScript("/hellish/test/script");
-		testExecService1.setExecServiceType(ExecServiceType.GENERATE);
 		try {
 			testExecService1.setId(execServiceDao.insertExecService(testExecService1));
 		} catch (InternalErrorException e) {
@@ -134,7 +132,6 @@ public class ExecServiceDenialDaoTest {
 		testExecService2.setEnabled(true);
 		testExecService2.setService(testService2);
 		testExecService2.setScript("/hellish/test/script2");
-		testExecService2.setExecServiceType(ExecServiceType.SEND);
 		try {
 			testExecService2.setId(execServiceDao.insertExecService(testExecService2));
 		} catch (InternalErrorException e) {
@@ -228,7 +225,6 @@ public class ExecServiceDenialDaoTest {
 				log.debug("\tENABLED:" + deniedExecService.isEnabled());
 				log.debug("\tService:" + deniedExecService.getService().getName());
 				log.debug("\tSCRIPT:" + deniedExecService.getScript());
-				log.debug("\tTYPE:" + deniedExecService.getExecServiceType().toString());
 			}
 
 			assertEquals(deniedExecServices.size(), 2);
@@ -265,7 +261,6 @@ public class ExecServiceDenialDaoTest {
 				log.debug("\tENABLED:" + deniedExecService.isEnabled());
 				log.debug("\tService:" + deniedExecService.getService().getName());
 				log.debug("\tSCRIPT:" + deniedExecService.getScript());
-				log.debug("\tTYPE:" + deniedExecService.getExecServiceType().toString());
 			}
 
 			assertEquals(deniedExecServices.size(), 2);

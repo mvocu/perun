@@ -97,7 +97,6 @@ public abstract class AbstractEngineTest {
 
 		execService1 = new ExecService();
 		execService1.setService(service);
-		execService1.setExecServiceType(ExecService.ExecServiceType.SEND);
 		execService1.setEnabled(true);
 		execService1.setDefaultDelay(1);
 		execService1.setScript("/bin/true"); // this command always return true
@@ -105,7 +104,6 @@ public abstract class AbstractEngineTest {
 
 		execService2 = new ExecService();
 		execService2.setService(service);
-		execService2.setExecServiceType(ExecService.ExecServiceType.SEND);
 		execService2.setEnabled(true);
 		execService2.setDefaultDelay(1);
 		execService2.setScript("/bin/false"); // this command always return true
@@ -113,7 +111,6 @@ public abstract class AbstractEngineTest {
 
 		execService_gen = new ExecService();
 		execService_gen.setService(service);
-		execService_gen.setExecServiceType(ExecService.ExecServiceType.GENERATE);
 		execService_gen.setEnabled(true);
 		execService_gen.setDefaultDelay(1);
 		execService_gen.setScript("/bin/true"); // this command always return true
