@@ -9,7 +9,7 @@ import cz.metacentrum.perun.dispatcher.processing.EventLogger;
 
 /**
  * 
- * @author Michal Karm Babacek JavaDoc coming soon...
+ * @author Michal Karm Babacek
  * 
  */
 @org.springframework.stereotype.Service(value = "eventLogger")
@@ -25,9 +25,9 @@ public class EventLoggerDummy implements EventLogger {
 	@Async
 	public void logEvent(Event event, int clientID) {
 		if (clientID != -1) {
-			log.info("[" + clientID + "]" + event.toString());
+			log.info("[{}]{}", clientID, event.toString());
 		} else {
-			log.info("[orphan]" + event.toString());
+			log.info("[orphan]{}", event.toString());
 		}
 	}
 

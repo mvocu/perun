@@ -64,20 +64,12 @@ public class EventProcessorImpl implements EventProcessor {
 
 		@Override
 		public void run() {
-			if (log.isDebugEnabled()) {
-				log.debug("DEBUG LEVEL ENABLED:" + log.isDebugEnabled());
-			}
-
 			while (running) {
 				try {
 					Event event = eventQueue.poll();
 					if (event != null) {
-						if (log.isDebugEnabled()) {
-							log.debug("Events in Queue(" + eventQueue.size()
-									+ ").Engines("
-									+ dispatcherQueuePool.poolSize()
-									+ ").Processing event...");
-						}
+						log.debug("Number of: Events in Queue = {}, Engines = {}",
+								eventQueue.size(), dispatcherQueuePool.poolSize());
 						createTask(null, event);
 						eventLogger.logEvent(event, -1);
 					}
@@ -96,42 +88,20 @@ public class EventProcessorImpl implements EventProcessor {
 		private void createTask(DispatcherQueue dispatcherQueue, Event event)
 				throws ServiceNotExistsException, InvalidEventMessageException,
 				InternalErrorException, PrivilegeException {
-			// MV: this was the original behaviour
-			// dispatcherQueue.sendMessage(event.toString());
-
 			// Resolve the services in event, send the resulting <ExecService,
 			// Facility> pairs to engine
 			Map<Facility, Set<ExecService>> resolvedServices = eventExecServiceResolver
 					.parseEvent(event.toString());
 			for (Entry<Facility, Set<ExecService>> service : resolvedServices.entrySet()) {
-				// String facility = service.getRight().serializeToString();
 				Facility facility = service.getKey();
 				for (ExecService execService : service.getValue()) {
-					// dispatcherQueue.sendMessage("[" + facility + "][" +
-					// execService.getId() + "]");
-
-					log.debug("Is the execService ID:" + execService.getId()
-							+ " enabled globally?");
-					if (execService.isEnabled()) {
-						log.debug("   Yes, it is globally enabled.");
-					} else {
-						log.debug("   No, execService ID:"
-								+ execService.getId()
-								+ " is not enabled globally.");
+					if (!execService.isEnabled()) {
+						log.debug("ExecService {} is not enabled globally", execService);
 						continue;
 					}
 
-					log.debug("   Is the execService ID:" + execService.getId()
-							+ " denied on facility ID:" + facility.getId()
-							+ "?");
-					if (!denialsResolver.isExecServiceDeniedOnFacility(
-							execService, facility)) {
-						log.debug("   No, it is not.");
-					} else {
-						log.debug("   Yes, the execService ID:"
-								+ execService.getId()
-								+ " is denied on facility ID:"
-								+ facility.getId() + "?");
+					if (denialsResolver.isExecServiceDeniedOnFacility(execService, facility)) {
+						log.debug("ExecService {} is denied on Facility {}", execService, facility);
 						continue;
 					}
 
@@ -143,15 +113,8 @@ public class EventProcessorImpl implements EventProcessor {
 					Task task = schedulingPool.getTask(execService, facility);
 					if (task != null) {
 						// there already is a task in schedulingPool
-						log.debug("  Task is in the pool already.");
-						/*
-						if (!(task.getStatus().equals(Task.TaskStatus.PLANNED) || task
-								.getStatus().equals(Task.TaskStatus.PROCESSING))) {
-							log.debug("  Task is not PLANNED or PROCESSING, removing destinations to refetch them later on.");
-							task.setDestinations(null);
-						}
-						*/
-						log.debug("  Removing destinations from existing task to refetch them later on.");
+						log.debug("Task is in the pool already.\n" +
+								"Removing destinations from existing task to re-fetch them later on.");
 						task.setDestinations(null);
 						// signal that task needs to regenerate data
 						task.setSourceUpdated(true);
@@ -169,7 +132,7 @@ public class EventProcessorImpl implements EventProcessor {
 						task.setPropagationForced(false);
 						schedulingPool.addToPool(task, dispatcherQueue);
 						schedulingPool.addTaskSchedule(task, -1);
-						log.debug("  Created new task and added to the pool.");
+						log.debug("Created new task {} and added it to the pool.", task);
 					}
 					if (event.getData().contains("force propagation:")) {
 						task.setPropagationForced(true);
@@ -178,7 +141,7 @@ public class EventProcessorImpl implements EventProcessor {
 						taskExecutor.execute(new Runnable() {
 							@Override
 							public void run() {
-								log.debug("  Force scheduling the task.");
+								log.debug("Force scheduling the task {}.", task_final);
 								taskScheduler.scheduleTask(task_final);
 							}
 						});

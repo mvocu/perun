@@ -47,7 +47,7 @@ import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 
 /**
  *
- * @author Michal Karm Babacek JavaDoc coming soon...
+ * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "eventExecServiceResolver")
 public class EventExecServiceResolverImpl implements EventExecServiceResolver {
@@ -78,19 +78,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 		boolean matchFound = matcher.find();
 
 		if (matchFound) {
-			log.debug("Message format matched ok...");
-			// NOT USED ANYMORE: not applicable in dispatcher
-			// String thisEngineID = matcher.group(1);
-			// // This should indeed match the current Engine instance ID, so
-			// let's compare it...
-			// if (Integer.parseInt(thisEngineID) != Integer.parseInt((String)
-			// propertiesBean.get("engine.unique.id"))) {
-			// throw new InvalidEventMessageException("Wrong Engine ID. Was:" +
-			// thisEngineID + ", Expected:" +
-			// propertiesBean.get("engine.unique.id"));
-			// }
-			// // Not being used at the moment.
-			// String timeStamp = matcher.group(2);
+			log.debug("Message format matched ok.");
 			// Header should provide information regarding the target facility.
 			String eventHeader = matcher.group(2);
 			// We expect the string to contain something like this:
@@ -98,32 +86,12 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 			// String headerParsingPattern = ".*facility.id\\=([0-9]+).*";
 			// Pattern headerPattern = Pattern.compile(headerParsingPattern);
 			// Matcher headerMatcher = headerPattern.matcher(eventHeader);
-			/*
-			 * boolean headerMatchFound = headerMatcher.find();
-			 * if(!headerMatchFound) { throw new InvalidEventMessageException(
-			 * "Invalid event header. It does not contain the expected facility.id=value..."
-			 * ); } int facilityId = Integer.parseInt(matcher.group(1));
-			 * PerunSession perunSession =
-			 * engineManager.getPerunSession(propertiesBean
-			 * .getProperty("perun.principal")); Facility facility = null; try {
-			 * facility = facilitiesManager.getFacilityById(perunSession,
-			 * facilityId); } catch (FacilityNotExistsException e) { throw new
-			 * InvalidEventMessageException
-			 * ("Facility with ID "+facilityId+"does not exist.", e); } catch
-			 * (InternalErrorException e) { throw new
-			 * InvalidEventMessageException("Unknown error...", e); } catch
-			 * (PrivilegeException e) { throw new
-			 * InvalidEventMessageException("Principal "
-			 * +propertiesBean.getProperty
-			 * ("perun.principal")+" is not allowed to access that facility. ",
-			 * e); }
-			 */
 
 			// Data should provide information regarding the target ExecService
 			// (Processing rule).
 			String eventData = matcher.group(3);
 
-			log.debug("Event data to be parsed:" + eventData);
+			log.debug("Event data to be parsed: {}", eventData);
 
 			// GET All Beans (only PerunBeans) from message
 			List<PerunBean> listOfBeans = new ArrayList<PerunBean>();
@@ -187,11 +155,10 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 				try {
 					log.debug("Facility found in event. {}.", facility);
 					facilitiesResolvedFromEvent.add(facility);
-					resourcesResolvedFromEvent.addAll(perun.getFacilitiesManager().getAssignedResources(perunSession, facility));
+					resourcesResolvedFromEvent.addAll(perun.getFacilitiesManager()
+							.getAssignedResources(perunSession, facility));
 				} catch (FacilityNotExistsException ex) {
-					log.debug(
-							"Non-existing facility found while resolving event. id={}",
-							facility.getId());
+					log.debug("Non-existing facility found while resolving event. id={}", facility.getId());
 				}
 			} else {
 				// Try to find RESOURCE in event
@@ -201,55 +168,47 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 					// Try to find GROUP in event
 					if (group != null) {
 						try {
-							resourcesResolvedFromEvent = perun.getResourcesManager().getAssignedResources(perunSession, group);
+							resourcesResolvedFromEvent = perun.getResourcesManager()
+									.getAssignedResources(perunSession, group);
 						} catch (GroupNotExistsException ex) {
-							log.debug(
-									"Non-existing group found while resolving event. id={}",
-									group.getId());
+							log.debug("Non-existing group found while resolving event. id={}", group.getId());
 						}
 					} else {
 						// try to find USER in event
 						if (user != null) {
 							try {
-								resourcesResolvedFromEvent = perun.getUsersManager().getAllowedResources(perunSession, user);
+								resourcesResolvedFromEvent = perun.getUsersManager()
+										.getAllowedResources(perunSession, user);
 							} catch (UserNotExistsException ex) {
-								log.debug(
-										"Non-existing user found while resolving event. id={}",
-										user.getId());
+								log.debug("Non-existing user found while resolving event. id={}", user.getId());
 							}
 						} else {
 							// try to find MEMBER in event
 							if (member != null) {
 								try {
-									resourcesResolvedFromEvent = perun.getResourcesManager().getAllowedResources(perunSession, member);
+									resourcesResolvedFromEvent = perun.getResourcesManager()
+											.getAllowedResources(perunSession, member);
 								} catch (MemberNotExistsException ex) {
-									log.debug(
-											"Non-existing member found while resolving event. id={}",
-											member.getId());
+									log.debug("Non-existing member found while resolving event. id={}", member.getId());
 								}
 							} else {
 								// try to find HOST in event
 								if (host != null) {
 									try {
-										log.debug(
-												"Host found in event.id= {}.",
-												host.getId());
+										log.debug("Host found in event.id= {}.", host.getId());
 										facility = perun.getFacilitiesManager().getFacilityForHost(perunSession, host);
 										facilitiesResolvedFromEvent.add(facility);
-										resourcesResolvedFromEvent.addAll(perun.getFacilitiesManager().getAssignedResources(perunSession, facility));
+										resourcesResolvedFromEvent.addAll(perun.getFacilitiesManager()
+												.getAssignedResources(perunSession, facility));
 									} catch (FacilityNotExistsException ex) {
 										log.debug(
 												"Host on non-existing facility found while resolving event. Host id={}",
 												host.getId());
 									} catch (HostNotExistsException ex) {
-										log.debug(
-												"Non-existing host found while resolving event. id={}",
-												host.getId());
+										log.debug("Non-existing host found while resolving event. id={}", host.getId());
 									}
 								} else {
-									log.warn(
-											"No match found for this event. Event={}",
-											event);
+									log.warn("No match found for this event. Event={}", event);
 								}
 							}
 						}
@@ -276,9 +235,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 					if (!servicesResolvedFromEvent.isEmpty())
 						servicesResolvedFromResource.retainAll(servicesResolvedFromEvent);
 				} catch (ResourceNotExistsException ex) {
-					log.debug(
-							"Non-existing resource found while resolving event. Resource={}",
-							r);
+					log.debug("Non-existing resource found while resolving event. Resource={}", r);
 					continue; // skip to next resource
 				}
 
@@ -288,8 +245,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 							.listExecServices(perunSession, s.getId());
 					List<ExecService> execServices = new ArrayList<ExecService>();
 					for (ExecService execService : execServicesGenAndSend) {
-						if (execService.getExecServiceType().equals(
-								ExecServiceType.SEND)) {
+						if (execService.getExecServiceType().equals(ExecServiceType.SEND)) {
 							execServices.add(execService);
 						}
 					}
@@ -315,7 +271,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 				}
 			}
 
-			log.info("I am going to return " + result.size() + " facilities.");
+			log.info("{} facilities will be returned", result.size());
 			return result;
 
 		} else {
@@ -343,8 +299,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 		return generalServiceManager;
 	}
 
-	public void setGeneralServiceManager(
-			GeneralServiceManager generalServiceManager) {
+	public void setGeneralServiceManager(GeneralServiceManager generalServiceManager) {
 		this.generalServiceManager = generalServiceManager;
 	}
 

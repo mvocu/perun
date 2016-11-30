@@ -20,8 +20,7 @@ import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
 
 /**
  * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "smartMatcher")
 public class SmartMatcherImpl implements SmartMatcher {
@@ -37,26 +36,17 @@ public class SmartMatcherImpl implements SmartMatcher {
 	public boolean doesItMatch(Event event, DispatcherQueue dispatcherQueue) {
 		MatchingRule matchingRule = matchingRules.get(dispatcherQueue.getClientID());
 		if (matchingRule == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("MATCHER rules(" + matchingRules.size()
-						+ "): Doesn't match. No such rule.");
-			}
+			log.debug("MATCHER rules({}): Doesn't match. No such rule.", matchingRules.size());
 			return true;
 		}
 		for (String rule : matchingRule.getRules()) {
 			if (event.getHeader().contains(rule)) {
-				if (log.isDebugEnabled()) {
-					log.debug("MATCHER rules(" + matchingRules.size()
-							+ "): Yes. Header [" + event.getHeader()
-							+ "] contains [" + rule + "]");
-				}
+				log.debug("MATCHER rules({}): Header [{}] contains [{}]",
+						new Object[] {matchingRules.size(), event.getHeader(), rule});
 				return true;
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("MATCHER rules(" + matchingRules.size()
-						+ "): Doesn't match: [" + event.getHeader()
-						+ "] doesn't contain [" + rule + "]");
-			}
+			log.debug("MATCHER rules({}): Doesn't match: [{}] doesn't contain [{}]",
+					new Object[] {matchingRules.size(), event.getHeader(), rule});
 		}
 		return true;
 	}
