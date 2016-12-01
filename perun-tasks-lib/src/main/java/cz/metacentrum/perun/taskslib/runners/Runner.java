@@ -1,4 +1,4 @@
-package cz.metacentrum.perun.engine.runners;
+package cz.metacentrum.perun.taskslib.runners;
 
 public interface Runner extends Runnable {
 	public boolean shouldStop();

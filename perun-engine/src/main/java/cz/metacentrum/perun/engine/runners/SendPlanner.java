@@ -1,4 +1,4 @@
-package cz.metacentrum.perun.engine.runners.impl;
+package cz.metacentrum.perun.engine.runners;
 
 
 import cz.metacentrum.perun.core.api.Destination;
@@ -9,6 +9,7 @@ import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletio
 import cz.metacentrum.perun.engine.scheduling.impl.SendWorkerImpl;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
+import cz.metacentrum.perun.taskslib.runners.impl.AbstractRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

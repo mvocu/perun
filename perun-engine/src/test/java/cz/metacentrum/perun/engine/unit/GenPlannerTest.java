@@ -3,7 +3,7 @@ package cz.metacentrum.perun.engine.unit;
 import cz.metacentrum.perun.engine.AbstractEngineTest;
 import cz.metacentrum.perun.engine.scheduling.GenWorker;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingGenExecutorCompletionService;
-import cz.metacentrum.perun.engine.runners.impl.GenPlanner;
+import cz.metacentrum.perun.engine.runners.GenPlanner;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.junit.Before;
 import org.junit.Test;

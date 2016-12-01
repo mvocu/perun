@@ -1,5 +1,4 @@
 package cz.metacentrum.perun.engine.service.impl;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,12 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.engine.service.EngineManager;
-import cz.metacentrum.perun.taskslib.model.ExecService;
-
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
-import cz.metacentrum.perun.taskslib.model.Task;
-import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
-import cz.metacentrum.perun.taskslib.service.TaskManager;
 
 /**
  * @author Michal Karm Babacek

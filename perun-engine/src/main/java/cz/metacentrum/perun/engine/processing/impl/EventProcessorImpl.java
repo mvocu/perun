@@ -4,7 +4,7 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.engine.exceptions.InvalidEventMessageException;
-import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.processing.EventParser;
 import cz.metacentrum.perun.engine.processing.EventProcessor;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;

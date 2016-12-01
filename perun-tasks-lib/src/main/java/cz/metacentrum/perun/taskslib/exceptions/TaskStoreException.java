@@ -1,4 +1,4 @@
-package cz.metacentrum.perun.engine.exceptions;
+package cz.metacentrum.perun.taskslib.exceptions;
 
 
 import cz.metacentrum.perun.core.api.exceptions.PerunException;

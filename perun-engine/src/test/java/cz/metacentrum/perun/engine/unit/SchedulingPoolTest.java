@@ -4,7 +4,7 @@ import cz.metacentrum.perun.engine.AbstractEngineTest;
 import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.engine.scheduling.impl.SchedulingPoolImpl;
-import cz.metacentrum.perun.engine.scheduling.impl.TaskStoreImpl;
+import cz.metacentrum.perun.taskslib.service.impl.TaskStoreImpl;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import org.junit.After;

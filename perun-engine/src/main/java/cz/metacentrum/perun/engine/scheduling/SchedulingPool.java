@@ -2,12 +2,11 @@ package cz.metacentrum.perun.engine.scheduling;
 
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Pair;
-import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
+import cz.metacentrum.perun.taskslib.service.TaskStore;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
@@ -15,7 +14,7 @@ import java.util.concurrent.Future;
 /**
  * This class groups all Task queues from Engine, providing means to add new Tasks, cancel/remove present ones, etc.
  */
-public interface SchedulingPool extends TaskStore{
+public interface SchedulingPool extends TaskStore {
 
 	Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture);
 

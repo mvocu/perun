@@ -1,11 +1,11 @@
-package cz.metacentrum.perun.engine.scheduling.impl;
+package cz.metacentrum.perun.taskslib.service.impl;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
-import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
-import cz.metacentrum.perun.engine.scheduling.TaskStore;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
+import cz.metacentrum.perun.taskslib.service.TaskStore;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;

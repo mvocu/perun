@@ -2,7 +2,7 @@ package cz.metacentrum.perun.engine.unit;
 
 import cz.metacentrum.perun.engine.AbstractEngineTest;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
-import cz.metacentrum.perun.engine.runners.impl.GenCollector;
+import cz.metacentrum.perun.engine.runners.GenCollector;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingGenExecutorCompletionService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.junit.Before;

@@ -1,6 +1,6 @@
-package cz.metacentrum.perun.engine.runners.impl;
+package cz.metacentrum.perun.taskslib.runners.impl;
 
-import cz.metacentrum.perun.engine.runners.Runner;
+import cz.metacentrum.perun.taskslib.runners.Runner;
 
 public abstract class AbstractRunner implements Runner {
 	private boolean stop = false;

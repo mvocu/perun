@@ -2,7 +2,7 @@ package cz.metacentrum.perun.engine.unit;
 
 import cz.metacentrum.perun.engine.AbstractEngineTest;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
-import cz.metacentrum.perun.engine.runners.impl.SendCollector;
+import cz.metacentrum.perun.engine.runners.SendCollector;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import org.junit.Before;

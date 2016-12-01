@@ -1,8 +1,7 @@
-package cz.metacentrum.perun.engine.scheduling;
+package cz.metacentrum.perun.taskslib.service;
 
-import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Facility;
-import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 

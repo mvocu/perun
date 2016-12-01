@@ -1,7 +1,6 @@
 package cz.metacentrum.perun.engine.scheduling.impl;
 
-import cz.metacentrum.perun.core.api.Perun;
-import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.PropagationMaintainer;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
