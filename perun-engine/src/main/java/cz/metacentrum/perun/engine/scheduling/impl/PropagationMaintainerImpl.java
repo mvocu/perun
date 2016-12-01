@@ -1,6 +1,7 @@
 package cz.metacentrum.perun.engine.scheduling.impl;
 
 import cz.metacentrum.perun.core.api.Perun;
+import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.PropagationMaintainer;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
@@ -39,7 +40,12 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		for (Task task : schedulingPool.getGeneratingTasksBlockingMap().values()) {
 			if ((task.getStartTime().getTime() - now) > stuckTimeLimit) {
 				task.setStatus(TaskStatus.GENERROR);
-				Task removed = schedulingPool.removeTask(task);
+				Task removed = null;
+				try {
+					removed = schedulingPool.removeTask(task);
+				} catch (TaskStoreException e) {
+					log.error("Failed during removal of Task {} from SchedulingPool", task);
+				}
 				if (removed != null) {
 					log.error("Stale Task {} was not removed.", task);
 				}
@@ -54,8 +60,13 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		for (SendTask sendTask : schedulingPool.getSendingSendTasksBlockingMap().values()) {
 			if ((sendTask.getStartTime().getTime() - now) > stuckTimeLimit) {
 				sendTask.setStatus(SendTaskStatus.ERROR);
-				Future<SendTask> sendTaskFuture = schedulingPool.removeSendTaskFuture(
-						sendTask.getId().getLeft(), sendTask.getId().getRight());
+				Future<SendTask> sendTaskFuture = null;
+				try {
+					sendTaskFuture = schedulingPool.removeSendTaskFuture(
+							sendTask.getId().getLeft(), sendTask.getId().getRight());
+				} catch (TaskStoreException e) {
+					log.error("Failed during removal of SendTaskFuture {} from SchedulingPool", sendTaskFuture);
+				}
 				if (sendTaskFuture == null) {
 					log.error("Stale SendTask {} was not removed.", sendTask);
 				}

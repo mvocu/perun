@@ -1,18 +1,20 @@
 package cz.metacentrum.perun.engine.scheduling.impl;
 
 import cz.metacentrum.perun.core.api.Destination;
+import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
+import cz.metacentrum.perun.engine.scheduling.TaskStore;
+import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
@@ -26,25 +28,44 @@ import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.PLANNED;
 @org.springframework.stereotype.Service(value = "schedulingPool")
 public class SchedulingPoolImpl implements SchedulingPool {
 	private final static Logger log = LoggerFactory.getLogger(SchedulingPoolImpl.class);
-	private final ConcurrentMap<Integer, Task> tasks = new ConcurrentHashMap<>();
 	private final ConcurrentMap<Integer, Future<Task>> genTaskFutures = new ConcurrentHashMap<>();
 	private final ConcurrentMap<Integer, ConcurrentMap<Destination, Future<SendTask>>> sendTasks = new ConcurrentHashMap<>();
 	private final ConcurrentMap<Integer, Integer> sendTaskCount = new ConcurrentHashMap<>();
 	private final BlockingDeque<Task> newTasksQueue = new LinkedBlockingDeque<>();
 	private final BlockingDeque<Task> generatedTasksQueue = new LinkedBlockingDeque<>();
 	@Autowired
+	private TaskStore taskStore;
+	@Autowired
 	private BlockingBoundedMap<Integer, Task> generatingTasks;
 	@Autowired
 	private BlockingBoundedMap<Pair<Integer, Destination>, SendTask> sendingSendTasks;
 
-	@Override
-	public int getSize() {
-		//TODO: count tasks, sendTasks or both?
-		return tasks.size();
+	public SchedulingPoolImpl() {
+	}
+
+	public SchedulingPoolImpl(TaskStore taskStore, BlockingBoundedMap<Integer, Task> generatingTasks, BlockingBoundedMap<Pair<Integer, Destination>, SendTask> sendingSendTasks) {
+		this.taskStore = taskStore;
+		this.generatingTasks = generatingTasks;
+		this.sendingSendTasks = sendingSendTasks;
 	}
 
 	public Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture) {
 		return genTaskFutures.put(id, taskFuture);
+	}
+
+	@Override
+	public Task getTask(int id) {
+		return taskStore.getTask(id);
+	}
+
+	@Override
+	public Task getTask(Facility facility, ExecService execService) {
+		return taskStore.getTask(facility, execService);
+	}
+
+	@Override
+	public int getSize() {
+		return taskStore.getSize();
 	}
 
 	/**
@@ -54,12 +75,12 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	 * @param task Task that will be added to the pool.
 	 * @return Task that was added to the pool.
 	 */
-	public Task addToPool(Task task) {
+	public Task addToPool(Task task) throws TaskStoreException {
 		if (task.getStatus() != PLANNED) {
 			throw new IllegalArgumentException("Only Tasks with PLANNED status can be added to SchedulingPool");
 		}
 
-		Task addedTask = tasks.put(task.getId(), task);
+		Task addedTask = taskStore.addToPool(task);
 		if (task.isPropagationForced()) {
 			try {
 				newTasksQueue.putFirst(task);
@@ -77,36 +98,26 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
+	public List<Task> getTasksWithStatus(Task.TaskStatus status) {
+		return taskStore.getTasksWithStatus(status);
+	}
+
+	@Override
 	public Integer addSendTaskCount(int taskId, int count) {
 		return sendTaskCount.put(taskId, count);
 	}
 
 	@Override
-	public Integer decreaseSendTaskCount(int taskId, int decrease) {
+	public Integer decreaseSendTaskCount(int taskId, int decrease) throws TaskStoreException {
 		Integer count = sendTaskCount.get(taskId);
 		if (count == null) {
 			return null;
 		} else if (count <= 1) {
-			removeTask(taskId);
+			Task removed = removeTask(taskId);
 			return 0;
 		} else {
 			return sendTaskCount.replace(taskId, count - decrease);
 		}
-	}
-
-	@Override
-	public Collection<Task> getPlannedTasks() {
-		return getFromIterator(newTasksQueue.iterator());
-	}
-
-	@Override
-	public Collection<Task> getGeneratingTasks() {
-		return generatingTasks.values();
-	}
-
-	@Override
-	public Collection<Task> getGeneratedTasks() {
-		return getFromIterator(generatedTasksQueue.iterator());
 	}
 
 	private <E> List<E> getFromIterator(Iterator<E> iterator) {
@@ -148,18 +159,13 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public Task getTaskById(int id) {
-		return tasks.get(id);
-	}
-
-	@Override
-	public Task removeTask(Task task) {
+	public Task removeTask(Task task) throws TaskStoreException {
 		return removeTask(task.getId());
 	}
 
 	@Override
-	public Task removeTask(int id) {
-		Task removed = tasks.remove(id);
+	public Task removeTask(int id) throws TaskStoreException {
+		Task removed = taskStore.removeTask(id);
 		Future<Task> taskFuture = genTaskFutures.get(id);
 		if (taskFuture != null) {
 			taskFuture.cancel(true);
@@ -171,7 +177,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		return removed;
 	}
 
-	public Future<SendTask> removeSendTaskFuture(int taskId, Destination destination) {
+	public Future<SendTask> removeSendTaskFuture(int taskId, Destination destination) throws TaskStoreException {
 		ConcurrentMap<Destination, Future<SendTask>> destinationSendTasks = sendTasks.get(taskId);
 		if (destinationSendTasks != null) {
 			Future<SendTask> removed = destinationSendTasks.remove(destination);
@@ -184,20 +190,8 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		}
 	}
 
-	@Override
-	public void modifyTask(Task task, List<Destination> destinations, boolean propagationForced) {
-		//TODO: Do we need to synchronize here? We may change destinations just as they are being transformed into SendTasks.
-		if (newTasksQueue.contains(task) || generatedTasksQueue.contains(task)) {
-			task.setDestinations(destinations);
-			task.setPropagationForced(propagationForced);
-		} else {
-			//TODO: Handle tasks that are currently being Generated/Sent
-			throw new NotImplementedException();
-		}
-	}
-
 	private void handleInterruptedException(Task task, InterruptedException e) {
-		String errorMessage = "Thread was interrupted while tryinng to put Task " + task + " into new Tasks queue.";
+		String errorMessage = "Thread was interrupted while trying to put Task " + task + " into new Tasks queue.";
 		log.error(errorMessage, e);
 		//TODO: Is this the correct behaviour here? This should not happen.
 		throw new RuntimeException(errorMessage, e);

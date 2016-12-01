@@ -2,6 +2,7 @@ package cz.metacentrum.perun.engine.scheduling;
 
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
 
@@ -14,23 +15,13 @@ import java.util.concurrent.Future;
 /**
  * This class groups all Task queues from Engine, providing means to add new Tasks, cancel/remove present ones, etc.
  */
-public interface SchedulingPool {
-
-	int getSize();
-
-	Task addToPool(Task task);
+public interface SchedulingPool extends TaskStore{
 
 	Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture);
 
 	Integer addSendTaskCount(int taskId, int count);
 
-	Integer decreaseSendTaskCount(int taskId, int decrease);
-
-	Collection<Task> getPlannedTasks();
-
-	Collection<Task> getGeneratingTasks();
-
-	Collection<Task> getGeneratedTasks();
+	Integer decreaseSendTaskCount(int taskId, int decrease) throws TaskStoreException;
 
 	BlockingDeque<Task> getNewTasksQueue();
 
@@ -44,13 +35,5 @@ public interface SchedulingPool {
 
 	Future<Task> getGenTaskFutureById(int id);
 
-	Task getTaskById(int id);
-
-	Task removeTask(Task task);
-
-	Task removeTask(int id);
-
-	Future<SendTask> removeSendTaskFuture(int taskId, Destination destination);
-
-	void modifyTask(Task task, List<Destination> destinations, boolean propagationForced);
+	Future<SendTask> removeSendTaskFuture(int taskId, Destination destination) throws TaskStoreException;
 }

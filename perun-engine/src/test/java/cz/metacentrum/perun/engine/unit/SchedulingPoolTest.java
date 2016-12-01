@@ -1,13 +1,15 @@
 package cz.metacentrum.perun.engine.unit;
 
 import cz.metacentrum.perun.engine.AbstractEngineTest;
+import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
+import cz.metacentrum.perun.engine.scheduling.impl.SchedulingPoolImpl;
+import cz.metacentrum.perun.engine.scheduling.impl.TaskStoreImpl;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
@@ -23,24 +25,27 @@ import static org.mockito.Mockito.mock;
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 public class SchedulingPoolTest extends AbstractEngineTest {
-	@Autowired
 	private SchedulingPool schedulingPool;
 
 	@Before
 	public void setup() throws Exception {
 		super.setup();
+		schedulingPool = new SchedulingPoolImpl(
+				new TaskStoreImpl(), mock(BlockingBoundedMap.class), mock(BlockingBoundedMap.class));
 		schedulingPool.addToPool(task1);
 	}
 
 	@After
-	public void cleanup() {
+	public void cleanup() throws Exception {
 		schedulingPool.removeTask(task1);
 		schedulingPool.removeTask(task2);
 	}
 
 	@Test
-	public void addToPoolTest() {
+	public void addToPoolTest() throws Exception {
 		assertEquals("Original size should be 1", 1, schedulingPool.getSize());
+
+		System.out.println(schedulingPool);
 
 		schedulingPool.addToPool(task1); // pool already contains this task
 		assertEquals("New size should be 1 because the added Task was already in.", 1, schedulingPool.getSize());
@@ -50,42 +55,42 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void doNotAddNotPlannedTasks() {
+	public void doNotAddNotPlannedTasks() throws Exception {
 		task2.setStatus(TaskStatus.GENERATING);
 		schedulingPool.addToPool(task2);
 	}
 
 	@Test
-	public void getPlannedFromPoolTest() {
-		Collection<Task> tasks = schedulingPool.getPlannedTasks();
+	public void getPlannedFromPoolTest() throws Exception {
+		Collection<Task> tasks = schedulingPool.getTasksWithStatus(TaskStatus.PLANNED);
 		assertTrue("Task task1 should be in the collection.", tasks.contains(task1));
 
 		schedulingPool.addToPool(task2);
-		tasks = schedulingPool.getPlannedTasks();
+		tasks = schedulingPool.getTasksWithStatus(TaskStatus.PLANNED);
 		assertTrue("Both Tasks should be in the collection.", tasks.contains(task1) && tasks.contains(task2));
 	}
 
 	@Test
 	public void getGeneratingFromPoolTest() throws Exception {
-		Collection<Task> tasks = schedulingPool.getGeneratingTasks();
+		Collection<Task> tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATING);
 		assertTrue("There should be no generating Tasks", tasks.isEmpty());
 
 		schedulingPool.addToPool(task2);
 		task2.setStatus(TaskStatus.GENERATING);
 		schedulingPool.getGeneratingTasksBlockingMap().blockingPut(task2.getId(), task2);
-		tasks = schedulingPool.getGeneratingTasks();
+		tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATING);
 		assertTrue("Task task1 should be in the collection.", tasks.contains(task2));
 	}
 
 	@Test
-	public void getGeneratedFromPool() {
-		Collection<Task> tasks = schedulingPool.getGeneratedTasks();
+	public void getGeneratedFromPool() throws Exception {
+		Collection<Task> tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATED);
 		assertTrue("There should be no generated Tasks", tasks.isEmpty());
 
 		schedulingPool.addToPool(task2);
 		task2.setStatus(TaskStatus.GENERATED);
 		schedulingPool.getGeneratedTasksQueue().add(task2);
-		tasks = schedulingPool.getGeneratedTasks();
+		tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATED);
 		assertTrue("Task task1 should be in the collection.", tasks.contains(task2));
 	}
 
@@ -101,13 +106,13 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 	}
 
 	@Test
-	public void getTaskByIdTest() {
-		Task task = schedulingPool.getTaskById(task1.getId());
+	public void getTaskByIdTest() throws Exception {
+		Task task = schedulingPool.getTask(task1.getId());
 		assertEquals(task1, task);
 	}
 
 	@Test
-	public void removeSentTaskTest() {
+	public void removeSentTaskTest() throws Exception {
 		schedulingPool.addSendTaskCount(task1.getId(), 2);
 		assertEquals(1, schedulingPool.getSize());
 

@@ -4,6 +4,7 @@ package cz.metacentrum.perun.engine.runners.impl;
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
+import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
@@ -60,6 +61,8 @@ public class SendCollector extends AbstractRunner {
 				} catch (JMSException e1) {
 					jmsErrorLog(id.getLeft(), id.getRight());
 				}
+			} catch (TaskStoreException e) {
+				log.error("Task {} could not be removed from SchedulingPool", e);
 			}
 		}
 	}

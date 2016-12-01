@@ -4,6 +4,7 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.engine.exceptions.InvalidEventMessageException;
+import cz.metacentrum.perun.engine.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.processing.EventParser;
 import cz.metacentrum.perun.engine.processing.EventProcessor;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
@@ -49,12 +50,15 @@ public class EventProcessorImpl implements EventProcessor {
 		log.debug("\t Resolved ExecService[{}]", task.getExecService());
 
 		if (task.getFacility() != null && task.getExecService() != null) {
-			Task currentTask = schedulingPool.getTaskById(task.getId());
+			Task currentTask = schedulingPool.getTask(task.getId());
 			if (currentTask == null) {
-				schedulingPool.addToPool(task);
+				try {
+					schedulingPool.addToPool(task);
+				} catch (TaskStoreException e) {
+					log.error("Could not save Task {} into Engine SchedulingPool, it will be ignored");
+				}
 			} else {
 				log.debug("Resetting current task destination list to {}", task.getDestinations());
-				schedulingPool.modifyTask(task, task.getDestinations(), task.isPropagationForced());
 				currentTask.setDestinations(task.getDestinations());
 				currentTask.setPropagationForced(task.isPropagationForced());
 			}
