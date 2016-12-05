@@ -11,8 +11,8 @@ import java.util.concurrent.Semaphore;
 
 
 public class BlockingBoundedHashMap<K, V> implements BlockingBoundedMap<K, V> {
-	ConcurrentMap<K, V> map = new ConcurrentHashMap<>();
-	Semaphore semaphore;
+	private ConcurrentMap<K, V> map = new ConcurrentHashMap<>();
+	private Semaphore semaphore;
 
 	public BlockingBoundedHashMap(int limit) {
 		semaphore = new Semaphore(limit);
@@ -23,11 +23,7 @@ public class BlockingBoundedHashMap<K, V> implements BlockingBoundedMap<K, V> {
 		Assert.isTrue(value != null);
 
 		semaphore.acquire();
-		V added = map.put(key, value);
-		if (added == null) {
-			semaphore.release();
-		}
-		return added;
+		return map.put(key, value);
 	}
 
 	@Override

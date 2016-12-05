@@ -11,7 +11,12 @@ import cz.metacentrum.perun.taskslib.model.SendTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Future;
 
 
 public class BlockingSendExecutorCompletionService implements BlockingCompletionService<SendTask> {

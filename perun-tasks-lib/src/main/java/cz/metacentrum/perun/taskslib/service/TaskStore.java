@@ -7,6 +7,10 @@ import cz.metacentrum.perun.taskslib.model.Task;
 
 import java.util.List;
 
+/**
+ * This interface describes basic Task storing functionality, where every Task is uniquely represented both by its ID,
+ * and the Facility and ExecService it contains.
+ */
 public interface TaskStore {
 	Task getTask(int id);
 	Task getTask(Facility facility, ExecService execService);

@@ -1,16 +1,5 @@
 package cz.metacentrum.perun.engine.processing.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import cz.metacentrum.perun.auditparser.AuditParser;
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Facility;
@@ -20,16 +9,20 @@ import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.engine.exceptions.InvalidEventMessageException;
 import cz.metacentrum.perun.engine.processing.EventParser;
-import cz.metacentrum.perun.engine.scheduling.DependenciesResolver;
-import cz.metacentrum.perun.taskslib.dao.ExecServiceDao;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
+import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
- */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
 @org.springframework.stereotype.Service(value = "eventParser")
 public class EventParserImpl implements EventParser {
 	private static final Logger log = LoggerFactory
@@ -43,7 +36,7 @@ public class EventParserImpl implements EventParser {
 			ServiceNotExistsException, InternalErrorException,
 			PrivilegeException {
 
-		log.info("I am going to process event: {}", event);
+		log.info("Going to process event: {}", event);
 
 		/*
 		 * Expected string format:
@@ -79,25 +72,25 @@ public class EventParserImpl implements EventParser {
 			String eventDestinationList = matcher.group(6);
 
 			// check possible enconding
-			if(!eventExecService.startsWith("ExecService")) {
+			if (!eventExecService.startsWith("ExecService")) {
 				eventExecService = new String(Base64.decodeBase64(eventExecService));
 			}
-			if(!eventExecService.startsWith("ExecService")) {
+			if (!eventExecService.startsWith("ExecService")) {
 				throw new InvalidEventMessageException("Wrong exec service: parse exception");
-			}			
-			if(!eventFacility.startsWith("Facility")) {
+			}
+			if (!eventFacility.startsWith("Facility")) {
 				eventFacility = new String(Base64.decodeBase64(eventFacility));
 			}
-			if(!eventFacility.startsWith("Facility")) {
+			if (!eventFacility.startsWith("Facility")) {
 				throw new InvalidEventMessageException("Wrong facility: parse exception");
-			}			
-			if(!eventDestinationList.startsWith("Destinations")) {
+			}
+			if (!eventDestinationList.startsWith("Destinations")) {
 				eventDestinationList = new String(Base64.decodeBase64(eventDestinationList));
 			}
-			if(!eventDestinationList.startsWith("Destinations")) {
+			if (!eventDestinationList.startsWith("Destinations")) {
 				throw new InvalidEventMessageException("Wrong destination list: parse exception");
 			}
-			
+
 			log.debug("Event data to be parsed: task id {}, forced {}, facility {}, exec service {}, destination list {}",
 					new Object[]{eventTaskId, eventIsForced, eventFacility, eventExecService, eventDestinationList});
 
@@ -123,9 +116,9 @@ public class EventParserImpl implements EventParser {
 			} catch (Exception e) {
 				throw new InvalidEventMessageException(
 						"Could not resolve exec service from event ["
-							+ eventExecService + "]", e);
+								+ eventExecService + "]", e);
 			}
-			
+
 			// resolve list of destinations
 			listOfBeans = AuditParser.parseLog(eventDestinationList);
 			log.debug("Found list of destination beans: {}", listOfBeans);

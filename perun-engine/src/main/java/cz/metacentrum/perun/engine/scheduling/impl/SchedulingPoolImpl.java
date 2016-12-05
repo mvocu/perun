@@ -113,8 +113,8 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		if (count == null) {
 			return null;
 		} else if (count <= 1) {
-			Task removed = removeTask(taskId);
-			return 0;
+			removeTask(taskId);
+			return 1;
 		} else {
 			return sendTaskCount.replace(taskId, count - decrease);
 		}

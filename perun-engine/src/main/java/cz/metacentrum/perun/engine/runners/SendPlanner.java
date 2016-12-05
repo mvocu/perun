@@ -20,6 +20,10 @@ import java.util.concurrent.BlockingQueue;
 
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENDING;
 
+/**
+ * Takes all Tasks planned for sending, creates a SendTask for every one of their Destinations and puts it into queue,
+ * where they wait to be sent.
+ */
 public class SendPlanner extends AbstractRunner {
 	private final static Logger log = LoggerFactory
 			.getLogger(SendPlanner.class);
@@ -33,7 +37,8 @@ public class SendPlanner extends AbstractRunner {
 	public SendPlanner() {
 	}
 
-	public SendPlanner(BlockingSendExecutorCompletionService sendCompletionService, SchedulingPool schedulingPool, JMSQueueManager jmsQueueManager) {
+	public SendPlanner(BlockingSendExecutorCompletionService sendCompletionService, SchedulingPool schedulingPool,
+	                   JMSQueueManager jmsQueueManager) {
 		this.sendCompletionService = sendCompletionService;
 		this.schedulingPool = schedulingPool;
 		this.jmsQueueManager = jmsQueueManager;

@@ -3,9 +3,8 @@ package cz.metacentrum.perun.engine.scheduling;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 
 /**
- *
- * @author Michal Karm Babacek JavaDoc coming soon...
- *
+ * Implements logic needed to end Tasks that get stuck in Engine for too long.
+ * @author Michal Karm Babacek
  */
 public interface PropagationMaintainer {
 

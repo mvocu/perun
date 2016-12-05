@@ -18,8 +18,23 @@ public interface SchedulingPool extends TaskStore {
 
 	Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture);
 
+	/**
+	 * Method used when SendTasks are being created from parent Task.
+	 * It puts number of SendTasks still running under the Tasks id.
+	 * @param taskId Id of the Task which count we add.
+	 * @param count Number of running sendTasks for a given Task.
+	 * @return Value previously associated with given Task's ID, null if there was none.
+	 */
 	Integer addSendTaskCount(int taskId, int count);
 
+	/**
+	 * Decreases the count of SendTask running for given Task.
+	 * Used when SendTasks finishes executing.
+	 * @param taskId Id of the Task whose SendTask/s finished.
+	 * @param decrease Number by which we reduce the count.
+	 * @return Return value previously associated with given Task ID.
+	 * @throws TaskStoreException Thrown if inconsistency occurred while saving the Task.
+	 */
 	Integer decreaseSendTaskCount(int taskId, int decrease) throws TaskStoreException;
 
 	BlockingDeque<Task> getNewTasksQueue();

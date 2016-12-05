@@ -18,6 +18,9 @@ import java.util.concurrent.Future;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERATING;
 
+/**
+ * This class takes all new Tasks received from Dispatcher, and puts in a queue where they wait to be generated.
+ */
 public class GenPlanner extends AbstractRunner {
 	private final static Logger log = LoggerFactory
 			.getLogger(GenPlanner.class);
@@ -42,7 +45,6 @@ public class GenPlanner extends AbstractRunner {
 		while (!shouldStop()) {
 			try {
 				log.debug("Getting new Task in the newTasks BlockingDeque");
-				System.out.println("Here");
 				Task task = newTasks.take();
 				GenWorker worker = new GenWorkerImpl(task);
 				Future<Task> taskFuture = genCompletionService.blockingSubmit(worker);

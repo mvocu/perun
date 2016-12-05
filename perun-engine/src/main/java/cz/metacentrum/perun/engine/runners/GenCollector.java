@@ -17,6 +17,10 @@ import java.util.concurrent.BlockingDeque;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERROR;
 
+/**
+ * This class takes Task which were generated (both successfully and not), reports their state change to the Dispatcher
+ * and puts them in queue of Tasks waiting to be sent to their Destinations.
+ */
 public class GenCollector extends AbstractRunner {
 	private final static Logger log = LoggerFactory
 			.getLogger(GenCollector.class);

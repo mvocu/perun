@@ -158,7 +158,7 @@ public class JMSQueueManager {
 
 	public void reportSendTask(int id, String status, String destination) throws JMSException {
 		TextMessage message = session.createTextMessage("sendTask:"
-				+ propertiesBean.getProperty("engine.unieuq.id") + ":"
+				+ propertiesBean.getProperty("engine.unique.id") + ":"
 				+ id + ":" + status + ":" + destination);
 		producer.send(message);
 		log.debug("Task send message [{}] sent.", message.getText());
