@@ -4,12 +4,13 @@ import cz.metacentrum.perun.engine.AbstractEngineTest;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.runners.SendCollector;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
-import cz.metacentrum.perun.taskslib.model.SendTask;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Date;
+
+import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.ERROR;
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENT;
-import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.SENDERROR;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -39,7 +40,14 @@ public class SendCollectorTest extends AbstractEngineTest {
 		assertEquals(SENT, sendTask3.getStatus());
 		assertEquals(SENT, sendTask4.getStatus());
 		verify(schedulingPoolMock, times(4)).decreaseSendTaskCount(task1.getId(), 1);
-		verify(jmsQueueManagerMock, times(4)).reportSendTask(any(SendTask.class));
+		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
+				eq(sendTask1.getDestination()), any(Date.class));
+		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
+				eq(sendTask2.getDestination()), any(Date.class));
+		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
+				eq(sendTask3.getDestination()), any(Date.class));
+		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
+				eq(sendTask4.getDestination()), any(Date.class));
 	}
 
 	@Test
@@ -53,8 +61,9 @@ public class SendCollectorTest extends AbstractEngineTest {
 
 		assertEquals(SENT, sendTask1.getStatus());
 		verify(schedulingPoolMock, times(1)).decreaseSendTaskCount(task1.getId(), 1);
-		verify(jmsQueueManagerMock, times(1)).reportSendTask(sendTask1);
-		verify(jmsQueueManagerMock, times(1)).reportSendTask(eq(task1.getId()),
-				eq(SENDERROR.toString()), contains("Destination"));
+		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(sendTask1.getTask().getId()),
+				eq(SENT), eq(sendTask1.getDestination()), any(Date.class));
+		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(sendTask2.getTask().getId()),
+				eq(ERROR), eq(sendTask2.getDestination()), any(Date.class));
 	}
 }

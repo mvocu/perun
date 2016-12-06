@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.engine.unit;
 
+import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.engine.AbstractEngineTest;
 import cz.metacentrum.perun.engine.runners.SendPlanner;
 import cz.metacentrum.perun.engine.scheduling.SendWorker;
@@ -9,10 +10,12 @@ import cz.metacentrum.perun.taskslib.model.Task;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERATED;
+import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.SENDING;
 import static org.mockito.Mockito.*;
 
 public class SendPlannerTest extends AbstractEngineTest {
@@ -39,8 +42,10 @@ public class SendPlannerTest extends AbstractEngineTest {
 
 		spy.run();
 
-		verify(schedulingPoolMock, times(1)).addSendTaskCount(task1.getId(), task1.getDestinations().size());
+		verify(schedulingPoolMock, times(1)).addSendTaskCount(task1.getId(),
+				task1.getDestinations().size());
 		verify(sendCompletionServiceMock, times(4)).blockingSubmit(any(SendWorker.class));
-		verify(jmsQueueManagerMock, times(4)).reportSendTask(any(SendTask.class));
+		verify(jmsQueueManagerMock, times(4)).reportSendTaskStatus(eq(task1.getId()),
+				eq(SendTask.SendTaskStatus.SENDING), any(Destination.class), any(Date.class));
 	}
 }

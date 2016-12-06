@@ -8,6 +8,7 @@ import cz.metacentrum.perun.taskslib.model.Task;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -43,7 +44,8 @@ public class GenPlannerTest extends AbstractEngineTest{
 
 		verify(genCompletionServiceMock, times(1)).blockingSubmit(any(GenWorker.class));
 		verify(schedulingPoolMock, times(1)).addGenTaskFutureToPool(task1.getId(), futureMock);
-		verify(jmsQueueManagerMock, times(1)).reportGenTask(task1);
+		verify(jmsQueueManagerMock, times(1)).reportTaskStatus(
+				eq(task1.getId()), eq(task1.getStatus()), eq(task1.getGenEndTime()));
 
 		assertEquals(GENERATING, task1.getStatus());
 	}

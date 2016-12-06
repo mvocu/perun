@@ -61,7 +61,8 @@ public class SendPlanner extends AbstractRunner {
 					sendTask.setStartTime(new Date(System.currentTimeMillis()));
 					sendTask.setStatus(SENDING);
 					try {
-						jmsQueueManager.reportSendTask(sendTask);
+						jmsQueueManager.reportSendTaskStatus(sendTask.getTask().getId(), sendTask.getStatus(),
+								sendTask.getDestination(), sendTask.getStartTime());
 					} catch (JMSException e) {
 						log.warn("Could not send SendTasks [{}] status update.", sendTask);
 					}

@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.engine.jms;
 
+import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.hornetq.api.core.TransportConfiguration;
@@ -12,13 +13,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 /**
- * @author Michal Karm Babacek JavaDoc coming soon...
+ * Class used to send messages through JMS to Dispatcher and also to initiate/close the needed connection.
+ *
+ * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "jmsQueueManager")
 public class JMSQueueManager {
@@ -144,30 +154,22 @@ public class JMSQueueManager {
 
 	}
 
-	public void reportGenTask(int id, String status) throws JMSException {
+	public void reportSendTaskStatus(int parentTaskId, SendTask.SendTaskStatus status, Destination destination,
+	                                 Date time) throws JMSException {
+		TextMessage message = session.createTextMessage("task:" + propertiesBean.getProperty("engine.unique.id")
+				+ ":" + parentTaskId + ":" + status + ":" + time);
+		producer.send(message);
+		log.info("SendTask with id {} reported and destination {} state {} to dispatcher.",
+				new Object[]{parentTaskId, destination, status});
+	}
+
+	public void reportTaskStatus(int id, Task.TaskStatus status, Date time) throws JMSException {
 		TextMessage message = session.createTextMessage("task:"
 				+ propertiesBean.getProperty("engine.unique.id") + ":"
-				+ id + ":" + status);
+				+ id + ":" + status + ":" + time);
 		producer.send(message);
-		log.debug("Task gen message [{}] sent.", message.getText());
+		log.info("Task with id {} reported state {} to dispatcher.", id, status);
 	}
-
-	public void reportGenTask(Task task) throws JMSException {
-		reportGenTask(task.getId(), task.getStatus().toString());
-	}
-
-	public void reportSendTask(int id, String status, String destination) throws JMSException {
-		TextMessage message = session.createTextMessage("sendTask:"
-				+ propertiesBean.getProperty("engine.unique.id") + ":"
-				+ id + ":" + status + ":" + destination);
-		producer.send(message);
-		log.debug("Task send message [{}] sent.", message.getText());
-	}
-
-	public void reportSendTask(SendTask task) throws JMSException {
-		reportSendTask(task.getId().getLeft(), task.getStatus().toString(), task.getId().getRight().toString());
-	}
-
 
 	public void sendGoodByeAndClose() {
 		try {

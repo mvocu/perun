@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.JMSException;
+import java.util.Date;
 import java.util.concurrent.BlockingDeque;
 
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERROR;
@@ -52,7 +53,7 @@ public class GenCollector extends AbstractRunner {
 					generatedTasks.put(task);
 				}
 				try {
-					jmsQueueManager.reportGenTask(task);
+					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getGenEndTime());
 				} catch (JMSException e) {
 					jmsErrorLog(task.getId());
 				}
@@ -63,7 +64,7 @@ public class GenCollector extends AbstractRunner {
 			} catch (TaskExecutionException e) {
 				Integer id = (Integer) e.getId();
 				try {
-					jmsQueueManager.reportGenTask(id, GENERROR.toString());
+					jmsQueueManager.reportTaskStatus(id, GENERROR, new Date(System.currentTimeMillis()));
 				} catch (JMSException e1) {
 					jmsErrorLog(id);
 				}

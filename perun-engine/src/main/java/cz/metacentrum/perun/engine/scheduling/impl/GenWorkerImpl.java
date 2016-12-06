@@ -52,7 +52,6 @@ public class GenWorkerImpl extends AbstractWorker implements GenWorker {
 		} catch (IOException e) {
 			log.error(e.toString(), e);
 			getTask().setStatus(GENERROR);
-			getTask().setGenEndTime(new Date(System.currentTimeMillis()));
 			throw new TaskExecutionException(task.getId(), e);
 		} catch (InterruptedException e) {
 			log.warn("Tasks {} execution interrupted.", task, e);
