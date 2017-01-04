@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.withSettings;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional

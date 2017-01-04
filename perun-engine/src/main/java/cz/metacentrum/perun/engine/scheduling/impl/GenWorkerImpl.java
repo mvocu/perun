@@ -27,6 +27,7 @@ public class GenWorkerImpl extends AbstractWorker implements GenWorker {
 
 	@Override
 	public Task call() throws TaskExecutionException {
+		getTask().setGenStartTime(new Date(System.currentTimeMillis()));
 		ExecService execService = getTask().getExecService();
 		log.info("EXECUTING GEN(worker:{}): Task ID:{}, Facility ID:{}",
 				new Object[]{hashCode(), getTask().getId(), getTask().getFacilityId()});
@@ -41,7 +42,6 @@ public class GenWorkerImpl extends AbstractWorker implements GenWorker {
 				log.error("GEN task failed. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
 						new Object[]{getReturnCode(), getStdout(), getStderr(), getTask().getId()});
 				getTask().setStatus(GENERROR);
-				getTask().setGenEndTime(new Date(System.currentTimeMillis()));
 				throw new TaskExecutionException(task.getId(), getReturnCode(), getStdout(), getStderr());
 			} else {
 				getTask().setStatus(GENERATED);

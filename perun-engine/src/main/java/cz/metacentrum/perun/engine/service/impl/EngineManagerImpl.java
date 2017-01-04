@@ -1,5 +1,9 @@
 package cz.metacentrum.perun.engine.service.impl;
 
+import cz.metacentrum.perun.engine.runners.GenCollector;
+import cz.metacentrum.perun.engine.runners.GenPlanner;
+import cz.metacentrum.perun.engine.runners.SendCollector;
+import cz.metacentrum.perun.engine.runners.SendPlanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +23,47 @@ public class EngineManagerImpl implements EngineManager {
 	private final static Logger log = LoggerFactory.getLogger(EngineManagerImpl.class);
 
 	@Autowired
+	private GenPlanner genPlanner;
+	@Autowired
+	private GenCollector genCollector;
+	@Autowired
+	private SendPlanner sendPlanner;
+	@Autowired
+	private SendCollector sendCollector;
+	@Autowired
 	private JMSQueueManager jmsQueueManager;
 	@Autowired
 	private SchedulingPool schedulingPool;
 
+	public EngineManagerImpl() {
+	}
+
+	public EngineManagerImpl(JMSQueueManager jmsQueueManager, SchedulingPool schedulingPool) {
+		this.jmsQueueManager = jmsQueueManager;
+		this.schedulingPool = schedulingPool;
+	}
+
 	@Override
 	public void startMessaging() {
-		// jmsQueueManager.initiateConnection();
-		// jmsQueueManager.registerForReceivingMessages();
 		jmsQueueManager.start();
 	}
+
+	@Override
+	public void startRunnerThreads() {
+		new Thread(genPlanner, "genPlanner").start();
+		new Thread(genCollector, "genCollector").start();
+		new Thread(sendPlanner, "sendPlanner").start();
+		new Thread(sendCollector, "sendCollector").start();
+	}
+
+	@Override
+	public void stopRunnerThreads() {
+		genPlanner.stop();
+		genCollector.stop();
+		sendPlanner.stop();
+		sendCollector.stop();
+	}
+
 
 	public void setJmsQueueManager(JMSQueueManager jmsQueueManager) {
 		this.jmsQueueManager = jmsQueueManager;
@@ -36,59 +71,6 @@ public class EngineManagerImpl implements EngineManager {
 
 	public JMSQueueManager getJmsQueueManager() {
 		return jmsQueueManager;
-	}
-
-	@Override
-	@Deprecated
-	public void loadSchedulingPool() {
-		/*
-		 * log.info("Loading last state of Tasks from local DB.");
-		 * // reload all tasks from local DB into pool
-		 * schedulingPool.reloadTasks(0);
-		 * log.info("Loading last state of Tasks from local DB is done. Pool contains " + schedulingPool.getSize() + " tasks.");
-		 */
-	}
-
-	@Override
-	public void switchUnfinishedTasksToERROR() {
-		log.info("I am going to switched all unfinished tasks to ERROR and finished GEN tasks which data wasn't send to ERROR as well");
-		/*
-		 * for (Task task :
-		 * taskManager.listAllTasks(Integer.parseInt(propertiesBean
-		 * .getProperty("engine.unique.id")))) {
-		 * if(task.getStatus().equals(TaskStatus.DONE)) { ExecService
-		 * execService = task.getExecService();
-		 * 
-		 * if(execService.getExecServiceType().equals(ExecServiceType.GENERATE))
-		 * { task.setStatus(TaskStatus.NONE); task.setEndTime(new
-		 * Date(System.currentTimeMillis())); taskManager.updateTask(task,
-		 * Integer.parseInt(propertiesBean.getProperty("engine.unique.id"))); }
-		 * } else { if (!task.getStatus().equals(TaskStatus.ERROR) &&
-		 * !task.getStatus().equals(TaskStatus.NONE)) {
-		 * task.setStatus(TaskStatus.ERROR); task.setEndTime(new
-		 * Date(System.currentTimeMillis())); taskManager.updateTask(task,
-		 * Integer.parseInt(propertiesBean.getProperty("engine.unique.id"))); }
-		 * } }
-		 */
-
-		/* we set everything found to error to report it back to dispatcher */
-		/*for (Task task : schedulingPool.getDoneTasks()) {
-			ExecService execService = task.getExecService();
-
-			if (execService.getExecServiceType().equals(ExecServiceType.GENERATE)) {
-				log.debug("Setting task " + task.toString() + " to ERROR");
-				schedulingPool.setTaskStatus(task, TaskStatus.ERROR);
-			}
-		}
-		for (Task task : schedulingPool.getProcessingTasks()) {
-			log.debug("Setting task " + task.toString() + " to ERROR");
-			schedulingPool.setTaskStatus(task, TaskStatus.ERROR);
-		}
-		for (Task task : schedulingPool.getPlannedTasks()) {
-			log.debug("Setting task " + task.toString() + " to ERROR");
-			schedulingPool.setTaskStatus(task, TaskStatus.ERROR);
-		}
-		log.info("I'm done with it.");*/
 	}
 
 	public SchedulingPool getSchedulingPool() {

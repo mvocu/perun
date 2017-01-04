@@ -10,24 +10,26 @@ import cz.metacentrum.perun.engine.scheduling.SendWorker;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 
 public class BlockingSendExecutorCompletionService implements BlockingCompletionService<SendTask> {
 	private final static Logger log = LoggerFactory
 			.getLogger(BlockingSendExecutorCompletionService.class);
 	private CompletionService<SendTask> completionService;
+	@Autowired
+	@Qualifier("sendingSendTasks")
 	private BlockingBoundedMap<Pair<Integer, Destination>, SendTask> executingTasks;
+
+	public BlockingSendExecutorCompletionService(int limit) {
+		this(Executors.newFixedThreadPool(limit), new LinkedBlockingQueue(), limit);
+	}
 
 	public BlockingSendExecutorCompletionService(Executor executor, BlockingQueue blockingQueue, int limit) {
 		completionService = new ExecutorCompletionService<>(executor, blockingQueue);
-		executingTasks = new BlockingBoundedHashMap<>(limit);
 	}
 
 	@Override

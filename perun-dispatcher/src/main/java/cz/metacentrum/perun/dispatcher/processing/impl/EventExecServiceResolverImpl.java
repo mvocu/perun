@@ -43,7 +43,6 @@ import cz.metacentrum.perun.core.api.exceptions.UserNotExistsException;
 import cz.metacentrum.perun.dispatcher.exceptions.InvalidEventMessageException;
 import cz.metacentrum.perun.dispatcher.processing.EventExecServiceResolver;
 import cz.metacentrum.perun.taskslib.model.ExecService;
-import cz.metacentrum.perun.taskslib.model.ExecService.ExecServiceType;
 
 /**
  *
@@ -241,14 +240,8 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 
 				for (Service s : servicesResolvedFromResource) {
 					// TODO: Optimize with an SQL query...
-					List<ExecService> execServicesGenAndSend = generalServiceManager
+					List<ExecService> execServices = generalServiceManager
 							.listExecServices(perunSession, s.getId());
-					List<ExecService> execServices = new ArrayList<ExecService>();
-					for (ExecService execService : execServicesGenAndSend) {
-						if (execService.getExecServiceType().equals(ExecServiceType.SEND)) {
-							execServices.add(execService);
-						}
-					}
 
 					if (attributeDefinition != null) {
 						// remove from future processing services

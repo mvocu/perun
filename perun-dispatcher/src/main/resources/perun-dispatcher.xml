@@ -45,6 +45,12 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 		<property name="queueCapacity" value="100" />
 	</bean>
 
+	<bean id="taskStore" class="cz.metacentrum.perun.taskslib.service.impl.TaskStoreImpl"/>
+
+	<!-- Task Queues -->
+	<bean id="waitingTasksQueue" class="java.util.concurrent.DelayQueue"/>
+	<bean id="waitingForcedTasksQueue" class="java.util.concurrent.DelayQueue"/>
+
 	<!-- DAOs -->
 	<bean id="dispatcherDao" class="cz.metacentrum.perun.dispatcher.dao.jdbc.DispatcherDaoJdbc">
 		<property name="dataSource" ref="dataSource"/>

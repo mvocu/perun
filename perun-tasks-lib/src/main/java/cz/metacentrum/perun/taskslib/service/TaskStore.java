@@ -16,7 +16,9 @@ public interface TaskStore {
 	Task getTask(Facility facility, ExecService execService);
 	int getSize();
 	Task addToPool(Task task) throws TaskStoreException;
-	List<Task> getTasksWithStatus(Task.TaskStatus status);
+	List<Task> getAllTasks();
+	List<Task> getTasksWithStatus(Task.TaskStatus... status);
 	Task removeTask(Task task) throws TaskStoreException;
 	Task removeTask(int id) throws TaskStoreException;
+	void clear();
 }

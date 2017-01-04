@@ -53,7 +53,7 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 			Assert.isTrue(execservice1.equals(task.getExecService()) || execservice2.equals(task.getExecService()),
 					"task execService is different");
 			Assert.isTrue(facility1.equals(task.getFacility()), "task Facility is different");
-			Assert.isTrue(task.getStatus().equals(TaskStatus.NONE));
+			Assert.isTrue(task.getStatus().equals(TaskStatus.WAITING));
 		}
 	}
 

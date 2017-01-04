@@ -1,12 +1,12 @@
 package cz.metacentrum.perun.dispatcher.scheduling;
 
+import cz.metacentrum.perun.dispatcher.scheduling.impl.TaskScheduled;
 import cz.metacentrum.perun.taskslib.model.Task;
+import cz.metacentrum.perun.taskslib.runners.Runner;
 
-public interface TaskScheduler extends Runnable {
+public interface TaskScheduler extends Runner {
 
-	int getPoolSize();
-
-	Boolean scheduleTask(Task task);
+	TaskScheduled scheduleTask(Task task);
 
 	void setSchedulingPool(SchedulingPool schedulingPool);
 }

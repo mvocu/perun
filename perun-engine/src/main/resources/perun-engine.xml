@@ -89,6 +89,27 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 
     <bean id="taskStore" class="cz.metacentrum.perun.taskslib.service.impl.TaskStoreImpl"/>
 
+    <bean id="schedulingPool" class="cz.metacentrum.perun.engine.scheduling.impl.SchedulingPoolImpl"/>
+
+
+    <bean id="genCompletionService" class="cz.metacentrum.perun.engine.scheduling.impl.BlockingGenExecutorCompletionService">
+        <constructor-arg value="10"/>
+    </bean>
+
+    <bean id="sendCompletionService" class="cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService">
+        <constructor-arg value="100"/>
+    </bean>
+
+    <!-- Runners -->
+
+    <bean id="genPlanner" class="cz.metacentrum.perun.engine.runners.GenPlanner"/>
+
+    <bean id="genCollector" class="cz.metacentrum.perun.engine.runners.GenCollector"/>
+
+    <bean id="sendPlanner" class="cz.metacentrum.perun.engine.runners.SendPlanner"/>
+
+    <bean id="sendCollector" class="cz.metacentrum.perun.engine.runners.SendCollector"/>
+
     <!-- DAOs -->
 
 	<!--

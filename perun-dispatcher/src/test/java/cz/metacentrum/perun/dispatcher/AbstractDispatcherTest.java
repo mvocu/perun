@@ -82,7 +82,6 @@ public abstract class AbstractDispatcherTest {
 			execservice1.setDefaultDelay(1);
 			execservice1.setScript("/bin/true");
 			execservice1.setEnabled(true);
-			execservice1.setExecServiceType(ExecService.ExecServiceType.SEND);
 			execservice1.setService(service1);
 			int id = generalServiceManager.insertExecService(sess, execservice1);
 			// stash back the created id (this should be really done somewhere else)
@@ -92,7 +91,6 @@ public abstract class AbstractDispatcherTest {
 			execservice2.setDefaultDelay(1);
 			execservice2.setScript("/bin/true");
 			execservice2.setEnabled(true);
-			execservice2.setExecServiceType(ExecService.ExecServiceType.SEND);
 			execservice2.setService(service1);
 			id = generalServiceManager.insertExecService(sess, execservice2);
 			// stash back the created id (this should be really done somewhere else)

@@ -51,7 +51,7 @@ public class GenPlanner extends AbstractRunner {
 				schedulingPool.addGenTaskFutureToPool(task.getId(), taskFuture);
 				task.setStatus(GENERATING);
 				try {
-					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getGenEndTime());
+					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getGenStartTime());
 				} catch (JMSException e) {
 					log.warn("Could not send Tasks [{}] GEN status update.", task);
 				}

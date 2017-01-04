@@ -15,18 +15,21 @@ public class Task implements Serializable {
 
 	private static final long serialVersionUID = -1809998673612582742L;
 
-	public static enum TaskStatus {
-		WAITING, PLANNED, GENERATING, GENERROR, GENERATED, SENDING, DONE, SENDERROR
+	public enum TaskStatus {
+		WAITING, PLANNED, GENERATING, GENERROR, GENERATED, SENDING, DONE, SENDERROR, ERROR
 	}
 
 	private int id;
 	private int delay;
 	private int recurrence;
 	private Date startTime;
+	private Date sentToEngine;
 	private Date sendStartTime;
 	private Date schedule;
+	private Date genStartTime;
 	private Date genEndTime;
 	private Date sendEndTime;
+	private Date endTime;
 	private ExecService execService;
 	private Facility facility;
 	private List<Destination> destinations;
@@ -145,8 +148,32 @@ public class Task implements Serializable {
 		return sendStartTime;
 	}
 
+	public Date getGenStartTime() {
+		return genStartTime;
+	}
+
+	public void setGenStartTime(Date genStartTime) {
+		this.genStartTime = genStartTime;
+	}
+
+	public Date getSentToEngine() {
+		return sentToEngine;
+	}
+
+	public void setSentToEngine(Date sentToEngine) {
+		this.sentToEngine = sentToEngine;
+	}
+
 	public void setSendStartTime(Date sendStartTime) {
 		this.sendStartTime = sendStartTime;
+	}
+
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
 	}
 
 	public Facility getFacility() {

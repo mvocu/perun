@@ -7,18 +7,11 @@ import cz.metacentrum.perun.taskslib.model.ExecService;
 
 /**
  * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ * @author Michal Karm Babacek
  */
 public interface PropagationMaintainer {
 
 	void checkResults();
-
-	void setAllGenerateDependenciesToNone(List<ExecService> dependencies,
-			Facility facility);
-
-	void setAllGenerateDependenciesToNone(List<ExecService> dependencies,
-			int facilityId);
 
 	void closeTasksForEngine(int clientID);
 

@@ -9,6 +9,8 @@ import cz.metacentrum.perun.engine.scheduling.GenWorker;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.concurrent.*;
 
@@ -16,11 +18,16 @@ public class BlockingGenExecutorCompletionService implements BlockingCompletionS
 	private final static Logger log = LoggerFactory
 			.getLogger(BlockingGenExecutorCompletionService.class);
 	private CompletionService<Task> completionService;
+	@Autowired
+	@Qualifier("generatingTasks")
 	private BlockingBoundedMap<Integer, Task> executingTasks;
+
+	public BlockingGenExecutorCompletionService(int limit) {
+		this(Executors.newFixedThreadPool(limit), new LinkedBlockingQueue(), limit);
+	}
 
 	public BlockingGenExecutorCompletionService(Executor executor, BlockingQueue blockingQueue, int limit) {
 		completionService = new ExecutorCompletionService<>(executor, blockingQueue);
-		executingTasks = new BlockingBoundedHashMap<>(limit);
 	}
 
 	@Override

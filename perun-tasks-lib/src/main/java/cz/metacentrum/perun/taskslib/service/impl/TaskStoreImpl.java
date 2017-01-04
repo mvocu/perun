@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -25,11 +26,11 @@ public class TaskStoreImpl implements TaskStore {
 	public TaskStoreImpl() {
 	}
 
-	private static Predicate<Task> getStatusPredicate(final Task.TaskStatus status) {
+	private static Predicate<Task> getStatusPredicate(final Task.TaskStatus ... status) {
 		return new Predicate<Task>() {
 			@Override
 			public boolean apply(Task task) {
-				return task.getStatus().equals(status);
+				return Arrays.asList(status).contains(task.getStatus());
 			}
 		};
 	}
@@ -70,7 +71,12 @@ public class TaskStoreImpl implements TaskStore {
 	}
 
 	@Override
-	public List<Task> getTasksWithStatus(Task.TaskStatus status) {
+	public List<Task> getAllTasks() {
+		return null;
+	}
+
+	@Override
+	public List<Task> getTasksWithStatus(Task.TaskStatus... status) {
 		Collection<Task> tasks = tasksById.values();
 		return new ArrayList<>(Collections2.filter(tasks, getStatusPredicate(status)));
 	}
@@ -93,5 +99,11 @@ public class TaskStoreImpl implements TaskStore {
 			task = removeTask(getTask(id));
 		}
 		return task;
+	}
+
+	@Override
+	public void clear() {
+		tasksById.clear();
+		tasksByFacilityAndExecService.clear();
 	}
 }

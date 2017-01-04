@@ -6,6 +6,7 @@ import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.dispatcher.AbstractDispatcherTest;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
+import cz.metacentrum.perun.dispatcher.scheduling.impl.TaskScheduled;
 import cz.metacentrum.perun.dispatcher.scheduling.impl.SchedulingPoolImpl;
 import cz.metacentrum.perun.dispatcher.scheduling.impl.TaskSchedulerImpl;
 import cz.metacentrum.perun.taskslib.model.Task;
@@ -156,17 +157,18 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 		}
 
 		@Override
-		public void scheduleTask(Task task) {
+		public TaskScheduled scheduleTask(Task task) {
 			if (task.getId() == 2) {
 				testFailed = true;
 				this.task.cancel(true);
-				return;
+				return TaskScheduled.ERROR;
 			}
 			scheduledCounter += 1;
 			if (scheduledCounter > scheduleLimit) {
 				testFailed = false;
 				this.task.cancel(true);
 			}
+			return TaskScheduled.SUCCESS;
 		}
 	}
 

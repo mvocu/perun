@@ -1,15 +1,5 @@
 package cz.metacentrum.perun.dispatcher.processing.impl;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
-
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
@@ -22,18 +12,27 @@ import cz.metacentrum.perun.dispatcher.processing.EventExecServiceResolver;
 import cz.metacentrum.perun.dispatcher.processing.EventLogger;
 import cz.metacentrum.perun.dispatcher.processing.EventProcessor;
 import cz.metacentrum.perun.dispatcher.processing.EventQueue;
-import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
 import cz.metacentrum.perun.dispatcher.scheduling.DenialsResolver;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
+
+import java.util.Date;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
+ * This class takes Tasks parsed from auditer and inserts them into schedulingPool into proper queue,
+ * so it gets sent into Engine.
  *
- * @author Michal Karm Babacek JavaDoc coming soon...
- *
+ * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "eventProcessor")
 public class EventProcessorImpl implements EventProcessor {
@@ -58,102 +57,6 @@ public class EventProcessorImpl implements EventProcessor {
 	private SchedulingPool schedulingPool;
 	@Autowired
 	private TaskScheduler taskScheduler;
-
-	public class EvProcessor implements Runnable {
-		private boolean running = true;
-
-		@Override
-		public void run() {
-			while (running) {
-				try {
-					Event event = eventQueue.poll();
-					if (event != null) {
-						log.debug("Number of: Events in Queue = {}, Engines = {}",
-								eventQueue.size(), dispatcherQueuePool.poolSize());
-						createTask(null, event);
-						eventLogger.logEvent(event, -1);
-					}
-				} catch (Exception e) {
-					log.error(e.getMessage(), e);
-				}
-				try {
-					// TODO: Remove?
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					log.error(e.getMessage(), e);
-				}
-			}
-		}
-
-		private void createTask(DispatcherQueue dispatcherQueue, Event event)
-				throws ServiceNotExistsException, InvalidEventMessageException,
-				InternalErrorException, PrivilegeException {
-			// Resolve the services in event, send the resulting <ExecService,
-			// Facility> pairs to engine
-			Map<Facility, Set<ExecService>> resolvedServices = eventExecServiceResolver
-					.parseEvent(event.toString());
-			for (Entry<Facility, Set<ExecService>> service : resolvedServices.entrySet()) {
-				Facility facility = service.getKey();
-				for (ExecService execService : service.getValue()) {
-					if (!execService.isEnabled()) {
-						log.debug("ExecService {} is not enabled globally", execService);
-						continue;
-					}
-
-					if (denialsResolver.isExecServiceDeniedOnFacility(execService, facility)) {
-						log.debug("ExecService {} is denied on Facility {}", execService, facility);
-						continue;
-					}
-
-					// check for presence of task for this <execService,
-					// facility> pair
-					// NOTE: this must be atomic enough to not create duplicate
-					// tasks in schedulingPool (are we running in parallel
-					// here?)
-					Task task = schedulingPool.getTask(execService, facility);
-					if (task != null) {
-						// there already is a task in schedulingPool
-						log.debug("Task is in the pool already.\n" +
-								"Removing destinations from existing task to re-fetch them later on.");
-						task.setDestinations(null);
-						// signal that task needs to regenerate data
-						task.setSourceUpdated(true);
-						//task.setPropagationForced(false);
-						task.setRecurrence(0);
-					} else {
-						// no such task yet, create one
-						task = new Task();
-						task.setFacility(facility);
-						task.setExecService(execService);
-						task.setStatus(TaskStatus.NONE);
-						task.setRecurrence(0);
-						task.setSchedule(new Date(System.currentTimeMillis()));
-						task.setSourceUpdated(false);
-						task.setPropagationForced(false);
-						schedulingPool.addToPool(task, dispatcherQueue);
-						schedulingPool.addTaskSchedule(task, -1);
-						log.debug("Created new task {} and added it to the pool.", task);
-					}
-					if (event.getData().contains("force propagation:")) {
-						task.setPropagationForced(true);
-						final Task task_final = task;
-						// expedite task processing
-						taskExecutor.execute(new Runnable() {
-							@Override
-							public void run() {
-								log.debug("Force scheduling the task {}.", task_final);
-								taskScheduler.scheduleTask(task_final);
-							}
-						});
-					}
-				}
-			}
-		}
-
-		public void stop() {
-			running = false;
-		}
-	}
 
 	@Override
 	public void startProcessingEvents() {
@@ -233,6 +136,88 @@ public class EventProcessorImpl implements EventProcessor {
 
 	public void setSchedulingPool(SchedulingPool schedulingPool) {
 		this.schedulingPool = schedulingPool;
+	}
+
+	public class EvProcessor implements Runnable {
+		private boolean running = true;
+
+		@Override
+		public void run() {
+			while (running) {
+				try {
+					Event event = eventQueue.poll();
+					if (event != null) {
+						log.debug("Number of: Events in Queue = {}, Engines = {}",
+								eventQueue.size(), dispatcherQueuePool.poolSize());
+						createTask(null, event);
+						eventLogger.logEvent(event, -1);
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+		}
+
+		private void createTask(DispatcherQueue dispatcherQueue, Event event)
+				throws ServiceNotExistsException, InvalidEventMessageException,
+				InternalErrorException, PrivilegeException {
+			// Resolve the services in event, send the resulting <ExecService,
+			// Facility> pairs to engine
+			Map<Facility, Set<ExecService>> resolvedServices = eventExecServiceResolver
+					.parseEvent(event.toString());
+			for (Entry<Facility, Set<ExecService>> service : resolvedServices.entrySet()) {
+				Facility facility = service.getKey();
+				for (ExecService execService : service.getValue()) {
+					if (!execService.isEnabled()) {
+						log.debug("ExecService {} is not enabled globally", execService);
+						continue;
+					}
+
+					if (denialsResolver.isExecServiceDeniedOnFacility(execService, facility)) {
+						log.debug("ExecService {} is denied on Facility {}", execService, facility);
+						continue;
+					}
+
+					// check for presence of task for this <execService,
+					// facility> pair
+					// NOTE: this must be atomic enough to not create duplicate
+					// tasks in schedulingPool (are we running in parallel
+					// here?)
+					Task task = schedulingPool.getTask(facility, execService);
+					if (task != null) {
+						// there already is a task in schedulingPool
+						log.debug("Task is in the pool already.\n" +
+								"Removing destinations from existing task to re-fetch them later on.");
+						task.setDestinations(null);
+						// signal that task needs to regenerate data
+						task.setSourceUpdated(true);
+						task.setPropagationForced(determineForcedPropagation(event));
+						task.setRecurrence(0);
+					} else {
+						// no such task yet, create one
+						task = new Task();
+						task.setFacility(facility);
+						task.setExecService(execService);
+						task.setStatus(TaskStatus.WAITING);
+						task.setRecurrence(0);
+						task.setSchedule(new Date(System.currentTimeMillis()));
+						task.setSourceUpdated(false);
+						task.setPropagationForced(determineForcedPropagation(event));
+						schedulingPool.addToPool(task, dispatcherQueue);
+						schedulingPool.addTaskSchedule(task, -1);
+						log.debug("Created new task {} and added it to the pool.", task);
+					}
+				}
+			}
+		}
+
+		private boolean determineForcedPropagation(Event event) {
+			return event.getData().contains("force propagation:");
+		}
+
+		public void stop() {
+			running = false;
+		}
 	}
 
 }

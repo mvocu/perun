@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,7 +96,12 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public List<Task> getTasksWithStatus(Task.TaskStatus status) {
+	public List<Task> getAllTasks() {
+		return taskStore.getAllTasks();
+	}
+
+	@Override
+	public List<Task> getTasksWithStatus(Task.TaskStatus... status) {
 		return taskStore.getTasksWithStatus(status);
 	}
 
@@ -118,14 +121,6 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		} else {
 			return sendTaskCount.replace(taskId, count - decrease);
 		}
-	}
-
-	private <E> List<E> getFromIterator(Iterator<E> iterator) {
-		List<E> list = new ArrayList<>();
-		while (iterator.hasNext()) {
-			list.add(iterator.next());
-		}
-		return list;
 	}
 
 	@Override
@@ -175,6 +170,16 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			sendTaskCount.remove(id);
 		}
 		return removed;
+	}
+
+	@Override
+	public void clear() {
+		taskStore.clear();
+		genTaskFutures.clear();
+		sendTasks.clear();
+		sendTaskCount.clear();
+		newTasksQueue.clear();
+		generatedTasksQueue.clear();
 	}
 
 	public Future<SendTask> removeSendTaskFuture(int taskId, Destination destination) throws TaskStoreException {
