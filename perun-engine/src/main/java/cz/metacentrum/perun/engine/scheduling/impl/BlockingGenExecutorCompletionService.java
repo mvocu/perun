@@ -50,15 +50,15 @@ public class BlockingGenExecutorCompletionService implements BlockingCompletionS
 			return taskResult;
 		} catch (ExecutionException e) {
 			Throwable cause = e.getCause();
-			if (cause.getClass().isInstance(TaskExecutionException.class)) {
+			if (cause.getClass().equals(TaskExecutionException.class)) {
 				TaskExecutionException castedCause = (TaskExecutionException) cause;
 				executingTasks.remove((Integer) castedCause.getId());
+				throw castedCause;
 			} else {
 				String errorMsg = "Unexpected exception occurred during Task execution";
 				log.error(errorMsg, e);
 				throw new RuntimeException(errorMsg, e);
 			}
 		}
-		return null;
 	}
 }

@@ -52,15 +52,15 @@ public class BlockingSendExecutorCompletionService implements BlockingCompletion
 			return taskResult;
 		} catch (ExecutionException e) {
 			Throwable cause = e.getCause();
-			if (cause.getClass().isInstance(TaskExecutionException.class)) {
+			if (cause.getClass().equals(TaskExecutionException.class)) {
 				TaskExecutionException castedCause = (TaskExecutionException) cause;
 				executingTasks.remove((Pair<Integer, Destination>) castedCause.getId());
+				throw castedCause;
 			} else {
 				String errorMsg = "Unexpected exception occurred during SendTask execution";
 				log.error(errorMsg, e);
 				throw new RuntimeException(errorMsg, e);
 			}
 		}
-		return null;
 	}
 }

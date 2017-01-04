@@ -196,7 +196,7 @@ public class Task implements Serializable {
 		return status;
 	}
 
-	public void setStatus(TaskStatus status) {
+	public synchronized void setStatus(TaskStatus status) {
 		this.status = status;
 	}
 

@@ -59,9 +59,13 @@ public class TaskStoreImpl implements TaskStore {
 			log.error("Tried to insert Task {} with no Facility", task);
 			throw new IllegalArgumentException("Tasks Facility not set.");
 		}
-		Task idAdded = tasksById.put(task.getId(), task);
-		Task otherAdded = tasksByFacilityAndExecService.put(
-				new Pair<>(task.getFacility(), task.getExecService()), task);
+		Task idAdded;
+		Task otherAdded;
+		synchronized (this) {
+			idAdded = tasksById.put(task.getId(), task);
+			otherAdded = tasksByFacilityAndExecService.put(
+					new Pair<>(task.getFacility(), task.getExecService()), task);
+		}
 		if (idAdded != otherAdded) {
 			log.error("Task returned from both Maps after insert differ. taskById {}, taskByFacilityAndExecService {}", idAdded, otherAdded);
 			throw new TaskStoreException("Tasks returned after insert into both Maps differ.");
@@ -76,15 +80,21 @@ public class TaskStoreImpl implements TaskStore {
 	}
 
 	@Override
-	public List<Task> getTasksWithStatus(Task.TaskStatus... status) {
+	public synchronized List<Task> getTasksWithStatus(Task.TaskStatus... status) {
 		Collection<Task> tasks = tasksById.values();
-		return new ArrayList<>(Collections2.filter(tasks, getStatusPredicate(status)));
+		synchronized (this) {
+			return new ArrayList<>(Collections2.filter(tasks, getStatusPredicate(status)));
+		}
 	}
 
 	@Override
 	public Task removeTask(Task task) throws TaskStoreException {
-		Task idRemoved = tasksById.remove(task.getId());
-		Task otherRemoved = tasksByFacilityAndExecService.remove(new Pair<>(task.getFacility(), task.getExecService()));
+		Task idRemoved;
+		Task otherRemoved;
+		synchronized (this) {
+			idRemoved = tasksById.remove(task.getId());
+			otherRemoved = tasksByFacilityAndExecService.remove(new Pair<>(task.getFacility(), task.getExecService()));
+		}
 		if (idRemoved != otherRemoved) {
 			log.error("Inconsistent state occurred after removing Task {} from TaskStore", task);
 			throw new TaskStoreException("Unable to remove Task properly.");
