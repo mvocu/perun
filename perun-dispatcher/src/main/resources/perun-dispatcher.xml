@@ -66,19 +66,6 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 
 	<!-- Quartz jobs definition - they are not started unless perun-dispatcher-scheduler.xml is imported to context -->
 
-	<bean id="maintenanceJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-		<property name="jobClass" value="cz.metacentrum.perun.dispatcher.job.MaintenanceJob" />
-		<property name="jobDataAsMap">
-			<map>
-				<entry key="schedulingPool" value-ref="schedulingPool" />
-			</map>
-		</property>
-	</bean>
-
-	<bean id="maintenanceJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="maintenanceJob" />
-		<property name="cronExpression" value="${dispatcher.cron.maintenance}" />
-	</bean>
 
 	<bean id="propagationMaintainerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
 		<property name="jobClass" value="cz.metacentrum.perun.dispatcher.job.PropagationMaintainerJob" />
