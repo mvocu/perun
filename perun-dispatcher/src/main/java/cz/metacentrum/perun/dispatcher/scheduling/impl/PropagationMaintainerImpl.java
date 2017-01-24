@@ -219,6 +219,13 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		}
 	}
 
+	@Override
+	public void onTaskStatusChange(int taskId, String status, String date) {
+		log.debug("Changing state of Task with id {} to {} as reported by Engine", taskId, status);
+		Task task = schedulingPool.getTask(taskId);
+		task.setStatus(TaskStatus.valueOf(status));
+	}
+
 
 	@Override
 	public void onTaskComplete(int taskId, int clientID, String status_s, String string) {

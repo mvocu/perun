@@ -156,7 +156,7 @@ public class JMSQueueManager {
 
 	public void reportSendTaskStatus(int parentTaskId, SendTask.SendTaskStatus status, Destination destination,
 	                                 Date time) throws JMSException {
-		TextMessage message = session.createTextMessage("task:" + propertiesBean.getProperty("engine.unique.id")
+		TextMessage message = session.createTextMessage("sendtask:" + propertiesBean.getProperty("engine.unique.id")
 				+ ":" + parentTaskId + ":" + status + ":" + time);
 		producer.send(message);
 		log.info("SendTask with id {} reported and destination {} state {} to dispatcher.",

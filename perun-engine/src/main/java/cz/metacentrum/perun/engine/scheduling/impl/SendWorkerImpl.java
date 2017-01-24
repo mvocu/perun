@@ -62,7 +62,7 @@ public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 			throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), e);
 		} catch (InterruptedException e) {
 			log.warn("SendTasks {} execution interrupted.", sendTask, e);
-			task.setStatus(GENERROR);
+			sendTask.setStatus(ERROR);
 			throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), e);
 		}
 	}
