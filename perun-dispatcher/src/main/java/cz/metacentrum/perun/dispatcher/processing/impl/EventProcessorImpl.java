@@ -15,6 +15,7 @@ import cz.metacentrum.perun.dispatcher.processing.EventQueue;
 import cz.metacentrum.perun.dispatcher.scheduling.DenialsResolver;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
@@ -203,7 +204,11 @@ public class EventProcessorImpl implements EventProcessor {
 						task.setSchedule(new Date(System.currentTimeMillis()));
 						task.setSourceUpdated(false);
 						task.setPropagationForced(determineForcedPropagation(event));
-						schedulingPool.addToPool(task, dispatcherQueue);
+						try {
+							schedulingPool.addToPool(task, dispatcherQueue);
+						} catch (TaskStoreException e) {
+							log.error("Could not add {} into the SchedulingPool, the Task will be lost.", task);
+						}
 						schedulingPool.addTaskSchedule(task, -1);
 						log.debug("Created new task {} and added it to the pool.", task);
 					}

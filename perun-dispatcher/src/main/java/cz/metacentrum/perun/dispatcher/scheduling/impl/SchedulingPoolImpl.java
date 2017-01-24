@@ -35,9 +35,10 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	private final static Logger log = LoggerFactory.getLogger(SchedulingPoolImpl.class);
 
 	private final Map<Integer, DispatcherQueue> dispatchersByTaskId = new HashMap<>();
-	private final DelayQueue<TaskSchedule> waitingTasksQueue = new DelayQueue<>();
-	private final DelayQueue<TaskSchedule> waitingForcedTasksQueue = new DelayQueue<>();
-
+	@Autowired
+	private DelayQueue<TaskSchedule> waitingTasksQueue;
+	@Autowired
+	private DelayQueue<TaskSchedule> waitingForcedTasksQueue;
 	@Autowired
 	private Properties dispatcherPropertiesBean;
 	@Autowired
@@ -145,14 +146,16 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	 */
 	@Override
 	public int addToPool(Task task, DispatcherQueue dispatcherQueue)
-			throws InternalErrorException {
+			throws InternalErrorException, TaskStoreException {
 		int engineId = (dispatcherQueue == null) ? -1 : dispatcherQueue.getClientID();
 		if (task.getId() == 0) {
-			if (getTask(task.getFacility(), task.getExecService()) != null) {
+			if (getTask(task.getFacility(), task.getExecService()) == null) {
 				log.debug("Adding new task to pool {}", task);
 
 				try {
+					log.debug("TESTSTR -> Scheduling new task");
 					int id = taskManager.scheduleNewTask(task, engineId);
+					log.debug("TESTSTR -> New task scheduled, id is {}", id);
 					task.setId(id);
 				} catch (InternalErrorException e) {
 					log.error("Error storing task {} into database: {}", task, e.getMessage());
@@ -160,10 +163,13 @@ public class SchedulingPoolImpl implements SchedulingPool {
 				}
 			} else {
 				try {
+					log.debug("TESTSTR -> Getting existing task");
 					Task existingTask = taskManager.getTaskById(task.getId());
 					if (existingTask == null) {
+						log.debug("TESTSTR -> Scheduling new task");
 						taskManager.scheduleNewTask(task, engineId);
 					} else {
+						log.debug("TESTSTR -> Updating existing task");
 						taskManager.updateTask(task);
 					}
 				} catch (InternalErrorException e) {
@@ -172,7 +178,9 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			}
 		}
 
+		addToPool(task);
 		dispatchersByTaskId.put(task.getId(), dispatcherQueue);
+		log.debug("TESTSTR -> Successfully added Task with id {}", task.getId());
 		return getSize();
 	}
 
@@ -228,7 +236,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			DispatcherQueue queue = dispatcherQueuePool.getDispatcherQueueByClient(pair.getRight());
 			try {
 				addToPool(task, queue);
-			} catch (InternalErrorException e) {
+			} catch (InternalErrorException | TaskStoreException e) {
 				log.error("Inserting Task {} and Queue {} into SchedulingPool failed,so the Task will be lost.");
 			}
 			addTaskSchedule(task, 0);
@@ -240,13 +248,13 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	public void setQueueForTask(Task task, DispatcherQueue queueForTask) throws InternalErrorException {
 		Task found = getTask(task.getId());
 		if (found == null) {
-			throw new InternalErrorException("no task by that id");
+			throw new InternalErrorException("no task by id " + task.getId());
 		} else {
 			dispatchersByTaskId.put(task.getId(), queueForTask);
 		}
 		// if queue is removed, set -1 to task as it's done on task creation if queue is null
 		int queueId = (queueForTask != null) ? queueForTask.getClientID() : -1;
-		taskManager.updateTaskEngine(task, queueId);
+		//taskManager.updateTaskEngine(task, queueId);
 	}
 
 	public void setDispatcherPropertiesBean(Properties dispatcherPropertiesBean) {

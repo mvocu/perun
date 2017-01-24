@@ -3,6 +3,8 @@ package cz.metacentrum.perun.taskslib.service.impl;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +27,14 @@ import cz.metacentrum.perun.taskslib.service.TaskManager;
 @Transactional
 @Service(value = "taskManager")
 public class TaskManagerImpl implements TaskManager {
+	private static final Logger log = LoggerFactory.getLogger(TaskManagerImpl.class);
 
 	@Autowired
 	private TaskDao taskDao;
 
 	@Override
 	public int scheduleNewTask(Task task, int engineID) throws InternalErrorException {
+		log.debug("TESTSTR -> Entered taskmanager");
 		return taskDao.scheduleNewTask(task, engineID);
 	}
 

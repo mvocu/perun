@@ -47,6 +47,8 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 
 	<bean id="taskStore" class="cz.metacentrum.perun.taskslib.service.impl.TaskStoreImpl"/>
 
+	<bean id="taskManager" class="cz.metacentrum.perun.taskslib.service.impl.TaskManagerImpl"/>
+
 	<!-- Task Queues -->
 	<bean id="waitingTasksQueue" class="java.util.concurrent.DelayQueue"/>
 	<bean id="waitingForcedTasksQueue" class="java.util.concurrent.DelayQueue"/>
@@ -124,7 +126,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 					<prop key="perun.principal.extSourceType">cz.metacentrum.perun.core.impl.ExtSourceInternal</prop>
 					<prop key="dispatcher.cron.propagation">45 0/2 * * * ?</prop>
 					<prop key="dispatcher.cron.cleantaskresults">0 0 1 * * ?</prop>
-					<prop key="dispatcher.new_task.delay.time">240000</prop>
+					<prop key="dispatcher.new_task.delay.time">30000</prop>
 					<prop key="dispatcher.new_task.delay.count">4</prop>
 					<prop key="dispatcher.cron.maintenance">0 0 0/2 * * ?</prop>
 					<prop key="dispatcher.datadir">/tmp/perun-dispatcher-data</prop>
@@ -143,7 +145,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 					<prop key="dispatcher.cron.propagation">45 0/2 * * * ?</prop>
 					<prop key="dispatcher.cron.cleantaskresults">0 0 1 * * ?</prop>
 					<prop key="dispatcher.cron.maintenance">0 0 0/2 * * ?</prop>
-					<prop key="dispatcher.new_task.delay.time">240000</prop>
+					<prop key="dispatcher.new_task.delay.time">30000</prop>
 					<prop key="dispatcher.new_task.delay.count">4</prop>
 					<prop key="dispatcher.datadir">/tmp/perun-dispatcher-data</prop>
 				</props>

@@ -3,6 +3,7 @@ package cz.metacentrum.perun.dispatcher.scheduling;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
@@ -30,7 +31,7 @@ public interface SchedulingPool extends TaskStore {
 	 * @throws InternalErrorException
 	 */
 	int addToPool(Task task, DispatcherQueue dispatcherQueue)
-			throws InternalErrorException;
+			throws InternalErrorException, TaskStoreException;
 
 	void addTaskSchedule(Task task, int delayCount);
 

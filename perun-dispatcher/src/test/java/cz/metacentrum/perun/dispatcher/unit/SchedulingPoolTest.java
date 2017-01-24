@@ -6,6 +6,7 @@ import java.util.List;
 
 import cz.metacentrum.perun.core.api.*;
 import cz.metacentrum.perun.dispatcher.AbstractDispatcherTest;
+import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 	private Task task2;
 
 	@Before
-	public void setup() throws InternalErrorException {
+	public void setup() throws InternalErrorException, TaskStoreException {
 		task1 = new Task();
 		task1.setId(1);
 		task1.setExecService(execservice1);
@@ -66,7 +67,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 
 	@IfProfileValue(name = "perun.test.groups", values = ("unit-tests"))
 	@Test
-	public void addToPoolTest() throws InternalErrorException {
+	public void addToPoolTest() throws InternalErrorException, TaskStoreException {
 		System.out.println("SchedulingPool.addToPool()");
 
 		Assert.isTrue(schedulingPool.getSize() == 1, "original size is 1");
