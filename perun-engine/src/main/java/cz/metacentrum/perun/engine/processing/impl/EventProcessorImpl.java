@@ -43,6 +43,7 @@ public class EventProcessorImpl implements EventProcessor {
 		if (task == null) {
 			return;
 		}
+		task.setStatus(Task.TaskStatus.PLANNED);
 
 		log.debug("\t Facility[{}]", task.getFacility());
 		log.debug("\t Resolved ExecService[{}]", task.getExecService());
