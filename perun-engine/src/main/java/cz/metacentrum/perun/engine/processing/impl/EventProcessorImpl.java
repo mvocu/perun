@@ -46,9 +46,10 @@ public class EventProcessorImpl implements EventProcessor {
 
 		log.debug("\t Facility[{}]", task.getFacility());
 		log.debug("\t Resolved ExecService[{}]", task.getExecService());
-
 		if (task.getFacility() != null && task.getExecService() != null) {
+			log.debug("TESTSTRE -> Gonna check if the task {} exists", task);
 			Task currentTask = schedulingPool.getTask(task.getId());
+			log.debug("TESTSTRE -> Found {}", currentTask);
 			if (currentTask == null) {
 				try {
 					schedulingPool.addToPool(task);
