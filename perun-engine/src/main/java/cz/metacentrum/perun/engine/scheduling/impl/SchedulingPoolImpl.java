@@ -3,6 +3,7 @@ package cz.metacentrum.perun.engine.scheduling.impl;
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
@@ -14,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.jms.JMSException;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +24,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.DONE;
 import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.PLANNED;
+import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.SENDERROR;
 
 @org.springframework.stereotype.Service(value = "schedulingPool")
 public class SchedulingPoolImpl implements SchedulingPool {
@@ -37,14 +42,17 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	private BlockingBoundedMap<Integer, Task> generatingTasks;
 	@Autowired
 	private BlockingBoundedMap<Pair<Integer, Destination>, SendTask> sendingSendTasks;
+	@Autowired
+	private JMSQueueManager jmsQueueManager;
 
 	public SchedulingPoolImpl() {
 	}
 
-	public SchedulingPoolImpl(TaskStore taskStore, BlockingBoundedMap<Integer, Task> generatingTasks, BlockingBoundedMap<Pair<Integer, Destination>, SendTask> sendingSendTasks) {
+	public SchedulingPoolImpl(TaskStore taskStore, BlockingBoundedMap<Integer, Task> generatingTasks, BlockingBoundedMap<Pair<Integer, Destination>, SendTask> sendingSendTasks, JMSQueueManager jmsQueueManager) {
 		this.taskStore = taskStore;
 		this.generatingTasks = generatingTasks;
 		this.sendingSendTasks = sendingSendTasks;
+		this.jmsQueueManager = jmsQueueManager;
 	}
 
 	public Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture) {
@@ -116,6 +124,15 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		if (count == null) {
 			return null;
 		} else if (count <= 1) {
+			Task task = taskStore.getTask(taskId);
+			if (task.getStatus() != SENDERROR) {
+				task.setStatus(DONE);
+			}
+			try {
+				jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), new Date(System.currentTimeMillis()));
+			} catch (JMSException e) {
+				log.error("Error while sending final status update for Task with ID {} to Dispatcher", taskId);
+			}
 			removeTask(taskId);
 			return 1;
 		} else {

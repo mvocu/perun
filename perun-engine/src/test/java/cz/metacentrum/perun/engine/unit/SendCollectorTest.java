@@ -4,6 +4,7 @@ import cz.metacentrum.perun.engine.AbstractEngineTest;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.runners.SendCollector;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
+import cz.metacentrum.perun.taskslib.model.Task;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,11 +57,13 @@ public class SendCollectorTest extends AbstractEngineTest {
 				.doThrow(new TaskExecutionException(sendTask2.getId(), "Test error"))
 				.when(sendCompletionServiceMock).blockingTake();
 		doReturn(false, false, true).when(spy).shouldStop();
+		doReturn(task1).when(schedulingPoolMock).getTask(task1.getId());
 
 		spy.run();
 
 		assertEquals(SENT, sendTask1.getStatus());
-		verify(schedulingPoolMock, times(1)).decreaseSendTaskCount(task1.getId(), 1);
+		assertEquals(Task.TaskStatus.SENDERROR, task1.getStatus());
+		verify(schedulingPoolMock, times(2)).decreaseSendTaskCount(task1.getId(), 1);
 		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(sendTask1.getTask().getId()),
 				eq(SENT), eq(sendTask1.getDestination()), any(Date.class));
 		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(sendTask2.getTask().getId()),

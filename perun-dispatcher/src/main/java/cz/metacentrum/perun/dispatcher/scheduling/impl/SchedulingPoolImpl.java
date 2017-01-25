@@ -198,7 +198,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		}
 		DispatcherQueue entry = dispatchersByTaskId.get(task.getId());
 		if (entry == null) {
-			throw new InternalErrorException("no such task");
+			throw new InternalErrorException("No Task with ID " + task.getId());
 		}
 		return entry;
 	}

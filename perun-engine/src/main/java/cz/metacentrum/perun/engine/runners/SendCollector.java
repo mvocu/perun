@@ -9,6 +9,7 @@ import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.SendTask;
+import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.runners.impl.AbstractRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,17 +47,22 @@ public class SendCollector extends AbstractRunner {
 
 	@Override
 	public void run() {
+		Task.TaskStatus status;
+		int taskId;
 		while (!shouldStop()) {
+			status = Task.TaskStatus.SENDERROR;
+			taskId = -1;
 			try {
 				SendTask sendTask = sendCompletionService.blockingTake();
+				status = null;
+				taskId = sendTask.getId().getLeft();
 				sendTask.setStatus(SENT);
 				sendTask.setEndTime(new Date(System.currentTimeMillis()));
-				schedulingPool.decreaseSendTaskCount(sendTask.getId().getLeft(), 1);
 				try {
-					jmsQueueManager.reportSendTaskStatus(sendTask.getTask().getId(), sendTask.getStatus(),
+					jmsQueueManager.reportSendTaskStatus(taskId, sendTask.getStatus(),
 							sendTask.getDestination(), sendTask.getEndTime());
 				} catch (JMSException e) {
-					jmsErrorLog(sendTask.getId().getLeft(), sendTask.getId().getRight());
+					jmsErrorLog(taskId, sendTask.getId().getRight());
 				}
 			} catch (InterruptedException e) {
 				String errorStr = "Thread collecting sent SendTasks was interrupted.";
@@ -64,12 +70,19 @@ public class SendCollector extends AbstractRunner {
 				throw new RuntimeException(errorStr, e);
 			} catch (TaskExecutionException e) {
 				Pair<Integer, Destination> id = (Pair<Integer, Destination>) e.getId();
+				taskId = id.getLeft();
 				try {
-					jmsQueueManager.reportSendTaskStatus(id.getLeft(), ERROR, id.getRight(),
+					jmsQueueManager.reportSendTaskStatus(taskId, ERROR, id.getRight(),
 							new Date(System.currentTimeMillis()));
 				} catch (JMSException e1) {
 					jmsErrorLog(id.getLeft(), id.getRight());
 				}
+			}
+			if (status != null) {
+				schedulingPool.getTask(taskId).setStatus(status);
+			}
+			try {
+				schedulingPool.decreaseSendTaskCount(taskId, 1);
 			} catch (TaskStoreException e) {
 				log.error("Task {} could not be removed from SchedulingPool", e);
 			}

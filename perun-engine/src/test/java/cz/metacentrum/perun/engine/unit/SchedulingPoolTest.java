@@ -1,6 +1,7 @@
 package cz.metacentrum.perun.engine.unit;
 
 import cz.metacentrum.perun.engine.AbstractEngineTest;
+import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.engine.scheduling.impl.SchedulingPoolImpl;
@@ -31,7 +32,8 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 	public void setup() throws Exception {
 		super.setup();
 		schedulingPool = new SchedulingPoolImpl(
-				new TaskStoreImpl(), mock(BlockingBoundedMap.class), mock(BlockingBoundedMap.class));
+				new TaskStoreImpl(), mock(BlockingBoundedMap.class), mock(BlockingBoundedMap.class),
+				mock(JMSQueueManager.class));
 		schedulingPool.addToPool(task1);
 	}
 
