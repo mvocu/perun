@@ -55,7 +55,8 @@ public class EventProcessorImpl implements EventProcessor {
 				try {
 					schedulingPool.addToPool(task);
 				} catch (TaskStoreException e) {
-					log.error("Could not save Task {} into Engine SchedulingPool, it will be ignored");
+					log.error("Could not save Task {} into Engine SchedulingPool because of {}, it will be ignored",
+							task, e);
 				}
 			} else {
 				log.debug("Resetting current task destination list to {}", task.getDestinations());

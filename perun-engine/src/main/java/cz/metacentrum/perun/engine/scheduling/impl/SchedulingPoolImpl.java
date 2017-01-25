@@ -3,10 +3,12 @@ package cz.metacentrum.perun.engine.scheduling.impl;
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import cz.metacentrum.perun.taskslib.service.TaskStore;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.SendTask;
@@ -215,7 +217,6 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	private void handleInterruptedException(Task task, InterruptedException e) {
 		String errorMessage = "Thread was interrupted while trying to put Task " + task + " into new Tasks queue.";
 		log.error(errorMessage, e);
-		//TODO: Is this the correct behaviour here? This should not happen.
 		throw new RuntimeException(errorMessage, e);
 	}
 
@@ -229,5 +230,20 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			//TODO: Set the with interrupt parameter to true or not?
 			sendTaskFuture.cancel(true);
 		}
+	}
+
+	@Override
+	public TaskResult createTaskResult (int taskId, int destinationId, String stderr, String stdout, int returnCode,
+	                                    Service service) {
+		TaskResult taskResult = new TaskResult();
+		taskResult.setTaskId(taskId);
+		taskResult.setDestinationId(destinationId);
+		taskResult.setErrorMessage(stderr);
+		taskResult.setStandardMessage(stdout);
+		taskResult.setReturnCode(returnCode);
+		taskResult.setStatus(returnCode == 0 ? TaskResult.TaskResultStatus.DONE : TaskResult.TaskResultStatus.ERROR);
+		taskResult.setTimestamp(new Date(System.currentTimeMillis()));
+		taskResult.setService(service);
+		return taskResult;
 	}
 }

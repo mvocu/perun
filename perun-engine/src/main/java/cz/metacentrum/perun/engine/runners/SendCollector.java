@@ -3,6 +3,7 @@ package cz.metacentrum.perun.engine.runners;
 
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.jms.JMSQueueManager;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.jms.JMSException;
 import java.util.Date;
 
-import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.ERROR;
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENT;
 
 /**
@@ -47,39 +47,51 @@ public class SendCollector extends AbstractRunner {
 
 	@Override
 	public void run() {
-		Task.TaskStatus status;
-		int taskId;
 		while (!shouldStop()) {
-			status = Task.TaskStatus.SENDERROR;
-			taskId = -1;
+			Task.TaskStatus status = Task.TaskStatus.SENDERROR;
+			int taskId;
+			int destinationId;
+			String stderr;
+			String stdout;
+			int returnCode;
+			Service service;
 			try {
 				SendTask sendTask = sendCompletionService.blockingTake();
 				status = null;
 				taskId = sendTask.getId().getLeft();
 				sendTask.setStatus(SENT);
 				sendTask.setEndTime(new Date(System.currentTimeMillis()));
-				try {
-					jmsQueueManager.reportSendTaskStatus(taskId, sendTask.getStatus(),
-							sendTask.getDestination(), sendTask.getEndTime());
-				} catch (JMSException e) {
-					jmsErrorLog(taskId, sendTask.getId().getRight());
-				}
+				destinationId = sendTask.getDestination().getId();
+				stderr = sendTask.getStderr();
+				stdout = sendTask.getStdout();
+				returnCode = sendTask.getReturnCode();
+				service = sendTask.getTask().getExecService().getService();
 			} catch (InterruptedException e) {
 				String errorStr = "Thread collecting sent SendTasks was interrupted.";
 				log.error(errorStr);
 				throw new RuntimeException(errorStr, e);
 			} catch (TaskExecutionException e) {
 				Pair<Integer, Destination> id = (Pair<Integer, Destination>) e.getId();
-				taskId = id.getLeft();
-				try {
-					jmsQueueManager.reportSendTaskStatus(taskId, ERROR, id.getRight(),
-							new Date(System.currentTimeMillis()));
-				} catch (JMSException e1) {
-					jmsErrorLog(id.getLeft(), id.getRight());
-				}
+				Task task = schedulingPool.getTask(id.getLeft());
+				log.warn("Error occurred while sending {} to destination {}", task, id.getRight());
+				taskId = task.getId();
+				destinationId = id.getRight().getId();
+				stderr = e.getStderr();
+				stdout = e.getStdout();
+				returnCode = e.getReturnCode();
+				service = task.getExecService().getService();
 			}
+			Task task = schedulingPool.getTask(taskId);
+
+			try {
+				jmsQueueManager.reportTaskResult(schedulingPool.createTaskResult(taskId, destinationId, stderr, stdout,
+						returnCode, service));
+			} catch (JMSException e1) {
+				jmsErrorLog(taskId, destinationId);
+			}
+
 			if (status != null) {
-				schedulingPool.getTask(taskId).setStatus(status);
+				task.setStatus(status);
 			}
 			try {
 				schedulingPool.decreaseSendTaskCount(taskId, 1);
@@ -89,7 +101,7 @@ public class SendCollector extends AbstractRunner {
 		}
 	}
 
-	private void jmsErrorLog(Integer id, Destination destination) {
-		log.warn("Could not send status update to SendTask with id {} and destination {}.", id, destination);
+	private void jmsErrorLog(Integer id, Integer destinationId) {
+		log.warn("Could not send status update to SendTask with id {} and destination with id {}.", id, destinationId);
 	}
 }

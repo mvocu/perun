@@ -49,6 +49,13 @@ public class TaskExecutionException extends EngineException{
 		this.stdout = stdout;
 	}
 
+	public String getStderr() {
+		return stderr;
+	}
+
+	public void setStderr(String stderr) {
+		this.stderr = stderr;
+	}
 
 	@Override
 	public String getMessage() {

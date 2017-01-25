@@ -71,8 +71,9 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 					log.error("Stale SendTask {} was not removed.", sendTask);
 				}
 				try {
-					jmsQueueManager.reportSendTaskStatus(sendTask.getTask().getId(), sendTask.getStatus(),
-							sendTask.getDestination(), new Date(System.currentTimeMillis()));
+					jmsQueueManager.reportTaskResult(schedulingPool.createTaskResult(sendTask.getId().getLeft(),
+							sendTask.getDestination().getId(), sendTask.getStderr(), sendTask.getStdout(),
+							sendTask.getReturnCode(), sendTask.getTask().getExecService().getService()));
 				} catch (JMSException e) {
 					logJmsError(e, sendTask);
 				}

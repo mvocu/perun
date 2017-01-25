@@ -1,7 +1,9 @@
 package cz.metacentrum.perun.dispatcher.scheduling.impl;
 
+import cz.metacentrum.perun.auditparser.AuditParser;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Perun;
+import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.core.api.PerunClient;
 import cz.metacentrum.perun.core.api.PerunPrincipal;
 import cz.metacentrum.perun.core.api.PerunSession;
@@ -16,11 +18,14 @@ import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import cz.metacentrum.perun.taskslib.service.ResultManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +47,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 	@Autowired
 	private Properties dispatcherPropertiesBean;
 	private PerunSession perunSession;
+	private SimpleDateFormat dateFormat = new SimpleDateFormat();
 
 
 	@Override
@@ -221,101 +227,55 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 
 	@Override
 	public void onTaskStatusChange(int taskId, String status, String date) {
-		log.debug("Changing state of Task with id {} to {} as reported by Engine", taskId, status);
+		log.debug("TESTSTR --> onTaskSatusChange ran with taskId {} status {} date {}",
+				new Object[]{taskId, status, date});
+		log.debug("Changing state of Task with id 1{} to {} as reported by Engine", taskId, status);
 		Task task = schedulingPool.getTask(taskId);
-		task.setStatus(TaskStatus.valueOf(status));
-	}
-
-
-	@Override
-	public void onTaskComplete(int taskId, int clientID, String status_s, String string) {
-		/*Task completedTask = schedulingPool.getTaskById(taskId);
-
-		if (completedTask == null) {
-			// eh? how would that be possible?
-			log.error("TASK id {} reported as complete, but we do not know it.", taskId);
+		if (task == null) {
+			log.error("Received status update about Task with id {} that is not in Dispatcher, will ignore it", taskId);
 			return;
 		}
-
-		TaskStatus status = TaskStatus.NONE;
-		if (status_s.equals("ERROR")) {
-			status = TaskStatus.ERROR;
-		} else if (status_s.equals("DONE")) {
-			status = TaskStatus.DONE;
-		} else {
-			log.error("Engine reported unexpected status {} for task id {}, setting to ERROR",
-					status_s, taskId);
-			status = TaskStatus.ERROR;
+		log.debug("TESTSTR --> Found task {} for if {}", task, taskId);
+		TaskStatus oldStatus = task.getStatus();
+		task.setStatus(TaskStatus.valueOf(status));
+		Date changeDate;
+		try {
+			changeDate = dateFormat.parse(date);
+		} catch (ParseException e) {
+			log.warn("EndDate {} of {} could not be parsed, current time will be used instead.", date, task);
+			changeDate = new Date(System.currentTimeMillis());
 		}
 
-		completedTask.setEndTime(new Date(System.currentTimeMillis()));
-
-		// if we are going to run this task again, make sure to generate up to
-		// date data
-		if (completedTask.getExecService().getExecServiceType().equals(ExecServiceType.SEND)) {
-			try {
-				schedulingPool.setQueueForTask(completedTask, null);
-			} catch (InternalErrorException e) {
-				log.error("Could not set destination queue for task {}: {}", completedTask.getId(), e.getMessage());
-			}
-			this.setAllGenerateDependenciesToNone(completedTask);
+		switch (task.getStatus()) {
+			case WAITING:
+			case PLANNED:
+				log.error("Received {} {} from Engine, this should not happen.", task.getStatus(), task);
+				return;
+			case GENERATING:
+				task.setGenStartTime(changeDate);
+				break;
+			case GENERROR:
+			case GENERATED:
+				task.setGenEndTime(changeDate);
+				break;
+			case SENDING:
+				task.setSendStartTime(changeDate);
+				break;
+			case DONE:
+			case SENDERROR:
+				task.setSendEndTime(changeDate);
+				task.setEndTime(changeDate);
+				break;
+			case ERROR:
+				task.setEndTime(changeDate);
+				break;
 		}
-
-		if (status.equals(TaskStatus.DONE)) {
-			// task completed successfully
-			// set destination list to null to refetch them later
-			completedTask.setDestinations(null);
-			schedulingPool.setTaskStatus(completedTask, TaskStatus.DONE);
-			completedTask.setRecurrence(0);
-			log.debug("TASK {} reported as DONE", completedTask.toString());
-			// for GEN tasks, signal SENDs that source data are updated
-			if (completedTask.getExecService().getExecServiceType().equals(ExecServiceType.GENERATE)) {
-				List<ExecService> dependantServices = dependenciesResolver.listDependantServices(completedTask.getExecService());
-				for (ExecService dependantService : dependantServices) {
-					Task dependantTask = schedulingPool.getTask(dependantService, completedTask.getFacility());
-					if (dependantTask != null && dependantService.getExecServiceType().equals(ExecServiceType.SEND)) {
-						dependantTask.setSourceUpdated(false);
-					}
-					if (completedTask.isPropagationForced() && dependantTask.isPropagationForced()) {
-						log.debug("Going to force schedule dependant task " + dependantTask.getId());
-						taskScheduler.scheduleTask(dependantTask);
-					}
-				}
-			}
-			completedTask.setPropagationForced(false);
-		} else {
-			if (string.isEmpty()) {
-				// weird - task is in error and no destinations reported as
-				// failed...
-				log.warn("TASK {} ended in ERROR state with no remaining destinations.", completedTask.toString());
-			} else {
-				// task failed, some destinations remain
-				// resolve list of destinations
-				List<PerunBean> listOfBeans;
-				List<Destination> destinationList = new ArrayList<Destination>();
-				try {
-					listOfBeans = AuditParser.parseLog(string);
-					log.debug("Found list of destination beans: " + listOfBeans);
-					for (PerunBean bean : listOfBeans) {
-						destinationList.add((Destination) bean);
-					}
-				} catch (InternalErrorException e) {
-					log.error("Could not resolve destination from destination list");
-				}
-				if (completedTask.getDestinations() != null &&
-						!completedTask.getDestinations().isEmpty()) {
-					completedTask.setDestinations(destinationList);
-				}
-			}
-			schedulingPool.setTaskStatus(completedTask, TaskStatus.ERROR);
-			log.debug("Task set to ERROR state with remaining destinations: "
-					+ completedTask.getDestinations());
-		}*/
+		log.info("{} changed state from {} to {}", new Object[]{task, oldStatus, task.getStatus()});
 	}
 
 	@Override
 	public void onTaskDestinationComplete(int clientID, String string) {
-		/*if (string == null || string.isEmpty()) {
+		if (string == null || string.isEmpty()) {
 			log.error("Could not parse taskresult message from engine " + clientID);
 			return;
 		}
@@ -331,7 +291,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		} catch (Exception e) {
 			log.error("Could not save taskresult message {} from engine " + clientID, string);
 			log.debug("Error storing taskresult message: " + e.getMessage());
-		}*/
+		}
 	}
 
 	public TaskScheduler getTaskScheduler() {

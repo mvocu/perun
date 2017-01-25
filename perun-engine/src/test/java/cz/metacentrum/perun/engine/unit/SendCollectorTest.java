@@ -5,6 +5,7 @@ import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.runners.SendCollector;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
 import cz.metacentrum.perun.taskslib.model.Task;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,14 +42,7 @@ public class SendCollectorTest extends AbstractEngineTest {
 		assertEquals(SENT, sendTask3.getStatus());
 		assertEquals(SENT, sendTask4.getStatus());
 		verify(schedulingPoolMock, times(4)).decreaseSendTaskCount(task1.getId(), 1);
-		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
-				eq(sendTask1.getDestination()), any(Date.class));
-		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
-				eq(sendTask2.getDestination()), any(Date.class));
-		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
-				eq(sendTask3.getDestination()), any(Date.class));
-		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(task1.getId()), eq(SENT),
-				eq(sendTask4.getDestination()), any(Date.class));
+		verify(jmsQueueManagerMock, times(4)).reportTaskResult(null);
 	}
 
 	@Test
@@ -64,9 +58,6 @@ public class SendCollectorTest extends AbstractEngineTest {
 		assertEquals(SENT, sendTask1.getStatus());
 		assertEquals(Task.TaskStatus.SENDERROR, task1.getStatus());
 		verify(schedulingPoolMock, times(2)).decreaseSendTaskCount(task1.getId(), 1);
-		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(sendTask1.getTask().getId()),
-				eq(SENT), eq(sendTask1.getDestination()), any(Date.class));
-		verify(jmsQueueManagerMock, times(1)).reportSendTaskStatus(eq(sendTask2.getTask().getId()),
-				eq(ERROR), eq(sendTask2.getDestination()), any(Date.class));
+		verify(jmsQueueManagerMock, times(2)).reportTaskResult(null);
 	}
 }

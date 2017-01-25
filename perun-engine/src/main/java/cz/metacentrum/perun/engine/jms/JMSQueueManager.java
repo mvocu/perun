@@ -1,8 +1,7 @@
 package cz.metacentrum.perun.engine.jms;
 
-import cz.metacentrum.perun.core.api.Destination;
-import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -154,13 +153,12 @@ public class JMSQueueManager {
 
 	}
 
-	public void reportSendTaskStatus(int parentTaskId, SendTask.SendTaskStatus status, Destination destination,
-	                                 Date time) throws JMSException {
-		TextMessage message = session.createTextMessage("sendtask:" + propertiesBean.getProperty("engine.unique.id")
-				+ ":" + parentTaskId + ":" + status + ":" + time);
+	public void reportTaskResult(TaskResult taskResult) throws JMSException {
+		TextMessage message = session.createTextMessage("taskresult:" + propertiesBean.getProperty("engine.unique.id")
+				+ ":" + taskResult.serializeToString());
 		producer.send(message);
-		log.info("SendTask with id {} reported and destination {} state {} to dispatcher.",
-				new Object[]{parentTaskId, destination, status});
+		log.info("TaskResult for {} reported and destination {} sent to dispatcher.", taskResult.getTaskId(),
+				taskResult.getDestination());
 	}
 
 	public void reportTaskStatus(int id, Task.TaskStatus status, Date time) throws JMSException {

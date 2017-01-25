@@ -178,13 +178,10 @@ public class SystemQueueProcessor {
 			// DB.
 
 			// Task status message
-			// task:x:y:status:dest
+			// task:x:y:status
 			// where x is an Integer that represents Engine's ID in the Perun
 			// y is an Integer that represents task ID
 			// status is string representation of task status
-			// dest is an comma separated list of successfully updated
-			// destinations
-			// (empty for DONE tasks)
 
 			if(null == systemMessagetext) {
 				throw new MessageFormatException("Client (Perun-Engine) sent empty message");
@@ -227,6 +224,7 @@ public class SystemQueueProcessor {
 				dispatcherQueuePool.removeDispatcherQueue(clientID);
 			} else if (clientIDsplitter[0].equalsIgnoreCase("task")) {
 				clientIDsplitter = systemMessagetext.split(":", 5);
+				log.debug("TESTSTR -> got task message {}", clientIDsplitter);
 				if(clientIDsplitter.length < 5) {
 					throw new MessageFormatException(
 							"Client (Perun-Engine) sent a malformed message ["
@@ -235,11 +233,11 @@ public class SystemQueueProcessor {
 				}
 				propagationMaintainer.onTaskStatusChange(Integer.parseInt(clientIDsplitter[2]),
 						clientIDsplitter[3], clientIDsplitter[4]);
-			} else if (clientIDsplitter[0].equalsIgnoreCase("sendtask")) {
-				log.debug("SendTask status update received.");
-				//clientIDsplitter = systemMessagetext.split(":", 3);
+			} else if (clientIDsplitter[0].equalsIgnoreCase("taskresult")) {
+				log.debug("Taskresult received");
+				clientIDsplitter = systemMessagetext.split(":", 3);
 				// destination complete for task
-				/*if(clientIDsplitter.length < 3) {
+				if(clientIDsplitter.length < 3) {
 					throw new MessageFormatException(
 							"Client (Perun-Engine) sent a malformed message ["
 									+ systemMessagetext + "]");
@@ -248,7 +246,7 @@ public class SystemQueueProcessor {
 				propagationMaintainer.onTaskDestinationComplete(
 						clientID,
 						clientIDsplitter[2]
-						);*/
+						);
 			} else {
 				throw new MessageFormatException(
 						"Client (Perun-Engine) sent a malformed message ["

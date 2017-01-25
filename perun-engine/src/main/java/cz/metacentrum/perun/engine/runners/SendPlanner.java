@@ -51,7 +51,13 @@ public class SendPlanner extends AbstractRunner {
 			try {
 				Task task = generatedTasks.take();
 				task.setStatus(Task.TaskStatus.SENDING);
+				task.setSendStartTime(new Date(System.currentTimeMillis()));
 				schedulingPool.addSendTaskCount(task.getId(), task.getDestinations().size());
+				try {
+					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getSendStartTime());
+				} catch (JMSException e) {
+					log.warn("Could not send status update to Dispatcher for [{}] .", task);
+				}
 
 				for (Destination destination : task.getDestinations()) {
 					SendTask sendTask = new SendTask(task, destination);
@@ -60,12 +66,6 @@ public class SendPlanner extends AbstractRunner {
 					sendCompletionService.blockingSubmit(worker);
 					sendTask.setStartTime(new Date(System.currentTimeMillis()));
 					sendTask.setStatus(SENDING);
-					try {
-						jmsQueueManager.reportSendTaskStatus(sendTask.getTask().getId(), sendTask.getStatus(),
-								sendTask.getDestination(), sendTask.getStartTime());
-					} catch (JMSException e) {
-						log.warn("Could not send SendTasks [{}] status update.", sendTask);
-					}
 				}
 
 			} catch (InterruptedException e) {

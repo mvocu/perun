@@ -12,8 +12,6 @@ public interface PropagationMaintainer {
 
 	void onTaskStatusChange(int taskId, String status, String date);
 
-	void onTaskComplete(int parseInt, int clientID, String status, String string);
-
 	void onTaskDestinationComplete(int clientID, String string);
 
 }

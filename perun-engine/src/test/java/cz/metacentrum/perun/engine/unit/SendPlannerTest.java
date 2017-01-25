@@ -7,6 +7,7 @@ import cz.metacentrum.perun.engine.scheduling.SendWorker;
 import cz.metacentrum.perun.engine.scheduling.impl.BlockingSendExecutorCompletionService;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +46,6 @@ public class SendPlannerTest extends AbstractEngineTest {
 		verify(schedulingPoolMock, times(1)).addSendTaskCount(task1.getId(),
 				task1.getDestinations().size());
 		verify(sendCompletionServiceMock, times(4)).blockingSubmit(any(SendWorker.class));
-		verify(jmsQueueManagerMock, times(4)).reportSendTaskStatus(eq(task1.getId()),
-				eq(SendTask.SendTaskStatus.SENDING), any(Destination.class), any(Date.class));
+		verify(jmsQueueManagerMock, times(1)).reportTaskStatus(eq(task1.getId()), eq(SENDING), any(Date.class));
 	}
 }

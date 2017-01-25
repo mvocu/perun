@@ -2,9 +2,11 @@ package cz.metacentrum.perun.engine.scheduling;
 
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import cz.metacentrum.perun.taskslib.service.TaskStore;
 
 import java.util.concurrent.BlockingDeque;
@@ -50,4 +52,7 @@ public interface SchedulingPool extends TaskStore {
 	Future<Task> getGenTaskFutureById(int id);
 
 	Future<SendTask> removeSendTaskFuture(int taskId, Destination destination) throws TaskStoreException;
+
+	TaskResult createTaskResult (int taskId, int destinationId, String stderr, String stdout, int returnCode,
+	                             Service service);
 }

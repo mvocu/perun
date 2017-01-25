@@ -143,22 +143,27 @@ public abstract class AbstractEngineTest {
 		sendTask1 = new SendTask(task1, destination1);
 		sendTask1.setStartTime(new Date(System.currentTimeMillis()));
 		sendTask1.setStatus(SendTask.SendTaskStatus.SENDING);
+		sendTask1.setReturnCode(0);
 
 		sendTask2 = new SendTask(task1, destination2);
 		sendTask2.setStartTime(new Date(System.currentTimeMillis()));
 		sendTask2.setStatus(SendTask.SendTaskStatus.SENDING);
+		sendTask2.setReturnCode(0);
 
 		sendTask3 = new SendTask(task1, destination3);
 		sendTask3.setStartTime(new Date(System.currentTimeMillis()));
 		sendTask3.setStatus(SendTask.SendTaskStatus.SENDING);
+		sendTask3.setReturnCode(0);
 
 		sendTask4 = new SendTask(task1, destination4);
 		sendTask4.setStartTime(new Date(System.currentTimeMillis()));
 		sendTask4.setStatus(SendTask.SendTaskStatus.SENDING);
+		sendTask4.setReturnCode(0);
 
 		sendTaskFalse = new SendTask(task2, destination1);
 		sendTask4.setStartTime(new Date(System.currentTimeMillis()));
 		sendTask4.setStatus(SendTask.SendTaskStatus.SENDING);
+		sendTaskFalse.setReturnCode(1);
 	}
 
 	public void mockSetUp() throws Exception {
