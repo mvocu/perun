@@ -269,12 +269,11 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 			}
 		}
 		destinations_s.append("]");
-		String dependencies = "";
 		dispatcherQueue.sendMessage("[" + task.getId() + "]["
 				+ task.isPropagationForced() + "]|["
 				+ fixStringSeparators(task.getExecService().serializeToString()) + "]|["
 				+ fixStringSeparators(task.getFacility().serializeToString()) + "]|["
-				+ fixStringSeparators(destinations_s.toString()) + "]|[" + dependencies + "]");
+				+ fixStringSeparators(destinations_s.toString()) + "]");
 		task.setStartTime(new Date(System.currentTimeMillis()));
 		task.setEndTime(null);
 		return SUCCESS;
