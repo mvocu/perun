@@ -176,7 +176,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
                     <prop key="engine.port">6061</prop>
                     <!-- set where perun-dispatcher JMS runs -->
                     <prop key="dispatcher.ip.address">127.0.0.1</prop>
-                    <prop key="dispatcher.port">6071</prop>
+                    <prop key="dispatcher.port">6075</prop>
                     <!-- set internal config -->
                     <prop key="perun.principal.name">perunEngine</prop>
                     <prop key="perun.principal.extSourceName">INTERNAL</prop>
@@ -203,7 +203,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
                     <prop key="engine.port">6061</prop>
                     <!-- set where perun-dispatcher JMS runs -->
                     <prop key="dispatcher.ip.address">127.0.0.1</prop>
-                    <prop key="dispatcher.port">6071</prop>
+                    <prop key="dispatcher.port">6075</prop>
                     <!-- set internal config -->
                     <prop key="perun.principal.name">perunEngine</prop>
                     <prop key="perun.principal.extSourceName">INTERNAL</prop>
