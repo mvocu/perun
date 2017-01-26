@@ -1608,7 +1608,7 @@ alter table tasks add constraint task_u unique (exec_service_id,facility_id);
 alter table tasks add constraint task_exsrv_fk foreign key (exec_service_id) references exec_services(id);
 alter table tasks add constraint task_fac_fk foreign key (facility_id) references facilities(id);
 alter table tasks add constraint task_eng_fk foreign key (engine_id) references engines(id);
-alter table tasks add constraint task_stat_chk check (status in ('NONE','OPEN','PLANNED','PROCESSING','DONE','ERROR'));
+alter table tasks add constraint task_stat_chk check (status in ('WAITING','PLANNED','SENDERROR','GENERROR','GENERATING','GENERATED', 'SENDING', 'DONE', 'ERROR'));
 
 alter table tasks_results add constraint taskres_task_fk foreign key (task_id) references tasks(id);
 alter table tasks_results add constraint taskres_dest_fk foreign key (destination_id) references destinations(id);
