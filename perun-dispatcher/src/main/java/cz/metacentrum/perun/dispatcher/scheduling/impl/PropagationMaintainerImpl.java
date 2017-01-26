@@ -20,6 +20,7 @@ import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskResult;
 import cz.metacentrum.perun.taskslib.service.ResultManager;
+import cz.metacentrum.perun.taskslib.service.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,8 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 	private ResultManager resultManager;
 	@Autowired
 	private Properties dispatcherPropertiesBean;
+	@Autowired
+	private TaskManager taskManager;
 	private PerunSession perunSession;
 	private SimpleDateFormat dateFormat = new SimpleDateFormat();
 
@@ -271,6 +274,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				break;
 		}
 		log.info("{} changed state from {} to {}", new Object[]{task, oldStatus, task.getStatus()});
+		taskManager.updateTask(task);
 	}
 
 	@Override
