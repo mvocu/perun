@@ -91,7 +91,7 @@ public class TaskDaoJdbc extends JdbcDaoSupport implements TaskDao {
 			} else if (rs.getString("tasks_status").equalsIgnoreCase(TaskStatus.DONE.toString())) {
 				task.setStatus(TaskStatus.DONE);
 			} else {
-				throw new IllegalArgumentException("Task status unknown :-(");
+				throw new IllegalArgumentException("Task status [" + rs.getString("tasks_status") + "] unknown");
 			}
 
 			task.setFacility(FacilitiesManagerImpl.FACILITY_MAPPER.mapRow(rs, i));
