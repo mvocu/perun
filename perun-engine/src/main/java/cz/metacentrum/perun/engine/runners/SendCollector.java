@@ -55,6 +55,7 @@ public class SendCollector extends AbstractRunner {
 			String stdout;
 			int returnCode;
 			Service service;
+			log.debug(schedulingPool.getReport());
 			try {
 				SendTask sendTask = sendCompletionService.blockingTake();
 				status = null;

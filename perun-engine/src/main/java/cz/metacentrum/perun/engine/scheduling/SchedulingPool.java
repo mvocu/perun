@@ -20,6 +20,8 @@ public interface SchedulingPool extends TaskStore {
 
 	Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture);
 
+	String getReport();
+
 	/**
 	 * Method used when SendTasks are being created from parent Task.
 	 * It puts number of SendTasks still running under the Tasks id.

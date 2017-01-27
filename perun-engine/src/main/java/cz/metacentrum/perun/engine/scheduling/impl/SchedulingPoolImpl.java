@@ -26,9 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.DONE;
-import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.PLANNED;
-import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.SENDERROR;
+import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.*;
 
 @org.springframework.stereotype.Service(value = "schedulingPool")
 public class SchedulingPoolImpl implements SchedulingPool {
@@ -59,6 +57,15 @@ public class SchedulingPoolImpl implements SchedulingPool {
 
 	public Future<Task> addGenTaskFutureToPool(Integer id, Future<Task> taskFuture) {
 		return genTaskFutures.put(id, taskFuture);
+	}
+
+	@Override
+	public String getReport() {
+		return "Engine SchedulingPool Task report:\n" +
+				" PLANNED: " + getTasksWithStatus(WAITING) +
+				" GENERATING:" + getTasksWithStatus(GENERATING) +
+				" SENDING:" + getTasksWithStatus(SENDING) +
+				" SENDTASKCOUNT map: " + sendTaskCount.toString();
 	}
 
 	@Override
