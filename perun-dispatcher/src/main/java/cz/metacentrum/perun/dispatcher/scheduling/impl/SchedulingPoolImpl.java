@@ -216,6 +216,30 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
+	public String getReport() {
+		int waiting = getTasksWithStatus(TaskStatus.WAITING).size();
+		int planned = getTasksWithStatus(TaskStatus.PLANNED).size();
+		int generating = getTasksWithStatus(TaskStatus.GENERATING).size();
+		int generated = getTasksWithStatus(TaskStatus.GENERATED).size();
+		int generror = getTasksWithStatus(TaskStatus.GENERROR).size();
+		int sending = getTasksWithStatus(TaskStatus.SENDING).size();
+		int senderror = getTasksWithStatus(TaskStatus.SENDERROR).size();
+		int done = getTasksWithStatus(TaskStatus.DONE).size();
+		int error = getTasksWithStatus(TaskStatus.ERROR).size();
+
+		return "Dispatcher SchedulingPool Task report:\n" +
+				"  WAITING: " + waiting +
+				"  PLANNED: " + planned +
+				"  GENERATING: " + generating +
+				"  GENERATED: " + generated +
+				"  GENERROR: " + generror +
+				"  SENDING:  " + sending +
+				"  SENDEEROR:  " + senderror +
+				"  DONE: " + done +
+				"  ERROR: " + error;
+	}
+
+	@Override
 	public void clear() {
 		taskStore.clear();
 		dispatchersByTaskId.clear();

@@ -121,8 +121,7 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 	private TaskSchedule getTaskSchedule() throws InterruptedException {
 		TaskSchedule taskSchedule = null;
 		while (!shouldStop()) {
-			log.debug("Trying to get a Task to send to Dispatcher.");
-			log.debug("SchedulingPool has {} Tasks", schedulingPool.getSize());
+			log.debug(schedulingPool.getReport());
 			log.debug("WaitingTasksQueue has {} Tasks", waitingTasksQueue.size());
 			taskSchedule = waitingForcedTasksQueue.poll();
 			if (taskSchedule == null) {

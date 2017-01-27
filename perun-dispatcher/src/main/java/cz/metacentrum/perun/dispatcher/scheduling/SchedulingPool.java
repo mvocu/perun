@@ -43,6 +43,8 @@ public interface SchedulingPool extends TaskStore {
 
 	List<Task> getTasksForEngine(int clientID);
 
+	String getReport();
+
 	void clear();
 
 	void reloadTasks();
