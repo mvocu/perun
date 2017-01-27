@@ -232,7 +232,9 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		this.clear();
 		for (Pair<Task, Integer> pair : taskManager.listAllTasksAndClients()) {
 			Task task = pair.getLeft();
-			task.setStatus(TaskStatus.WAITING);
+			if (task.getStatus() != TaskStatus.DONE) {
+				task.setStatus(TaskStatus.WAITING);
+			}
 			DispatcherQueue queue = dispatcherQueuePool.getDispatcherQueueByClient(pair.getRight());
 			try {
 				addToPool(task, queue);
