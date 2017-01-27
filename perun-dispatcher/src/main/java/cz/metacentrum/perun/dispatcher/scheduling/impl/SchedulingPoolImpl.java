@@ -254,7 +254,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		}
 		// if queue is removed, set -1 to task as it's done on task creation if queue is null
 		int queueId = (queueForTask != null) ? queueForTask.getClientID() : -1;
-		//taskManager.updateTaskEngine(task, queueId);
+		taskManager.updateTaskEngine(task, queueId);
 	}
 
 	public void setDispatcherPropertiesBean(Properties dispatcherPropertiesBean) {

@@ -22,6 +22,7 @@ public class GenCollectorTest extends AbstractEngineTest {
 	private BlockingGenExecutorCompletionService genCompletionServiceMock;
 	private GenCollector spy;
 	private BlockingDeque<Task> generatedTasksQueue;
+	private Date genEndTime;
 
 	@Before
 	public void setUp() throws Exception {
@@ -30,11 +31,13 @@ public class GenCollectorTest extends AbstractEngineTest {
 		GenCollector genCollector = new GenCollector(schedulingPoolMock, genCompletionServiceMock, jmsQueueManagerMock);
 		spy = spy(genCollector);
 		generatedTasksQueue = new LinkedBlockingDeque<>();
+		genEndTime = new Date(System.currentTimeMillis());
 	}
 
 	@Test
 	public void testGenCollector() throws Exception {
 		task1.setStatus(GENERATING);
+		task1.setGenEndTime(genEndTime);
 
 		when(schedulingPoolMock.getGeneratedTasksQueue()).thenReturn(generatedTasksQueue);
 		when(genCompletionServiceMock.blockingTake()).thenReturn(task1);
@@ -43,7 +46,7 @@ public class GenCollectorTest extends AbstractEngineTest {
 		spy.run();
 
 		verify(jmsQueueManagerMock, times(1)).reportTaskStatus(
-				eq(task1.getId()), eq(task1.getStatus()), eq(task1.getGenEndTime()));
+				eq(task1.getId()), eq(task1.getStatus()), eq(task1.getGenEndTime().getTime()));
 		assertTrue(generatedTasksQueue.contains(task1));
 		assertEquals("There should be only one generated Task", 1, generatedTasksQueue.size());
 	}
@@ -58,7 +61,7 @@ public class GenCollectorTest extends AbstractEngineTest {
 		spy.run();
 
 		verify(jmsQueueManagerMock, times(1)).reportTaskStatus(
-				eq(task1.getId()), eq(GENERROR), any(Date.class));
+				eq(task1.getId()), eq(GENERROR), anyLong());
 		verify(schedulingPoolMock, times(1)).removeTask(task1.getId());
 		assertTrue(generatedTasksQueue.isEmpty());
 	}

@@ -21,6 +21,7 @@ public class GenPlannerTest extends AbstractEngineTest{
 	private BlockingGenExecutorCompletionService genCompletionServiceMock;
 	private BlockingDeque<Task> newTasksQueue;
 	private GenPlanner spy;
+	private Date genStartTime;
 
 	@Before
 	public void setUp() throws Exception {
@@ -29,12 +30,15 @@ public class GenPlannerTest extends AbstractEngineTest{
 		newTasksQueue = new LinkedBlockingDeque<>();
 		GenPlanner genPlanner = new GenPlanner(schedulingPoolMock, genCompletionServiceMock, jmsQueueManagerMock);
 		spy = spy(genPlanner);
+		genStartTime = new Date(System.currentTimeMillis());
+		task1.setGenStartTime(genStartTime);
 	}
 
 	@Test
 	public void testGenPlanner() throws Exception {
 		Future<Task> futureMock = mock(Future.class);
 		newTasksQueue.add(task1);
+
 
 		when(schedulingPoolMock.getNewTasksQueue()).thenReturn(newTasksQueue);
 		when(genCompletionServiceMock.blockingSubmit(any(GenWorker.class))).thenReturn(futureMock);
@@ -45,7 +49,7 @@ public class GenPlannerTest extends AbstractEngineTest{
 		verify(genCompletionServiceMock, times(1)).blockingSubmit(any(GenWorker.class));
 		verify(schedulingPoolMock, times(1)).addGenTaskFutureToPool(task1.getId(), futureMock);
 		verify(jmsQueueManagerMock, times(1)).reportTaskStatus(
-				eq(task1.getId()), eq(task1.getStatus()), eq(task1.getGenEndTime()));
+				eq(task1.getId()), eq(task1.getStatus()), eq(task1.getGenStartTime().getTime()));
 
 		assertEquals(GENERATING, task1.getStatus());
 	}

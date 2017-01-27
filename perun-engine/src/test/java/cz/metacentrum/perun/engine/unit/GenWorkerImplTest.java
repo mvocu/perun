@@ -16,7 +16,7 @@ public class GenWorkerImplTest extends AbstractEngineTest {
 
 	@Test
 	public void testGenWorkerSuccess() throws Exception {
-		GenWorker worker = new GenWorkerImpl(task1);
+		GenWorker worker = new GenWorkerImpl(task1, null);
 		Task resultTask = worker.call();
 		Date now = new Date(System.currentTimeMillis());
 		assertTrue(resultTask.getGenEndTime().before(now) || resultTask.getGenEndTime().equals(now));
@@ -25,7 +25,7 @@ public class GenWorkerImplTest extends AbstractEngineTest {
 
 	@Test
 	public void testGenWorkerFailure() throws Exception {
-		GenWorker worker = new GenWorkerImpl(task2);
+		GenWorker worker = new GenWorkerImpl(task2, null);
 		try {
 			worker.call();
 			fail("TaskExecutionException should be thrown.");

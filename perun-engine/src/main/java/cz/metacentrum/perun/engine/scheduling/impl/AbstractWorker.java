@@ -1,13 +1,13 @@
 package cz.metacentrum.perun.engine.scheduling.impl;
 
-
-import cz.metacentrum.perun.engine.model.Pair;
-import cz.metacentrum.perun.taskslib.model.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 
 public abstract class AbstractWorker {
+	private final static Logger log = LoggerFactory.getLogger(AbstractWorker.class);
 	private File directory;
 	private Integer returnCode = -1;
 	private String stdout = null;
@@ -34,6 +34,7 @@ public abstract class AbstractWorker {
 	}
 
 	protected void execute(ProcessBuilder pb) throws InterruptedException, IOException {
+		log.debug("The directory for the worker will be [{}]", getDirectory());
 		if (getDirectory() != null) {
 			// set path relative to current working dir
 			pb.directory(getDirectory());

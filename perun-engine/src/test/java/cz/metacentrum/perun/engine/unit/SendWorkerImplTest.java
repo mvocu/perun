@@ -16,7 +16,7 @@ public class SendWorkerImplTest extends AbstractEngineTest {
 
 	@Test
 	public void testSendWorkerSuccess() throws Exception {
-		SendWorker worker = new SendWorkerImpl(sendTask1);
+		SendWorker worker = new SendWorkerImpl(sendTask1, null);
 		SendTask resultSendTask = worker.call();
 
 		assertEquals(SENT, resultSendTask.getStatus());
@@ -27,7 +27,7 @@ public class SendWorkerImplTest extends AbstractEngineTest {
 
 	@Test
 	public void testSendWorkerFailure() throws Exception {
-		SendWorker worker = new SendWorkerImpl(sendTaskFalse);
+		SendWorker worker = new SendWorkerImpl(sendTaskFalse, null);
 		try {
 			worker.call();
 			fail("TaskExecutionException should be thrown");

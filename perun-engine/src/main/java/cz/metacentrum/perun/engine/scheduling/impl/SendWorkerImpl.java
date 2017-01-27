@@ -1,6 +1,5 @@
 package cz.metacentrum.perun.engine.scheduling.impl;
 
-import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.scheduling.SendWorker;
@@ -10,12 +9,12 @@ import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.ERROR;
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENT;
-import static cz.metacentrum.perun.taskslib.model.Task.TaskStatus.GENERROR;
 
 
 public class SendWorkerImpl extends AbstractWorker implements SendWorker {
@@ -23,8 +22,9 @@ public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 
 	private SendTask sendTask;
 
-	public SendWorkerImpl(SendTask sendTask) {
+	public SendWorkerImpl(SendTask sendTask, File directory) {
 		this.sendTask = sendTask;
+		setDirectory(directory);
 	}
 
 	@Override

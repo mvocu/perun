@@ -15,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.JMSException;
+import java.io.File;
 import java.util.Date;
+import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENDING;
@@ -33,6 +35,7 @@ public class SendPlanner extends AbstractRunner {
 	private SchedulingPool schedulingPool;
 	@Autowired
 	private JMSQueueManager jmsQueueManager;
+	private File directory;
 
 	public SendPlanner() {
 	}
@@ -54,14 +57,14 @@ public class SendPlanner extends AbstractRunner {
 				task.setSendStartTime(new Date(System.currentTimeMillis()));
 				schedulingPool.addSendTaskCount(task.getId(), task.getDestinations().size());
 				try {
-					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getSendStartTime());
+					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getSendStartTime().getTime());
 				} catch (JMSException e) {
 					log.warn("Could not send status update to Dispatcher for [{}] .", task);
 				}
 
 				for (Destination destination : task.getDestinations()) {
 					SendTask sendTask = new SendTask(task, destination);
-					SendWorker worker = new SendWorkerImpl(sendTask);
+					SendWorker worker = new SendWorkerImpl(sendTask, directory);
 
 					sendCompletionService.blockingSubmit(worker);
 					sendTask.setStartTime(new Date(System.currentTimeMillis()));
@@ -73,6 +76,15 @@ public class SendPlanner extends AbstractRunner {
 				log.error(errorStr);
 				throw new RuntimeException(errorStr, e);
 			}
+		}
+	}
+
+	@Autowired
+	public void setPropertiesBean(Properties propertiesBean) {
+		log.debug("TESTSTR --> Send property bean set");
+		if (propertiesBean != null) {
+			log.debug("TESTSTR --> Send script path from properties is {}", propertiesBean.getProperty("engine.sendscript.path"));
+			directory = new File(propertiesBean.getProperty("engine.sendscript.path"));
 		}
 	}
 }

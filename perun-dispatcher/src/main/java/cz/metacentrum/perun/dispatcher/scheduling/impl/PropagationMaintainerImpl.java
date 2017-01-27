@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +49,6 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 	@Autowired
 	private TaskManager taskManager;
 	private PerunSession perunSession;
-	private SimpleDateFormat dateFormat = new SimpleDateFormat();
 
 
 	@Override
@@ -81,7 +79,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 	private void rescheduleErrorTasks() {
 		log.info("Rescheduling necessary Tasks in ERROR state.");
 
-		for (Task task : schedulingPool.getTasksWithStatus(TaskStatus.ERROR)) {
+		for (Task task : schedulingPool.getTasksWithStatus(TaskStatus.ERROR, TaskStatus.GENERROR, TaskStatus.SENDERROR)) {
 			if (task.getEndTime() == null) {
 				log.error("RECOVERY FROM INCONSISTENT STATE: ERROR task does not have end_time! " +
 						"Setting end_time to task.getDelay + 1.");
@@ -214,7 +212,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		engineStates.add(TaskStatus.SENDING);
 
 		// switch all processing tasks to error, remove the engine queue association
-		log.debug("Switching PROCESSING tasks on engine {} to ERROR, the engine went down", clientID);
+		log.debug("Switching processing tasks on engine {} to ERROR, the engine went down", clientID);
 		for (Task task : tasks) {
 			if (engineStates.contains(task.getStatus())) {
 				log.debug("switching task {} to ERROR, the engine it was running on went down", task.getId());
@@ -229,9 +227,9 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 	}
 
 	@Override
-	public void onTaskStatusChange(int taskId, String status, String date) {
+	public void onTaskStatusChange(int taskId, String status, String milliseconds) {
 		log.debug("TESTSTR --> onTaskSatusChange ran with taskId {} status {} date {}",
-				new Object[]{taskId, status, date});
+				new Object[]{taskId, status, milliseconds});
 		log.debug("Changing state of Task with id 1{} to {} as reported by Engine", taskId, status);
 		Task task = schedulingPool.getTask(taskId);
 		if (task == null) {
@@ -241,13 +239,14 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		log.debug("TESTSTR --> Found task {} for if {}", task, taskId);
 		TaskStatus oldStatus = task.getStatus();
 		task.setStatus(TaskStatus.valueOf(status));
-		Date changeDate;
+		long ms;
 		try {
-			changeDate = dateFormat.parse(date);
-		} catch (ParseException e) {
-			log.warn("EndDate {} of {} could not be parsed, current time will be used instead.", date, task);
-			changeDate = new Date(System.currentTimeMillis());
+			ms = Long.valueOf(milliseconds);
+		} catch (NumberFormatException e) {
+			log.warn("EndDate {} of {} could not be parsed, current time will be used instead.", milliseconds, task);
+			ms = System.currentTimeMillis();
 		}
+		Date changeDate = new Date(ms);
 
 		switch (task.getStatus()) {
 			case WAITING:
@@ -258,6 +257,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				task.setGenStartTime(changeDate);
 				break;
 			case GENERROR:
+				task.setEndTime(changeDate);
 			case GENERATED:
 				task.setGenEndTime(changeDate);
 				break;

@@ -158,13 +158,13 @@ public class JMSQueueManager {
 				+ ":" + taskResult.serializeToString());
 		producer.send(message);
 		log.info("TaskResult for {} reported and destination {} sent to dispatcher.", taskResult.getTaskId(),
-				taskResult.getDestination());
+				taskResult.getDestinationId());
 	}
 
-	public void reportTaskStatus(int id, Task.TaskStatus status, Date time) throws JMSException {
+	public void reportTaskStatus(int id, Task.TaskStatus status, long miliseconds) throws JMSException {
 		TextMessage message = session.createTextMessage("task:"
 				+ propertiesBean.getProperty("engine.unique.id") + ":"
-				+ id + ":" + status + ":" + time);
+				+ id + ":" + status + ":" + miliseconds);
 		producer.send(message);
 		log.info("Task with id {} reported state {} to dispatcher.", id, status);
 	}

@@ -53,7 +53,7 @@ public class GenCollector extends AbstractRunner {
 					generatedTasks.put(task);
 				}
 				try {
-					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getGenEndTime());
+					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getGenEndTime().getTime());
 				} catch (JMSException e) {
 					jmsErrorLog(task.getId());
 				}
@@ -64,7 +64,7 @@ public class GenCollector extends AbstractRunner {
 			} catch (TaskExecutionException e) {
 				Integer id = (Integer) e.getId();
 				try {
-					jmsQueueManager.reportTaskStatus(id, GENERROR, new Date(System.currentTimeMillis()));
+					jmsQueueManager.reportTaskStatus(id, GENERROR, System.currentTimeMillis());
 				} catch (JMSException e1) {
 					jmsErrorLog(id);
 				}
