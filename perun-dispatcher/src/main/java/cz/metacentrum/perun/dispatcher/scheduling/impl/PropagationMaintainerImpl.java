@@ -80,6 +80,11 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		log.info("Rescheduling necessary Tasks in ERROR state.");
 
 		for (Task task : schedulingPool.getTasksWithStatus(TaskStatus.ERROR, TaskStatus.GENERROR, TaskStatus.SENDERROR)) {
+			if (task.isSourceUpdated()) {
+				schedulingPool.addTaskSchedule(task, -1);
+				task.setSourceUpdated(false);
+				continue;
+			}
 			if (task.getEndTime() == null) {
 				log.error("RECOVERY FROM INCONSISTENT STATE: ERROR task does not have end_time! " +
 						"Setting end_time to task.getDelay + 1.");
