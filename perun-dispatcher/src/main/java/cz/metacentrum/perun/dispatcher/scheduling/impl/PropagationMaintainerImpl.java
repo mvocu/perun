@@ -191,6 +191,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				// reschedule the task
 				log.info("TASK [{}] data changed. Going to schedule for propagation now.", task);
 				schedulingPool.addTaskSchedule(task, -1);
+				task.setSourceUpdated(false);
 			} else if (task.getEndTime() == null || task.getEndTime().before(twoDaysAgo)) {
 				// reschedule the task
 				log.info("TASK [{}] wasn't propagated for more then 2 days. Going to schedule it for propagation now.",
