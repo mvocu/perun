@@ -53,14 +53,24 @@ public class SendPlanner extends AbstractRunner {
 		while (!shouldStop()) {
 			try {
 				Task task = generatedTasks.take();
+				if (task.getDestinations().isEmpty()) {
+					task.setStatus(Task.TaskStatus.DONE);
+					try {
+						jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), System.currentTimeMillis());
+					} catch (JMSException e) {
+						jmsLogError(task);
+					}
+					continue;
+				}
 				task.setStatus(Task.TaskStatus.SENDING);
 				task.setSendStartTime(new Date(System.currentTimeMillis()));
 				schedulingPool.addSendTaskCount(task.getId(), task.getDestinations().size());
 				try {
 					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), task.getSendStartTime().getTime());
 				} catch (JMSException e) {
-					log.warn("Could not send status update to Dispatcher for [{}] .", task);
+					jmsLogError(task);
 				}
+
 
 				for (Destination destination : task.getDestinations()) {
 					SendTask sendTask = new SendTask(task, destination);
@@ -77,6 +87,10 @@ public class SendPlanner extends AbstractRunner {
 				throw new RuntimeException(errorStr, e);
 			}
 		}
+	}
+
+	private void jmsLogError(Task task) {
+		log.warn("Could not send status update to Dispatcher for [{}] .", task);
 	}
 
 	@Autowired
