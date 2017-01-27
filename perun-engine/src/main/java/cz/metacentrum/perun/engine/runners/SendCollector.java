@@ -84,6 +84,8 @@ public class SendCollector extends AbstractRunner {
 			Task task = schedulingPool.getTask(taskId);
 
 			try {
+				log.debug("TESTSTR --> Sending TaskResult: taskid {}, destionationId {}, stderr {}, stdout {}, " +
+						"returnCode {}, service {}", new Object[]{taskId, destinationId, stderr, stdout, returnCode, service});
 				jmsQueueManager.reportTaskResult(schedulingPool.createTaskResult(taskId, destinationId, stderr, stdout,
 						returnCode, service));
 			} catch (JMSException e1) {
