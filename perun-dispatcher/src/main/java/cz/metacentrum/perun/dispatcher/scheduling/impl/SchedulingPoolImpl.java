@@ -134,6 +134,9 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		} else {
 			log.debug("{}, was added to waiting queue", schedule);
 		}
+		if (!task.getStatus().equals(TaskStatus.WAITING)) {
+			task.setStatus(TaskStatus.WAITING);
+		}
 	}
 
 	/**

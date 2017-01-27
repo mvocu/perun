@@ -275,6 +275,7 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 				+ fixStringSeparators(destinations_s.toString()) + "]");
 		task.setStartTime(new Date(System.currentTimeMillis()));
 		task.setEndTime(null);
+		task.setStatus(Task.TaskStatus.PLANNED);
 		return SUCCESS;
 	}
 
