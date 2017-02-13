@@ -1,7 +1,5 @@
 package cz.metacentrum.perun.taskslib.service.impl;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
@@ -24,15 +22,6 @@ public class TaskStoreImpl implements TaskStore {
 	private final Map<Pair<Facility, ExecService>, Task> tasksByFacilityAndExecService = new HashMap<>();
 
 	public TaskStoreImpl() {
-	}
-
-	private static Predicate<Task> getStatusPredicate(final Task.TaskStatus ... status) {
-		return new Predicate<Task>() {
-			@Override
-			public boolean apply(Task task) {
-				return Arrays.asList(status).contains(task.getStatus());
-			}
-		};
 	}
 
 	@Override
@@ -83,7 +72,12 @@ public class TaskStoreImpl implements TaskStore {
 	public synchronized List<Task> getTasksWithStatus(Task.TaskStatus... status) {
 		Collection<Task> tasks = tasksById.values();
 		synchronized (this) {
-			return new ArrayList<>(Collections2.filter(tasks, getStatusPredicate(status)));
+			List<Task> result = new ArrayList<>();
+			List<Task.TaskStatus> statuses = Arrays.asList(status);
+			for (Task t : tasks) {
+				if (statuses.contains(t.getStatus())) result.add(t);
+			}
+			return result;
 		}
 	}
 

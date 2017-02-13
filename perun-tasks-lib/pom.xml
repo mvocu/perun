@@ -80,7 +80,7 @@
 	  		<groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-dbcp</artifactId>
         </dependency>
- 
+
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc7</artifactId>
@@ -129,12 +129,6 @@
 		</dependency>
 
 		<!-- OTHERS -->
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>16.0.1</version>
-		</dependency>
 
 	</dependencies>
 
