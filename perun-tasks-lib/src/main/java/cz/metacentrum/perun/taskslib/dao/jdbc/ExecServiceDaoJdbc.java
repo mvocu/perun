@@ -51,15 +51,11 @@ public class ExecServiceDaoJdbc extends JdbcDaoSupport implements ExecServiceDao
 
 	@Override
 	public int insertExecService(ExecService execService) throws InternalErrorException {
-		char enabled = '0';
-		if (execService.isEnabled()) {
-			enabled = '1';
-		}
 		int newExecServiceId = Utils.getNewId(this.getJdbcTemplate(), "exec_services_id_seq");
 		this.getJdbcTemplate().update("insert into exec_services(id, default_delay, default_recurrence, " +
 						"enabled, script, service_id) values (?,?,?,?,?,?)",
 				newExecServiceId, execService.getDefaultDelay(), execService.getDefaultRecurrence(),
-				Character.toString(enabled), execService.getScript(), execService.getService().getId());
+				execService.isEnabled() ? '1' : '0', execService.getScript(), execService.getService().getId());
 
 		return newExecServiceId;
 	}
@@ -98,13 +94,9 @@ public class ExecServiceDaoJdbc extends JdbcDaoSupport implements ExecServiceDao
 
 	@Override
 	public void updateExecService(ExecService execService) {
-		char enabled = '0';
-		if (execService.isEnabled()) {
-			enabled = '1';
-		}
 		this.getJdbcTemplate().update("update exec_services set default_delay = ?, default_recurrence = ?, " +
 						"enabled = ?, script = ?, service_id = ? where id = ?", execService.getDefaultDelay(),
-				execService.getDefaultRecurrence(), Character.toString(enabled), execService.getScript(),
+				execService.getDefaultRecurrence(), execService.isEnabled() ? '1' : '0', execService.getScript(),
 				execService.getService().getId(), execService.getId());
 	}
 
