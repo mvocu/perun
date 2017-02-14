@@ -33,8 +33,8 @@ import java.util.Properties;
 
 @org.springframework.stereotype.Service(value = "propagationMaintainer")
 public class PropagationMaintainerImpl implements PropagationMaintainer {
-	private final static Logger log = LoggerFactory
-			.getLogger(PropagationMaintainerImpl.class);
+
+	private final static Logger log = LoggerFactory.getLogger(PropagationMaintainerImpl.class);
 
 	@Autowired
 	private SchedulingPool schedulingPool;

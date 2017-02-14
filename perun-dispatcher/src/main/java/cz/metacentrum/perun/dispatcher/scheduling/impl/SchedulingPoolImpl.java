@@ -124,6 +124,8 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		schedule.setBase(System.currentTimeMillis());
 		schedule.setDelayCount(delayCount);
 		boolean added = false;
+		// FIXME - by javadoc DelayQueue permit duplicates, hence TRUE is always returned from add() method.
+		// FIXME - forced Tasks are delayed too ??
 		if (schedule.getTask().isPropagationForced()) {
 			added = waitingForcedTasksQueue.add(schedule);
 		} else {
@@ -137,6 +139,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		if (!task.getStatus().equals(TaskStatus.WAITING)) {
 			task.setStatus(TaskStatus.WAITING);
 		}
+		taskManager.updateTask(task);
 	}
 
 	/**

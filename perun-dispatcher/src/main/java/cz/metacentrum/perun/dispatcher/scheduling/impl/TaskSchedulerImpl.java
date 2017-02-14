@@ -20,6 +20,7 @@ import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskSchedule;
 import cz.metacentrum.perun.taskslib.runners.impl.AbstractRunner;
+import cz.metacentrum.perun.taskslib.service.TaskManager;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +37,8 @@ import static cz.metacentrum.perun.dispatcher.scheduling.impl.TaskScheduled.*;
 
 @org.springframework.stereotype.Service(value = "taskScheduler")
 public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
-	private final static Logger log = LoggerFactory
-			.getLogger(TaskSchedulerImpl.class);
+
+	private final static Logger log = LoggerFactory.getLogger(TaskSchedulerImpl.class);
 
 	@Autowired
 	private SchedulingPool schedulingPool;
@@ -54,6 +55,8 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 	private DelayQueue<TaskSchedule> waitingTasksQueue;
 	@Autowired
 	private DelayQueue<TaskSchedule> waitingForcedTasksQueue;
+	@Autowired
+	private TaskManager taskManager;
 
 	/**
 	 * This method runs in separate thread perpetually trying to take tasks from delay queue, blocking if none are available.
@@ -107,6 +110,8 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 						//#TODO: Figure out
 						break;
 				}
+				// update task status in DB
+				taskManager.updateTask(task);
 			}
 		}
 	}
@@ -307,4 +312,13 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 							new PerunClient());
 		}
 	}
+
+	public TaskManager getTaskManager() {
+		return taskManager;
+	}
+
+	public void setTaskManager(TaskManager taskManager) {
+		this.taskManager = taskManager;
+	}
+
 }
