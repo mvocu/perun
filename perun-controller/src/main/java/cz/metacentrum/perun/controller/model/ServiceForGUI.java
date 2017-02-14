@@ -13,12 +13,7 @@ public class ServiceForGUI extends Service {
 	// global service info calculated by GeneralServiceManager
 	// (based on allowed status of exec services)
 	private boolean allowedOnFacility;
-	// Allowed on Facility state for each exec service
-	private boolean genAllowedOnFacility;
-	private boolean sendAllowedOnFacility;
-	// Exec services (with global allowed info about them)
-	private ExecService generate;
-	private ExecService send;
+	private ExecService execService;
 
 	public ServiceForGUI(Service service){
 
@@ -35,36 +30,12 @@ public class ServiceForGUI extends Service {
 		return allowedOnFacility;
 	}
 
-	public void setGenAllowedOnFacility(boolean allowed){
-		genAllowedOnFacility = allowed;
+	public void setExecService(ExecService send){
+		this.execService = send;
 	}
 
-	public boolean getGenAllowedOnFacility(){
-		return genAllowedOnFacility;
-	}
-
-	public void setSendAllowedOnFacility(boolean allowed){
-		sendAllowedOnFacility = allowed;
-	}
-
-	public boolean getSendAllowedOnFacility(){
-		return sendAllowedOnFacility;
-	}
-
-	public void setGenExecService(ExecService gen){
-		generate = gen;
-	}
-
-	public ExecService getGenExecService(){
-		return generate;
-	}
-
-	public void setSendExecService(ExecService send){
-		this.send = send;
-	}
-
-	public ExecService getSendExecService(){
-		return this.send;
+	public ExecService getExecService(){
+		return this.execService;
 	}
 
 	@Override
@@ -86,13 +57,7 @@ public class ServiceForGUI extends Service {
 		ServiceForGUI other = (ServiceForGUI) obj;
 		if (allowedOnFacility != other.allowedOnFacility)
 			return false;
-		if (genAllowedOnFacility != other.genAllowedOnFacility)
-			return false;
-		if (sendAllowedOnFacility != other.sendAllowedOnFacility)
-			return false;
-		if (send != other.send)
-			return false;
-		if (generate != other.generate)
+		if (execService != other.execService)
 			return false;
 
 		return true;
@@ -101,10 +66,7 @@ public class ServiceForGUI extends Service {
 	@Override
 	public String toString() {
 		return "ServiceForGUI [allowedOnFacility=" + allowedOnFacility
-			+ ", genAllowedOnFacility = " + genAllowedOnFacility
-			+ ", sendAllowedOnFacility = " + sendAllowedOnFacility
-			+ ", generate = " + generate
-			+ ", send = " + send
+			+ ", execService = " + execService
 			+ ", Service=" + super.toString() + "]";
 	}
 

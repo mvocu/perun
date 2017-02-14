@@ -230,35 +230,18 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 		// get assigned services
 		List<Service> services = getServicesManager().getAssignedServices(perunSession, facility);
 		for (Service service : services){
-			// flag
-			boolean allowed = true;
 			// new ServiceForGUI
 			ServiceForGUI newService = new ServiceForGUI(service);
 			// get their exec services
 			List<ExecService> execs = execServiceDao.listExecServices(service.getId());
-			// TODO: handle this !!
-			/*for (ExecService exec : execs){
-				// if generate
-				if (exec.getExecServiceType().equals(ExecService.ExecServiceType.GENERATE)){
-					if (execServiceDenialDao.isExecServiceDeniedOnFacility(exec.getId(), facility.getId()) == true) {
-						newService.setGenAllowedOnFacility(false);
-						allowed = false;
-					} else {
-						newService.setGenAllowedOnFacility(true);
-					}
-					newService.setGenExecService(exec);
+			for (ExecService exec : execs) {
+				if (execServiceDenialDao.isExecServiceDeniedOnFacility(exec.getId(), facility.getId())) {
+					newService.setAllowedOnFacility(false);
 				} else {
-					// if send
-					if (execServiceDenialDao.isExecServiceDeniedOnFacility(exec.getId(), facility.getId()) == true) {
-						newService.setSendAllowedOnFacility(false);
-						allowed = false;
-					} else {
-						newService.setSendAllowedOnFacility(true);
-					}
-					newService.setSendExecService(exec);
+					newService.setAllowedOnFacility(true);
 				}
-			}*/
-			newService.setAllowedOnFacility(allowed);
+				newService.setExecService(exec);
+			}
 			result.add(newService);
 		}
 

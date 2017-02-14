@@ -2,7 +2,6 @@ package cz.metacentrum.perun.controller.model;
 
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Service;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 
 import java.util.Date;
@@ -17,8 +16,7 @@ public class ServiceState {
 
 	private Service service;
 	private Facility facility;
-	private Task genTask;
-	private Task sendTask;
+	private Task task;
 	private boolean isBlockedGlobally;
 	private boolean isBlockedOnFacility;
 	private boolean hasDestinations;
@@ -50,20 +48,12 @@ public class ServiceState {
 		this.facility = facility;
 	}
 
-	public Task getGenTask() {
-		return genTask;
+	public Task getTask() {
+		return task;
 	}
 
-	public void setGenTask(Task genTask) {
-		this.genTask = genTask;
-	}
-
-	public Task getSendTask() {
-		return sendTask;
-	}
-
-	public void setSendTask(Task sendTask) {
-		this.sendTask = sendTask;
+	public void setTask(Task task) {
+		this.task = task;
 	}
 
 	public boolean isBlockedGlobally() {
@@ -91,187 +81,53 @@ public class ServiceState {
 	}
 
 	/**
-	 * Return ID of GEN Task if present or 0
-	 *
-	 * @return ID of GEN Task
-	 */
-	public int getGenTaskId() {
-		return (genTask != null) ? genTask.getId() : 0;
-	}
-
-	/**
-	 * Return ID of SEND Task if present or 0
-	 *
-	 * @return ID of SEND Task
-	 */
-	public int getSendTaskId() {
-		return (sendTask != null) ? sendTask.getId() : 0;
-	}
-
-	/**
 	 * Return ID of Task. If present SEND Task takes precedence.
 	 * If not GEN Task is used or 0 is returned if none Task is present.
 	 *
 	 * @return ID of Task
 	 */
 	public int getTaskId() {
-		return (getSendTaskId() != 0) ? getSendTaskId() : getGenTaskId();
+		return (task != null) ? task.getId() : 0;
 	}
 
 	/**
-	 * Return status of GEN Task or TaskStatus.NONE if gen task is not present.
-	 *
-	 * @return status of GEN Task
-	 */
-	public Task.TaskStatus getGenStatus() {
-		// TODO: figure out
-		// return (genTask != null) ? genTask.getStatus() : Task.TaskStatus.NONE;
-		return null;
-	}
-
-	/**
-	 * Return status of SEND Task or TaskStatus.NONE if send task is not present.
-	 *
-	 * @return status of SEND Task
-	 */
-	public Task.TaskStatus getSendStatus() {
-		// TODO: figure out
-		// return (sendTask != null) ? sendTask.getStatus() : Task.TaskStatus.NONE;
-		return null;
-	}
-
-	/**
-	 * Return time, when was GEN Task scheduled or null if was never scheduled.
-	 *
-	 * @return time when was GEN task scheduled
-	 */
-	public Date getGenScheduled() {
-		return (genTask != null) ? genTask.getSchedule() : null;
-	}
-
-	/**
-	 * Return time, when was GEN Task scheduled or null if was never scheduled.
-	 *
-	 * @return time when was GEN task scheduled
-	 */
-	public Date getSendScheduled() {
-		return (sendTask != null) ? sendTask.getSchedule() : null;
-	}
-
-	/**
-	 * Return time, when GEN Task started or null if never.
-	 *
-	 * @return time when GEN task started
-	 */
-	public Date getGenStartTime() {
-		return (genTask != null) ? genTask.getStartTime() : null;
-	}
-
-	/**
-	 * Return time, when SEND Task started or null if never.
-	 *
-	 * @return time when SEND task started
-	 */
-	public Date getSendStartTime() {
-		return (sendTask != null) ? sendTask.getStartTime() : null;
-	}
-
-	/**
-	 * Return time, when GEN Task ended or null if never.
-	 *
-	 * @return time when GEN task ended
-	 */
-	public Date getGenEndTime() {
-		return (genTask != null) ? genTask.getGenEndTime() : null;
-	}
-
-	/**
-	 * Return time, when SEND Task ended or null if never.
-	 *
-	 * @return time when SEND task ended
-	 */
-	public Date getSendEndTime() {
-		return (sendTask != null) ? sendTask.getSendEndTime() : null;
-	}
-//TODO: Handle this !!
-/*	*//**
 	 * Return time when was Task on Facility scheduled if ever for the last time.
 	 *
 	 * @return Time when was last task scheduled.
-	 *//*
+	 */
 	public Date getScheduled() {
-		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
-			return getGenScheduled();
-		} else {
-			return getSendScheduled();
-		}
+		return (task != null) ? task.getSchedule() : null;
 	}
 
-	*//**
+	/**
 	 * Return time when was Task on Facility scheduled if ever for the last time.
 	 *
 	 * @return Time when was last task scheduled.
-	 *//*
+	 */
 	public Date getStartTime() {
-		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
-			return getGenStartTime();
-		} else {
-			return getSendStartTime();
-		}
+		return (task != null) ? task.getStartTime() : null;
 	}
 
-	*//**
+	/**
 	 * Return time when was Task on Facility scheduled if ever for the last time.
 	 *
 	 * @return Time when was last task scheduled.
-	 *//*
+	 */
 	public Date getEndTime() {
-		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
-			return getGenEndTime();
-		} else {
-			return getSendEndTime();
-		}
+		return (task != null) ? task.getEndTime() : null;
 	}
 
-	*//**
+	/**
 	 * Return status of service propagation (task status) based on current tasks states.
 	 * Method compares "scheduled" dates of tasks in order to determine, which is more relevant.
 	 *
 	 * If can't determine, TaskStatus.NONE is returned.
 	 *
 	 * @return TaskStatus of service on facility
-	 *//*
+	 */
 	public Task.TaskStatus getStatus() {
-		if (ExecService.ExecServiceType.GENERATE.equals(getLastScheduled())) {
-			return getGenStatus();
-		} else {
-			return getSendStatus();
-		}
+		return (task != null) ? task.getStatus() : Task.TaskStatus.WAITING;
 	}
-
-	*//**
-	 * Return type of Task which was last scheduled for facility.
-	 * If none GEN is returned.
-	 *
-	 * @return Return type of Task, which was last scheduled
-	 *//*
-	public ExecService.ExecServiceType getLastScheduled() {
-		if (getGenScheduled() != null && getSendScheduled() != null) {
-			if (getGenScheduled().after(getSendScheduled())) {
-				// gen was last scheduled
-				return ExecService.ExecServiceType.GENERATE;
-			} else {
-				// send was last scheduled
-				return ExecService.ExecServiceType.SEND;
-			}
-		}
-		// gen was only scheduled
-		if (getGenScheduled() != null) return ExecService.ExecServiceType.GENERATE;
-		// send was only scheduled (but it shouldn't occur !)
-		if (getSendScheduled() != null) return ExecService.ExecServiceType.SEND;
-		// no task was ever scheduled - make it generate
-		return ExecService.ExecServiceType.GENERATE;
-	}*/
 
 	public String getBeanName() {
 		return this.getClass().getSimpleName();
@@ -283,8 +139,7 @@ public class ServiceState {
 		return str.append(getBeanName()).append(":[")
 				.append("service='").append(getService().toString())
 				.append("', facility='").append(getFacility().toString())
-				.append("', genTask='").append(getGenTask())
-				.append("', sendTask='").append(getSendTask())
+				.append("', task='").append(getTask())
 				.append("']").toString();
 	}
 

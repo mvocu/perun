@@ -137,18 +137,17 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 		for (Task task : tasks) {
 			// save previous facility state
 			FacilityPropagationState facState = state.getState();
-//			// PROCESSING and not ERROR before
-//			if (TaskStatus.PROCESSING.equals(task.getStatus()) && (facState!=FacilityPropagationState.ERROR)) {
-//				state.setState(FacilityPropagationState.PROCESSING);
-//			}
-//			// ERROR - set ERROR
-//			else if (TaskStatus.ERROR.equals(task.getStatus())) {
-//				state.setState(FacilityPropagationState.ERROR);
-//			}
+			// PROCESSING and not ERROR before
+			if (Arrays.asList(TaskStatus.GENERATED, TaskStatus.GENERATING, TaskStatus.PLANNED, TaskStatus.SENDING).contains(task.getStatus()) && (facState!=FacilityPropagationState.ERROR)) {
+				state.setState(FacilityPropagationState.PROCESSING);
+			}
+			// ERROR - set ERROR
+			else if (Arrays.asList(TaskStatus.ERROR, TaskStatus.GENERROR, TaskStatus.SENDERROR).contains(task.getStatus())) {
+				state.setState(FacilityPropagationState.ERROR);
+			}
 
 			// get destination status
-			//TODO: handle this !!
-			/*if (task.getExecService().getExecServiceType().equals(ExecService.ExecServiceType.SEND)) {
+			if (task.getExecService() != null) {
 				List<TaskResult> results = taskResultDao.getTaskResultsByTask(task.getId());
 
 				Map<Service, Map<Destination, TaskResult>> latestResults = new HashMap<Service, Map<Destination, TaskResult>>();
@@ -190,7 +189,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 					}
 
 				}
-			}*/
+			}
 
 		}
 		return state;
@@ -273,15 +272,6 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 		for (Resource resource : resources) {
 			List<Task> taskList = taskManager.listAllTasksForFacility(resource.getFacilityId());
 
-			// filter SEND tasks
-			Iterator<Task> iterator = taskList.iterator();
-			while (iterator.hasNext()) {
-				//TODO: handle this !!
-/*				if ( !(iterator.next().getExecService().getExecServiceType().equals(ExecService.ExecServiceType.SEND)) ) {
-					iterator.remove();
-				}*/
-			}
-
 			// create new resourceState
 			ResourceState resourceState = new ResourceState();
 			resourceState.setResource(resource);
@@ -344,12 +334,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 			}
 
 			// fill service state
-			//TODO: handle this!!
-/*			if (ExecService.ExecServiceType.GENERATE.equals(task.getExecService().getExecServiceType())) {
-				serviceState.setGenTask(task);
-			} else {
-				serviceState.setSendTask(task);
-			}*/
+			serviceState.setTask(task);
 
 			if (!task.getExecService().isEnabled()) {
 				serviceStates.get(taskService).setBlockedGlobally(true);
