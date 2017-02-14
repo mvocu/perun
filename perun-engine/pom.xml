@@ -140,8 +140,21 @@
 
 		<dependency>
 			<groupId>cz.metacentrum.perun</groupId>
+			<artifactId>perun-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>cz.metacentrum.perun</groupId>
+			<artifactId>perun-tasks-lib</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>cz.metacentrum.perun</groupId>
 			<artifactId>perun-controller</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 
