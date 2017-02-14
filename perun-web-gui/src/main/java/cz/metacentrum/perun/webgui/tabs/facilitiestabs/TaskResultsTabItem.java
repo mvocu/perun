@@ -81,7 +81,7 @@ public class TaskResultsTabItem implements TabItem, TabItemWithUrl{
 
 	public Widget draw() {
 
-		this.titleWidget.setText("Tasks results: "+task.getExecService().getService().getName()+" "+task.getExecService().getType());
+		this.titleWidget.setText("Tasks results: "+task.getExecService().getService().getName());
 
 		VerticalPanel vp = new VerticalPanel();
 		vp.setSize("100%", "100%");

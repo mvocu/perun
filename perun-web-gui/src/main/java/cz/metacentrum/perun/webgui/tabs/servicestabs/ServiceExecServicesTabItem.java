@@ -103,12 +103,7 @@ public class ServiceExecServicesTabItem implements TabItem, TabItemWithUrl{
 		menu.addWidget(UiElements.getRefreshButton(this));
 
 		final ListExecServices callback = new ListExecServices(serviceId);
-		CellTable<ExecService> table = callback.getTable(new FieldUpdater<ExecService, String>(){
-			public void update(int index, ExecService object, String value) {
-				// manage details of exec services (dependency, status, update values?)
-				session.getTabManager().addTab(new ViewExecServiceTabItem(object));
-			}
-		});
+		CellTable<ExecService> table = callback.getTable();
 
 		// refresh event after deletion
 		final JsonCallbackEvents events = JsonCallbackEvents.refreshTableEvents(callback);

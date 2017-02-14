@@ -493,7 +493,7 @@ public class TableSorter<T> {
 			return state.getService().getName();
 		} else {
 			Task task = (Task)value;
-			return task.getExecService().getService().getName() + task.getExecService().getType();
+			return task.getExecService().getService().getName();
 		}
 
 	}

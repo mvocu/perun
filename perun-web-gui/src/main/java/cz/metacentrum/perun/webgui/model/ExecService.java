@@ -108,15 +108,6 @@ public class ExecService extends JavaScriptObject {
     }-*/;
 
 	/**
-	 * Get type of exec service (SEND / GENERATE)
-	 *
-	 * @return type of exec service
-	 */
-	public final native String getType() /*-{
-        return this.execServiceType;
-    }-*/;
-
-	/**
 	 * Sets status of exec service
 	 *
 	 * @param value (enabled = true / disabled = false)

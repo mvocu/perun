@@ -1,7 +1,6 @@
 package cz.metacentrum.perun.webgui.tabs.facilitiestabs;
 
 import com.google.gwt.cell.client.FieldUpdater;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -14,7 +13,6 @@ import cz.metacentrum.perun.webgui.client.localization.ButtonTranslation;
 import cz.metacentrum.perun.webgui.client.mainmenu.MainMenu;
 import cz.metacentrum.perun.webgui.client.resources.*;
 import cz.metacentrum.perun.webgui.json.GetEntityById;
-import cz.metacentrum.perun.webgui.json.JsonCallback;
 import cz.metacentrum.perun.webgui.json.JsonCallbackEvents;
 import cz.metacentrum.perun.webgui.json.JsonUtils;
 import cz.metacentrum.perun.webgui.json.generalServiceManager.BanExecServiceOnFacility;
@@ -108,7 +106,7 @@ public class FacilityStatusTabItem implements TabItem, TabItemWithUrl {
 			public void update(int index, final ServiceState object, String value) {
 				// show results if any present
 				if (object.getSendTask() != null) {
-					session.getTabManager().addTab(new TaskResultsTabItem(object.getSendTask()));
+					session.getTabManager().addTab(new TaskResultsTabItem(object.getTask()));
 				}
 			}
 		});
@@ -182,13 +180,10 @@ public class FacilityStatusTabItem implements TabItem, TabItemWithUrl {
 				if (UiElements.cantSaveEmptyListDialogBox(list)) {
 					for (int i = 0; i < list.size(); i++) {
 						// TODO - SHOULD HAVE ONLY ONE CALLBACK TO CORE !!
-						BanExecServiceOnFacility request = new BanExecServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(blockButton));
-						if (list.get(i).getGenTask() != null) request.banExecService(list.get(i).getGenTask().getExecService().getId());
-						// last event
 						BanExecServiceOnFacility sendRequest = new BanExecServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(blockButton));
 						JsonCallbackEvents events = JsonCallbackEvents.disableButtonEvents(blockButton, JsonCallbackEvents.refreshTableEvents(callback));
 						if (i == list.size()-1) sendRequest.setEvents(events);
-						if (list.get(i).getSendTask() != null) sendRequest.banExecService(list.get(i).getSendTask().getExecService().getId());
+						if (list.get(i).getTask() != null) sendRequest.banExecService(list.get(i).getTask().getExecService().getId());
 					}
 				}
 			}
@@ -201,13 +196,10 @@ public class FacilityStatusTabItem implements TabItem, TabItemWithUrl {
 				if (UiElements.cantSaveEmptyListDialogBox(list)) {
 					for (int i = 0; i < list.size(); i++) {
 						// TODO - SHOULD HAVE ONLY ONE CALLBACK TO CORE !!
-						FreeDenialOfExecServiceOnFacility request = new FreeDenialOfExecServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(allowButton));
-						if (list.get(i).getGenTask() != null) request.freeDenialOfExecService(list.get(i).getGenTask().getExecService().getId());
-						// last event
 						FreeDenialOfExecServiceOnFacility sendRequest = new FreeDenialOfExecServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(allowButton));
 						JsonCallbackEvents events = JsonCallbackEvents.disableButtonEvents(allowButton, JsonCallbackEvents.refreshTableEvents(callback));
 						if (i == list.size()-1) sendRequest.setEvents(events);
-						if (list.get(i).getSendTask() != null) sendRequest.freeDenialOfExecService(list.get(i).getSendTask().getExecService().getId());
+						if (list.get(i).getTask() != null) sendRequest.freeDenialOfExecService(list.get(i).getTask().getExecService().getId());
 					}
 				}
 			}
@@ -234,9 +226,8 @@ public class FacilityStatusTabItem implements TabItem, TabItemWithUrl {
 							public void onClick(ClickEvent event) {
 								for (ServiceState ss : list) {
 									DeleteTask deleteTask = new DeleteTask(JsonCallbackEvents.disableButtonEvents(deleteButton));
-									if (ss.getGenTask() != null) deleteTask.deleteTask(ss.getGenTask().getId());
 									deleteTask.setEvents(JsonCallbackEvents.disableButtonEvents(deleteButton, JsonCallbackEvents.refreshTableEvents(callback)));
-									if (ss.getSendTask() != null) deleteTask.deleteTask(ss.getSendTask().getId());
+									if (ss.getTask() != null) deleteTask.deleteTask(ss.getTask().getId());
 								}
 							}
 						});

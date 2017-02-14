@@ -88,20 +88,6 @@ public class AddExecServiceTabItem implements TabItem {
 		Label serviceLabel = new Label();
 		serviceLabel.setText(service.getName()+" ("+serviceId+")");
 
-		final ListBox type = new ListBox();
-		type.addItem("GENERATE", "GENERATE");
-		type.addItem("SEND", "SEND");
-
-		final VerticalPanel fp = new VerticalPanel();
-		final RadioButton radio1 = new RadioButton("rd-type", "GENERATE + SEND");
-		final RadioButton radio2 = new RadioButton("rd-type", "GENERATE");
-		final RadioButton radio3 = new RadioButton("rd-type", "SEND");
-
-		radio1.setValue(true);
-		fp.add(radio1);
-		fp.add(radio2);
-		fp.add(radio3);
-
 		final CheckBox enabled = new CheckBox();
 		enabled.setText("Enabled / Disabled");
 		enabled.setValue(true);
@@ -144,16 +130,14 @@ public class AddExecServiceTabItem implements TabItem {
 
 		// layout
 		layout.setHTML(0, 0, "Service:");
-		layout.setHTML(1, 0, "Type:");
-		layout.setHTML(2, 0, "Status:");
-		layout.setHTML(3, 0, "Delay:");
-		layout.setHTML(4, 0, "Script path:");
+		layout.setHTML(1, 0, "Status:");
+		layout.setHTML(2, 0, "Delay:");
+		layout.setHTML(3, 0, "Script path:");
 
 		layout.setWidget(0, 1, serviceLabel);
-		layout.setWidget(1, 1, fp);
-		layout.setWidget(2, 1, enabled);
-		layout.setWidget(3, 1, delay);
-		layout.setWidget(4, 1, scriptPath);
+		layout.setWidget(1, 1, enabled);
+		layout.setWidget(2, 1, delay);
+		layout.setWidget(3, 1, scriptPath);
 
 		// send button
 		createButton.addClickHandler(new ClickHandler() {
@@ -163,14 +147,7 @@ public class AddExecServiceTabItem implements TabItem {
 				if (delayValidator.validateTextBox() && scriptValidator.validateTextBox()) {
 					int delayNum = Integer.parseInt(delay.getTextBox().getText().trim());
 					InsertExecService request = new InsertExecService(JsonCallbackEvents.closeTabDisableButtonEvents(createButton, tab));
-					if (radio1.getValue()) {
-						request.addExecService(service, "GENERATE", enabled.getValue(), delayNum, scriptPath.getTextBox().getText().trim());
-						request.addExecService(service, "SEND", enabled.getValue(), delayNum, scriptPath.getTextBox().getText().trim());
-					} else if (radio2.getValue()) {
-						request.addExecService(service, "GENERATE", enabled.getValue(), delayNum, scriptPath.getTextBox().getText().trim());
-					} else if (radio3.getValue()) {
-						request.addExecService(service, "SEND", enabled.getValue(), delayNum, scriptPath.getTextBox().getText().trim());
-					}
+					request.addExecService(service, enabled.getValue(), delayNum, scriptPath.getTextBox().getText().trim());
 				}
 			}
 		});

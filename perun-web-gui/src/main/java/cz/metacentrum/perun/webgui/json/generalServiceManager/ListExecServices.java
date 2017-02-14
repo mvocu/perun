@@ -127,13 +127,6 @@ public class ListExecServices implements JsonCallback, JsonCallbackTable<ExecSer
 			}
 		},this.tableFieldUpdater);
 
-		// Create type column
-		Column<ExecService, String> typeColumn = JsonUtils.addColumn(new JsonUtils.GetValue<ExecService, String>() {
-			public String getValue(ExecService object) {
-				return object.getType();
-			}
-		},this.tableFieldUpdater);
-
 		// Create enabled column
 		Column<ExecService, String> enabledColumn = JsonUtils.addColumn(new JsonUtils.GetValue<ExecService, String>() {
 			public String getValue(ExecService object) {
@@ -164,13 +157,6 @@ public class ListExecServices implements JsonCallback, JsonCallbackTable<ExecSer
 			}
 		});
 
-		typeColumn.setSortable(true);
-		columnSortHandler.setComparator(typeColumn, new Comparator<ExecService>() {
-			public int compare(ExecService o1, ExecService o2) {
-				return o1.getType().compareToIgnoreCase(o2.getType());
-			}
-		});
-
 		enabledColumn.setSortable(true);
 		columnSortHandler.setComparator(enabledColumn, new Comparator<ExecService>() {
 			public int compare(ExecService o1, ExecService o2) {
@@ -195,13 +181,11 @@ public class ListExecServices implements JsonCallback, JsonCallbackTable<ExecSer
 
 		// updates the columns size
 		table.setColumnWidth(serviceNameColumn, 250.0, Unit.PX);
-		table.setColumnWidth(typeColumn, 100.0, Unit.PX);
 		table.setColumnWidth(scriptPathColumn, 100.0, Unit.PX);
 		table.setColumnWidth(enabledColumn, 100.0, Unit.PX);
 
 		// Add the columns.
 		table.addColumn(serviceNameColumn, "Service name");
-		table.addColumn(typeColumn, "Type");
 		table.addColumn(enabledColumn, "Enabled");
 		table.addColumn(scriptPathColumn, "Script path");
 		table.addColumn(delayColumn, "Default delay");

@@ -46,12 +46,11 @@ public class InsertExecService {
 	 * Creates exec service in DB and associate it with service
 	 *
 	 * @param service service to associate with
-	 * @param type type of exec service (SEND, GENERATE)
 	 * @param enabled true if exec service is enabled
 	 * @param delayNum default delay
 	 * @param scriptPath path to propagation scripts
 	 */
-	public void addExecService(Service service, String type, Boolean enabled, int delayNum, String scriptPath) {
+	public void addExecService(Service service, Boolean enabled, int delayNum, String scriptPath) {
 
 		// TODO - test input
 		// test arguments
@@ -66,7 +65,6 @@ public class InsertExecService {
 
 		// reconstruct exec service
 		JSONObject exec = new JSONObject();
-		exec.put("execServiceType", new JSONString(type));
 		exec.put("enabled", JSONBoolean.getInstance(enabled));
 		exec.put("defaultDelay", new JSONNumber(delayNum));
 		exec.put("service", serv);  // insert service into exec service

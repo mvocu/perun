@@ -148,7 +148,7 @@ public class DestinationResultsTabItem implements TabItem, TabItemWithUrl {
 				ArrayList<RichService> list = JsonUtils.jsoAsList(jso);
 				list = new TableSorter<RichService>().sortByName(list);
 				for (RichService s : list){
-					if (s.getAllowedOnFacility().equalsIgnoreCase("allowed") && (s.getGenExecService() != null && s.getGenExecService().isEnabled()) && (s.getSendExecService() != null && s.getSendExecService().isEnabled())){
+					if (s.getAllowedOnFacility().equalsIgnoreCase("allowed") && (s.getExecService() != null && s.getExecService().isEnabled())){
 						listbox.addItem(s);
 					}
 				}
