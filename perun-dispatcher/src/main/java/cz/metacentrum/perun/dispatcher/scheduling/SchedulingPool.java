@@ -49,5 +49,5 @@ public interface SchedulingPool extends TaskStore {
 
 	void reloadTasks();
 
-	void setDispatcherPropertiesBean(Properties dispatcherPropertiesBean);
+	void setDispatcherProperties(Properties dispatcherProperties);
 }

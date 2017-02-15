@@ -10,42 +10,42 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
- * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ * Start / stop and configure HornetQ server for Perun.
+ *
+ * @author Michal Karm Babacek
+ * @author Pavel Zlámal
  */
-@org.springframework.stereotype.Service(value = "perunHornetQServer")
+@Service(value = "perunHornetQServer")
 public class PerunHornetQServer {
 
-	private final static Logger log = LoggerFactory
-			.getLogger(PerunHornetQServer.class);
+	private final static Logger log = LoggerFactory.getLogger(PerunHornetQServer.class);
 
-	@Autowired
-	private Properties dispatcherPropertiesBean;
+	@Autowired private Properties dispatcherProperties;
 	private FileConfiguration configuration = null;
 	private HornetQServer server = null;
 	private JMSServerManager jmsServerManager = null;
 	private boolean serverRunning = false;
 
+	/**
+	 * Start and configure HornetQ server wit default JMS queue (systemQueue).
+	 */
 	public void startServer() {
 		try {
 
-			System.setProperty("perun.dispatcher.hornetq.remoting.netty.host",
-					dispatcherPropertiesBean.getProperty("dispatcher.ip.address"));
-			System.setProperty("perun.dispatcher.hornetq.remoting.netty.port",
-					dispatcherPropertiesBean.getProperty("dispatcher.port"));
-			System.setProperty("perun.dispatcher.hornetq.datadir",
-					dispatcherPropertiesBean.getProperty("dispatcher.datadir"));
-			
+			System.setProperty("perun.dispatcher.hornetq.remoting.netty.host", dispatcherProperties.getProperty("dispatcher.ip.address"));
+			System.setProperty("perun.dispatcher.hornetq.remoting.netty.port", dispatcherProperties.getProperty("dispatcher.port"));
+			System.setProperty("perun.dispatcher.hornetq.datadir", dispatcherProperties.getProperty("dispatcher.datadir"));
+
+			// config from dispatcher classpath
 			configuration = new FileConfiguration();
 			configuration.setConfigurationUrl("hornetq-configuration.xml");
 			configuration.start();
 
 			server = HornetQServers.newHornetQServer(configuration);
-			jmsServerManager = new JMSServerManagerImpl(server,
-					"hornetq-jms.xml");
+			jmsServerManager = new JMSServerManagerImpl(server,"hornetq-jms.xml");
 			// if you want to use JNDI, simple inject a context here or don't
 			// call this method and make sure the JNDI parameters are set.
 			jmsServerManager.setContext(null);
@@ -57,6 +57,9 @@ public class PerunHornetQServer {
 		}
 	}
 
+	/**
+	 * Stop HornetQ server.
+	 */
 	public void stopServer() {
 		if (serverRunning && jmsServerManager != null) {
 			try {
@@ -78,11 +81,11 @@ public class PerunHornetQServer {
 		return serverRunning;
 	}
 
-	public void setDispatcherPropertiesBean(Properties propertiesBean) {
-		this.dispatcherPropertiesBean = propertiesBean;
+	public void setDispatcherProperties(Properties propertiesBean) {
+		this.dispatcherProperties = propertiesBean;
 	}
 
-	public Properties getDispatcherPropertiesBean() {
-		return dispatcherPropertiesBean;
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
 	}
 }

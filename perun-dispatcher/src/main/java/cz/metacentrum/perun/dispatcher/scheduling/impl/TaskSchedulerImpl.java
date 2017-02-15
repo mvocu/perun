@@ -46,7 +46,7 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 	private Perun perun;
 	private PerunSession perunSession;
 	@Autowired
-	private Properties dispatcherPropertiesBean;
+	private Properties dispatcherProperties;
 	@Autowired
 	private DispatcherQueuePool dispatcherQueuePool;
 	@Autowired
@@ -308,10 +308,10 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 		if (perunSession == null) {
 			perunSession = perun
 					.getPerunSession(new PerunPrincipal(
-							dispatcherPropertiesBean.getProperty("perun.principal.name"),
-							dispatcherPropertiesBean
+							dispatcherProperties.getProperty("perun.principal.name"),
+							dispatcherProperties
 									.getProperty("perun.principal.extSourceName"),
-							dispatcherPropertiesBean
+							dispatcherProperties
 									.getProperty("perun.principal.extSourceType")),
 							new PerunClient());
 		}

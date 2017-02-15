@@ -32,7 +32,7 @@ public class DispatcherStarter {
 	@Autowired
 	private AbstractApplicationContext springCtx;
 	@Autowired
-	private Properties dispatcherPropertiesBean;
+	private Properties dispatcherProperties;
 	@Autowired
 	private PropagationMaintainerJob propagationMaintainerJob;
 	@Autowired
@@ -54,7 +54,7 @@ public class DispatcherStarter {
 	 */
 	public final void init() {
 
-		String dispatcherEnabled = dispatcherPropertiesBean.getProperty("dispatcher.enabled");
+		String dispatcherEnabled = dispatcherProperties.getProperty("dispatcher.enabled");
 		if(dispatcherEnabled != null && !Boolean.parseBoolean(dispatcherEnabled)) {
 			propagationMaintainerJob.setEnabled(false);
 			cleanTaskResultsJob.setEnabled(false);

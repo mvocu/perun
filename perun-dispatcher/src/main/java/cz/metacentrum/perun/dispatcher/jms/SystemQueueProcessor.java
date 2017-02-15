@@ -26,7 +26,6 @@ import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 import cz.metacentrum.perun.dispatcher.hornetq.PerunHornetQServer;
 import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
 import cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer;
-import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
 
 /**
  *
@@ -40,7 +39,7 @@ public class SystemQueueProcessor {
 			.getLogger(SystemQueueProcessor.class);
 
 	@Autowired
-	private Properties dispatcherPropertiesBean;
+	private Properties dispatcherProperties;
 	@Autowired
 	private DispatcherQueuePool dispatcherQueuePool;
 	@Autowired
@@ -70,15 +69,15 @@ public class SystemQueueProcessor {
 			Map<String, Object> connectionParams = new HashMap<String, Object>();
 			if (log.isDebugEnabled()) {
 				log.debug("Gonna connect to the host["
-						+ dispatcherPropertiesBean.getProperty("dispatcher.ip.address")
+						+ dispatcherProperties.getProperty("dispatcher.ip.address")
 						+ "] on port["
-						+ dispatcherPropertiesBean.getProperty("dispatcher.port")
+						+ dispatcherProperties.getProperty("dispatcher.port")
 						+ "]...");
 			}
 			connectionParams.put(TransportConstants.PORT_PROP_NAME, Integer
-					.parseInt(dispatcherPropertiesBean.getProperty("dispatcher.port")));
+					.parseInt(dispatcherProperties.getProperty("dispatcher.port")));
 			connectionParams.put(TransportConstants.HOST_PROP_NAME,
-					dispatcherPropertiesBean.getProperty("dispatcher.ip.address"));
+					dispatcherProperties.getProperty("dispatcher.ip.address"));
 			TransportConfiguration transportConfiguration = new TransportConfiguration(
 					NettyConnectorFactory.class.getName(), connectionParams);
 
@@ -112,10 +111,10 @@ public class SystemQueueProcessor {
 			// If unable to connect to the server...
 			log.error(
 					"Connection failed. \nThis is weird...are you sure that the Perun-Dispatcher is running on host["
-							+ dispatcherPropertiesBean
+							+ dispatcherProperties
 									.getProperty("dispatcher.ip.address")
 							+ "] on port["
-							+ dispatcherPropertiesBean.getProperty("dispatcher.port")
+							+ dispatcherProperties.getProperty("dispatcher.port")
 							+ "] ? \nSee: perun-dispatcher.properties. We gonna wait 5 sec and try again...",
 					e);
 
@@ -294,8 +293,8 @@ public class SystemQueueProcessor {
 		this.dispatcherQueuePool = dispatcherQueuePool;
 	}
 
-	public void setDispatcherPropertiesBean(Properties propertiesBean) {
-		this.dispatcherPropertiesBean = propertiesBean;
+	public void setDispatcherProperties(Properties propertiesBean) {
+		this.dispatcherProperties = propertiesBean;
 	}
 
 	public void setPerunHornetQServer(PerunHornetQServer perunHornetQServer) {

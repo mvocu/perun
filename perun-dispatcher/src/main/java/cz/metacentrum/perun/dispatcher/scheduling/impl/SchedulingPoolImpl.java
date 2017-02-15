@@ -40,7 +40,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	@Autowired
 	private DelayQueue<TaskSchedule> waitingForcedTasksQueue;
 	@Autowired
-	private Properties dispatcherPropertiesBean;
+	private Properties dispatcherProperties;
 	@Autowired
 	private TaskStore taskStore;
 	@Autowired
@@ -51,9 +51,9 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	public SchedulingPoolImpl() {
 	}
 
-	public SchedulingPoolImpl(Properties dispatcherPropertiesBean, TaskStore taskStore,
+	public SchedulingPoolImpl(Properties dispatcherProperties, TaskStore taskStore,
 	                          TaskManager taskManager, DispatcherQueuePool dispatcherQueuePool) {
-		this.dispatcherPropertiesBean = dispatcherPropertiesBean;
+		this.dispatcherProperties = dispatcherProperties;
 		this.taskStore = taskStore;
 		this.taskManager = taskManager;
 		this.dispatcherQueuePool = dispatcherQueuePool;
@@ -116,9 +116,9 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	 *                   If the supplied value is lower or equal to 0, the value is read from propertyBean.
 	 */
 	public void addTaskSchedule(Task task, int delayCount) {
-		long newTaskDelay = Long.parseLong(dispatcherPropertiesBean.getProperty("dispatcher.new_task.delay.time"));
+		long newTaskDelay = Long.parseLong(dispatcherProperties.getProperty("dispatcher.new_task.delay.time"));
 		if (delayCount < 0) {
-			delayCount = Integer.parseInt(dispatcherPropertiesBean.getProperty("dispatcher.new_task.delay.count"));
+			delayCount = Integer.parseInt(dispatcherProperties.getProperty("dispatcher.new_task.delay.count"));
 		}
 		TaskSchedule schedule = new TaskSchedule(newTaskDelay, task);
 		schedule.setBase(System.currentTimeMillis());
@@ -289,7 +289,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		taskManager.updateTaskEngine(task, queueId);
 	}
 
-	public void setDispatcherPropertiesBean(Properties dispatcherPropertiesBean) {
-		this.dispatcherPropertiesBean = dispatcherPropertiesBean;
+	public void setDispatcherProperties(Properties dispatcherProperties) {
+		this.dispatcherProperties = dispatcherProperties;
 	}
 }

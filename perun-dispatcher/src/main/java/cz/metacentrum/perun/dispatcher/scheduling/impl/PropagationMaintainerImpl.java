@@ -44,7 +44,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 	@Autowired
 	private ResultManager resultManager;
 	@Autowired
-	private Properties dispatcherPropertiesBean;
+	private Properties dispatcherProperties;
 	@Autowired
 	private TaskManager taskManager;
 	private PerunSession perunSession;
@@ -56,10 +56,10 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		try {
 			perunSession = perun
 					.getPerunSession(new PerunPrincipal(
-									dispatcherPropertiesBean.getProperty("perun.principal.name"),
-									dispatcherPropertiesBean
+									dispatcherProperties.getProperty("perun.principal.name"),
+									dispatcherProperties
 											.getProperty("perun.principal.extSourceName"),
-									dispatcherPropertiesBean
+									dispatcherProperties
 											.getProperty("perun.principal.extSourceType")),
 							new PerunClient());
 		} catch (InternalErrorException e1) {
@@ -311,12 +311,12 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		this.taskScheduler = taskScheduler;
 	}
 
-	public Properties getDispatcherPropertiesBean() {
-		return dispatcherPropertiesBean;
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
 	}
 
-	public void setDispatcherPropertiesBean(Properties propertiesBean) {
-		this.dispatcherPropertiesBean = propertiesBean;
+	public void setDispatcherProperties(Properties propertiesBean) {
+		this.dispatcherProperties = propertiesBean;
 	}
 
 }

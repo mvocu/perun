@@ -26,7 +26,7 @@ public class AuditerListener {
 
 	@Autowired private EventQueue eventQueue;
 	@Autowired private DataSource dataSource;
-	@Autowired private Properties dispatcherPropertiesBean;
+	@Autowired private Properties dispatcherProperties;
 
 	// ----- setters -------------------------------------
 
@@ -46,19 +46,19 @@ public class AuditerListener {
 		this.dataSource = dataSource;
 	}
 
-	public Properties getDispatcherPropertiesBean() {
-		return dispatcherPropertiesBean;
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
 	}
 
-	public void setDispatcherPropertiesBean(Properties dispatcherPropertiesBean) {
-		this.dispatcherPropertiesBean = dispatcherPropertiesBean;
+	public void setDispatcherProperties(Properties dispatcherProperties) {
+		this.dispatcherProperties = dispatcherProperties;
 	}
 
 	// ----- methods -------------------------------------
 
 	public void init() {
 
-		dispatcherName = dispatcherPropertiesBean.getProperty("dispatcher.ip.address") + ":" + dispatcherPropertiesBean.getProperty("dispatcher.port");
+		dispatcherName = dispatcherProperties.getProperty("dispatcher.ip.address") + ":" + dispatcherProperties.getProperty("dispatcher.port");
 
 		try {
 			while(running) {

@@ -79,11 +79,11 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 	<!-- import properties -->
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="ignoreUnresolvablePlaceholders" value="true" />
-		<property name="properties" ref="dispatcherPropertiesBean" />
+		<property name="properties" ref="dispatcherProperties" />
 	</bean>
 
 	<beans profile="devel,production">
-		<bean id="dispatcherPropertiesBean" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<bean id="dispatcherProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 			<property name="locations">
 				<list>
 					<value>file:${perun.conf}perun-dispatcher.properties</value>
@@ -110,7 +110,7 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 	</beans>
 
 	<beans profile="default">
-		<bean id="dispatcherPropertiesBean" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<bean id="dispatcherProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 			<property name="properties">
 				<props>
 					<prop key="perun.principal.name">perunDispatcher</prop>

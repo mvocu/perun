@@ -53,7 +53,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 	private static final Logger log = LoggerFactory
 			.getLogger(EventExecServiceResolverImpl.class);
 	@Autowired
-	private Properties dispatcherPropertiesBean;
+	private Properties dispatcherProperties;
 	@Autowired
 	private Perun perun;
 	@Autowired
@@ -145,9 +145,9 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 
 			PerunSession perunSession = perun
 					.getPerunSession(new PerunPrincipal(
-							dispatcherPropertiesBean.getProperty("perun.principal.name"),
-							dispatcherPropertiesBean.getProperty("perun.principal.extSourceName"),
-							dispatcherPropertiesBean.getProperty("perun.principal.extSourceType")),
+							dispatcherProperties.getProperty("perun.principal.name"),
+							dispatcherProperties.getProperty("perun.principal.extSourceName"),
+							dispatcherProperties.getProperty("perun.principal.extSourceType")),
 							new PerunClient());
 			// Try to find FACILITY in event
 			if (facility != null) {
@@ -272,12 +272,12 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 		}
 	}
 
-	public Properties getDispatcherPropertiesBean() {
-		return dispatcherPropertiesBean;
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
 	}
 
-	public void setDispatcherPropertiesBean(Properties propertiesBean) {
-		this.dispatcherPropertiesBean = propertiesBean;
+	public void setDispatcherProperties(Properties propertiesBean) {
+		this.dispatcherProperties = propertiesBean;
 	}
 
 	public Perun getPerun() {
