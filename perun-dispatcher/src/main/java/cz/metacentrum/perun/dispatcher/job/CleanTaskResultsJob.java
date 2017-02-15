@@ -1,11 +1,8 @@
 package cz.metacentrum.perun.dispatcher.job;
 
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
 
@@ -15,11 +12,14 @@ import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
  * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "cleanTaskResultsJob")
-public class CleanTaskResultsJob  extends QuartzJobBean {
+public class CleanTaskResultsJob {
 
 	private final static Logger log = LoggerFactory.getLogger(CleanTaskResultsJob.class);
 
 	private DispatcherManager dispatcherManager;
+	private boolean enabled = true;
+
+	// ------ setters -------------------------------
 
 	public DispatcherManager getDispatcherManager() {
 		return dispatcherManager;
@@ -30,11 +30,25 @@ public class CleanTaskResultsJob  extends QuartzJobBean {
 		this.dispatcherManager = dispatcherManager;
 	}
 
-	@Override
-	protected void executeInternal(JobExecutionContext arg0) throws JobExecutionException {
-		log.debug("Entering CleanTaskResultsJob...");
-		dispatcherManager.cleanOldTaskResults();
-		log.debug("CleanTaskResultsJob done.");
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	// ------ methods -------------------------------
+
+	/**
+	 * If job is enabled, start it. This method is called periodically by spring task scheduler.
+	 */
+	public void doTheJob() {
+		if (enabled) {
+			log.debug("Entering CleanTaskResultsJob...");
+			dispatcherManager.cleanOldTaskResults();
+			log.debug("CleanTaskResultsJob done.");
+		}
 	}
 
 }

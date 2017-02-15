@@ -4,15 +4,14 @@ import java.util.Properties;
 
 import javax.annotation.PreDestroy;
 
-import org.quartz.SchedulerException;
+import cz.metacentrum.perun.dispatcher.job.CleanTaskResultsJob;
+import cz.metacentrum.perun.dispatcher.job.PropagationMaintainerJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
 import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
@@ -35,8 +34,9 @@ public class DispatcherStarter {
 	@Autowired
 	private Properties dispatcherPropertiesBean;
 	@Autowired
-	@Qualifier("perunScheduler")
-	private SchedulerFactoryBean perunScheduler;
+	private PropagationMaintainerJob propagationMaintainerJob;
+	@Autowired
+	private CleanTaskResultsJob cleanTaskResultsJob;
 
 	/**
 	 * Initialize stand-alone dispatcher.
@@ -56,15 +56,9 @@ public class DispatcherStarter {
 
 		String dispatcherEnabled = dispatcherPropertiesBean.getProperty("dispatcher.enabled");
 		if(dispatcherEnabled != null && !Boolean.parseBoolean(dispatcherEnabled)) {
-			try {
-				// stop scheduler
-				perunScheduler.stop();
-				// stop all triggers
-				perunScheduler.getScheduler().pauseAll();
-				log.debug("Dispatcher startup disabled by configuration.");
-			} catch (SchedulerException ex) {
-				log.error("Unable to stop dispatcher scheduler: {}", ex);
-			}
+			propagationMaintainerJob.setEnabled(false);
+			cleanTaskResultsJob.setEnabled(false);
+			log.debug("Dispatcher startup disabled by configuration.");
 			// skip start of HornetQ and other dispatcher jobs
 			return;
 		}
@@ -105,14 +99,9 @@ public class DispatcherStarter {
 
 	@PreDestroy
 	public void destroy() {
-		try {
-			// stop current scheduler
-			perunScheduler.stop();
-			// stop job triggers
-			perunScheduler.getScheduler().pauseAll();
-		} catch (SchedulerException ex) {
-			log.error("Unable to stop dispatcher scheduler: {}", ex);
-		}
+		// stop current scheduler
+		propagationMaintainerJob.setEnabled(false);
+		cleanTaskResultsJob.setEnabled(false);
 		// stop currently running jobs
 		dispatcherManager.stopProcessingEvents();
 		dispatcherManager.stopParsingData();

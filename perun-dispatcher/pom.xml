@@ -228,12 +228,6 @@
 			<artifactId>aspectjweaver</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>quartz</groupId>
-			<artifactId>quartz</artifactId>
-			<version>1.5.2</version>
-		</dependency>
-
 		<!-- HORNET-Q  -->
 
 		<dependency>
