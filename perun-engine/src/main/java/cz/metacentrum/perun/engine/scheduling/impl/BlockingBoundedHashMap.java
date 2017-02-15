@@ -4,13 +4,12 @@ import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import org.springframework.util.Assert;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 
-
 public class BlockingBoundedHashMap<K, V> implements BlockingBoundedMap<K, V> {
+
 	private ConcurrentMap<K, V> map = new ConcurrentHashMap<>();
 	private Semaphore semaphore;
 

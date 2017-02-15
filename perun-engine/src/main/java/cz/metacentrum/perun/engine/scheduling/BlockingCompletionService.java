@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
  * @see java.util.concurrent.CompletionService
  */
 public interface BlockingCompletionService<V>{
+
 	/**
 	 * Tries to submit the given worker for execution, blocking if the CompletionServices ThreadPool is full.
 	 * @param taskWorker The EngineWorker instance which will be executed

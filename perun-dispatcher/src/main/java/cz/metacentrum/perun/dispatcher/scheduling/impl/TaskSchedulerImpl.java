@@ -77,6 +77,10 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 		TaskSchedule schedule;
 		while (!shouldStop()) {
 			try {
+				// FIXME - if Task was already processed and sent to engine, it's not in a waiting queue
+				// FIXME - so if next audit message reset "source updated" flag, it has no effect
+				// FIXME - since we take Tasks not from pool but from a queue.
+				// FIXME - we should call addTaskSchedule() in EventProcessorImpl when Task is found in a pool
 				schedule = getTaskSchedule();
 			} catch (InterruptedException e) {
 				String message = "Thread was interrupted, cannot continue.";

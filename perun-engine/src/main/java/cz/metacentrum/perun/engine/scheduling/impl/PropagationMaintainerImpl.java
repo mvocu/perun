@@ -8,36 +8,56 @@ import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.jms.JMSException;
-import java.util.Date;
 import java.util.concurrent.Future;
 
 @org.springframework.stereotype.Service(value = "propagationMaintainer")
 public class PropagationMaintainerImpl implements PropagationMaintainer {
-	private final static Logger log = LoggerFactory
-			.getLogger(PropagationMaintainerImpl.class);
 
-	@Autowired
+	private final static Logger log = LoggerFactory.getLogger(PropagationMaintainerImpl.class);
+
+	/**
+	 * After how many minutes is processing Task considered as stuck and re-scheduled.
+	 */
+	private final static int rescheduleTime = 180;
+
 	private SchedulingPool schedulingPool;
-	@Autowired
 	private JMSQueueManager jmsQueueManager;
 
-	private void logJmsError(JMSException e, Object o) {
-		log.warn("Error occured trying to send {} to Dispatcher", o, e);
+	// ----- setters ------------------------------
+
+	public JMSQueueManager getJmsQueueManager() {
+		return jmsQueueManager;
 	}
 
+	@Autowired
+	public void setJmsQueueManager(JMSQueueManager jmsQueueManager) {
+		this.jmsQueueManager = jmsQueueManager;
+	}
+
+	public SchedulingPool getSchedulingPool() {
+		return schedulingPool;
+	}
+
+	@Autowired
+	public void setSchedulingPool(SchedulingPool schedulingPool) {
+		this.schedulingPool = schedulingPool;
+	}
+
+	// ----- methods ------------------------------
+
 	public void endStuckTasks() {
-		//TODO: where and how to get this
-		long stuckTimeLimit = 10000L;
-		long now = new Date(System.currentTimeMillis()).getTime();
 
-
+		// handle stuck GEN tasks
 		for (Task task : schedulingPool.getGeneratingTasksBlockingMap().values()) {
-			if ((task.getStartTime().getTime() - now) > stuckTimeLimit) {
+			int howManyMinutesAgo = (int) (System.currentTimeMillis() - task.getStartTime().getTime()) / 1000 / 60;
+			// If too much time has passed something is broken
+			if (howManyMinutesAgo >= rescheduleTime) {
 				task.setStatus(TaskStatus.GENERROR);
 				Task removed = null;
 				try {
@@ -45,19 +65,22 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				} catch (TaskStoreException e) {
 					log.error("Failed during removal of Task {} from SchedulingPool", task);
 				}
-				if (removed != null) {
+				if (removed == null) {
 					log.error("Stale Task {} was not removed.", task);
 				}
 				try {
 					jmsQueueManager.reportTaskStatus(task.getId(), task.getStatus(), System.currentTimeMillis());
 				} catch (JMSException e) {
-					logJmsError(e, task);
+					log.warn("Error trying to send {} to Dispatcher: {}", task, e);
 				}
 			}
 		}
 
+		// handle stuck SEND tasks
 		for (SendTask sendTask : schedulingPool.getSendingSendTasksBlockingMap().values()) {
-			if ((sendTask.getStartTime().getTime() - now) > stuckTimeLimit) {
+			int howManyMinutesAgo = (int) (System.currentTimeMillis() - sendTask.getStartTime().getTime()) / 1000 / 60;
+			// If too much time has passed something is broken
+			if (howManyMinutesAgo >= rescheduleTime) {
 				sendTask.setStatus(SendTaskStatus.ERROR);
 				Future<SendTask> sendTaskFuture = null;
 				try {
@@ -69,24 +92,18 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				if (sendTaskFuture == null) {
 					log.error("Stale SendTask {} was not removed.", sendTask);
 				}
+				TaskResult taskResult = null;
 				try {
-					jmsQueueManager.reportTaskResult(schedulingPool.createTaskResult(sendTask.getId().getLeft(),
+					taskResult = schedulingPool.createTaskResult(sendTask.getId().getLeft(),
 							sendTask.getDestination().getId(), sendTask.getStderr(), sendTask.getStdout(),
-							sendTask.getReturnCode(), sendTask.getTask().getExecService().getService()));
+							sendTask.getReturnCode(), sendTask.getTask().getExecService().getService());
+					jmsQueueManager.reportTaskResult(taskResult);
 				} catch (JMSException e) {
-					logJmsError(e, sendTask);
+					log.warn("Error trying to send {} to Dispatcher: {}", taskResult, e);
 				}
 
 			}
 		}
-	}
-
-	public JMSQueueManager getJmsQueueManager() {
-		return jmsQueueManager;
-	}
-
-	public void setJmsQueueManager(JMSQueueManager jmsQueueManager) {
-		this.jmsQueueManager = jmsQueueManager;
 	}
 
 }

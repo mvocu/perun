@@ -4,10 +4,14 @@ import java.util.Collection;
 
 /**
  * This class wraps classic Map class, making its size limited an providing blocking behaviour when the limit is reached.
+ *
  * @param <K> Maps key
  * @param <V> Maps value
+ *
+ * @author David Šarman
  */
 public interface BlockingBoundedMap<K, V> {
+
 	/**
 	 * Puts the value into the Map, possibly blocking until there is open space.
 	 * @param value Value to be inserted into the map.
