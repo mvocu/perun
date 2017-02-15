@@ -1,28 +1,27 @@
 package cz.metacentrum.perun.dispatcher.service.impl;
 
+import cz.metacentrum.perun.dispatcher.parser.AuditerListener;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Properties;
 
 import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 import cz.metacentrum.perun.dispatcher.hornetq.PerunHornetQServer;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.dispatcher.jms.SystemQueueProcessor;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
-import cz.metacentrum.perun.dispatcher.parser.ParserManager;
 import cz.metacentrum.perun.dispatcher.processing.EventProcessor;
 import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
 import cz.metacentrum.perun.taskslib.service.ResultManager;
+import org.springframework.core.task.TaskExecutor;
 
 /**
- * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ * Implementation of DispatcherManager.
+ *
+ * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "dispatcherManager")
 public class DispatcherManagerImpl implements DispatcherManager {
@@ -32,8 +31,6 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	private PerunHornetQServer perunHornetQServer;
 	@Autowired
 	private SystemQueueProcessor systemQueueProcessor;
-	@Autowired
-	private ParserManager parserManager;
 	@Autowired
 	private EventProcessor eventProcessor;
 	@Autowired
@@ -45,9 +42,11 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	@Autowired
 	private ResultManager resultManager;
 	@Autowired
-	private Properties dispatcherPropertiesBean;
-	@Autowired
 	private TaskScheduler taskScheduler;
+	@Autowired
+	private TaskExecutor taskExecutor;
+	@Autowired
+	private AuditerListener auditerListener;
 
 	@Override
 	public void startPerunHornetQServer() {
@@ -60,8 +59,7 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	}
 
 	@Override
-	public void prefetchRulesAndDispatcherQueues()
-			throws PerunHornetQServerException {
+	public void prefetchRulesAndDispatcherQueues() throws PerunHornetQServerException {
 		smartMatcher.loadAllRulesFromDB();
 		systemQueueProcessor.createDispatcherQueuesForClients(smartMatcher.getClientsWeHaveRulesFor());
 	}
@@ -77,13 +75,18 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	}
 
 	@Override
-	public void startParsingData() {
-		parserManager.summonParsers();
+	public void startAuditerListener() {
+		taskExecutor.execute(new Runnable() {
+			@Override
+			public void run() {
+				auditerListener.init();
+			}
+		});
 	}
 
 	@Override
-	public void stopParsingData() {
-		parserManager.disposeParsers();
+	public void stopAuditerListener() {
+		// TODO - not implemeneted
 	}
 
 	@Override
@@ -105,8 +108,12 @@ public class DispatcherManagerImpl implements DispatcherManager {
 		this.systemQueueProcessor = systemQueueProcessor;
 	}
 
-	public void setParserManager(ParserManager parserManager) {
-		this.parserManager = parserManager;
+	public void setTaskExecutor(TaskExecutor taskExecutor) {
+		this.taskExecutor = taskExecutor;
+	}
+
+	public void setAuditerListener(AuditerListener auditerListener) {
+		this.auditerListener = auditerListener;
 	}
 
 	public void setEventProcessor(EventProcessor eventProcessor) {
@@ -121,7 +128,7 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	public void loadSchedulingPool() {
 		schedulingPool.reloadTasks();
 	}
-	
+
 	@Override
 	public void cleanOldTaskResults() {
 		for(DispatcherQueue queue: dispatcherQueuePool.getPool()) {

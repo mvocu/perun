@@ -38,8 +38,7 @@ import java.util.Set;
 @org.springframework.stereotype.Service(value = "eventProcessor")
 public class EventProcessorImpl implements EventProcessor {
 
-	private final static Logger log = LoggerFactory
-			.getLogger(EventProcessorImpl.class);
+	private final static Logger log = LoggerFactory.getLogger(EventProcessorImpl.class);
 
 	@Autowired
 	private EventQueue eventQueue;

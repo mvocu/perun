@@ -3,9 +3,9 @@ package cz.metacentrum.perun.dispatcher.service;
 import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 
 /**
- * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ * Main class for manging various parts of Dispatcher (hornetQ server, auditer listener, task scheduling, ...).
+ *
+ * @author Michal Karm Babacek
  */
 public interface DispatcherManager {
 
@@ -23,9 +23,9 @@ public interface DispatcherManager {
 	void stopProcessingSystemMessages();
 
 	// /Parsing data///
-	void startParsingData();
+	void startAuditerListener();
 
-	void stopParsingData();
+	void stopAuditerListener();
 
 	// /Event Processor///
 	void startProcessingEvents();
@@ -34,7 +34,7 @@ public interface DispatcherManager {
 
 	// /Task database///
 	void loadSchedulingPool();
-	
+
 	void cleanOldTaskResults();
 
 	void startSchedulingTasks();

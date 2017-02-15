@@ -83,7 +83,7 @@ public class DispatcherStarter {
 			// reload tasks from database
 			dispatcherManager.loadSchedulingPool();
 			// Start parsers (mining data both from Grouper and PerunDB)
-			dispatcherManager.startParsingData();
+			dispatcherManager.startAuditerListener();
 			// Start Event Processor
 			dispatcherManager.startProcessingEvents();
 			// Start thread for Task scheduling
@@ -104,7 +104,7 @@ public class DispatcherStarter {
 		cleanTaskResultsJob.setEnabled(false);
 		// stop currently running jobs
 		dispatcherManager.stopProcessingEvents();
-		dispatcherManager.stopParsingData();
+		dispatcherManager.stopAuditerListener();
 		dispatcherManager.stopProcessingSystemMessages();
 		dispatcherManager.stopPerunHornetQServer();
 	}
