@@ -19,14 +19,14 @@ import cz.metacentrum.perun.engine.processing.CommandProcessor;
 import cz.metacentrum.perun.engine.processing.EventProcessor;
 
 /**
- * 
+ *
  * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ *
  */
 @org.springframework.stereotype.Service(value = "eventReceiver")
 public class MessageReceiver implements Runnable {
-	private final static Logger log = LoggerFactory
-			.getLogger(MessageReceiver.class);
+
+	private final static Logger log = LoggerFactory.getLogger(MessageReceiver.class);
 
 	private final static int TOO_LONG = 15000;
 

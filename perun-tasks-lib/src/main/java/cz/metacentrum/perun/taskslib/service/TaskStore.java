@@ -1,8 +1,8 @@
 package cz.metacentrum.perun.taskslib.service;
 
 import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface TaskStore {
 	Task getTask(int id);
-	Task getTask(Facility facility, ExecService execService);
+	Task getTask(Facility facility, Service service);
 	int getSize();
 	Task addToPool(Task task) throws TaskStoreException;
 	List<Task> getAllTasks();

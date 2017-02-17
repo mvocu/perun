@@ -66,7 +66,7 @@ public class SendCollector extends AbstractRunner {
 				stderr = sendTask.getStderr();
 				stdout = sendTask.getStdout();
 				returnCode = sendTask.getReturnCode();
-				service = sendTask.getTask().getExecService().getService();
+				service = sendTask.getTask().getService();
 			} catch (InterruptedException e) {
 				String errorStr = "Thread collecting sent SendTasks was interrupted.";
 				log.error(errorStr);
@@ -80,7 +80,7 @@ public class SendCollector extends AbstractRunner {
 				stderr = e.getStderr();
 				stdout = e.getStdout();
 				returnCode = e.getReturnCode();
-				service = task.getExecService().getService();
+				service = task.getService();
 			}
 			Task task = schedulingPool.getTask(taskId);
 

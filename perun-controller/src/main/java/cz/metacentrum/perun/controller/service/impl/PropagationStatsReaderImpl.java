@@ -16,11 +16,9 @@ import cz.metacentrum.perun.controller.service.PropagationStatsReader;
 import cz.metacentrum.perun.core.bl.PerunBl;
 import cz.metacentrum.perun.taskslib.dao.TaskDao;
 import cz.metacentrum.perun.taskslib.dao.TaskResultDao;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskResult;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 /**
  * @author Michal Karm Babacek
@@ -42,8 +40,8 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 	private TaskManager taskManager;
 
 	@Override
-	public Task getTask(PerunSession perunSession, ExecService execService, Facility facility) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		return taskDao.getTask(execService, facility);
+	public Task getTask(PerunSession perunSession, Service service, Facility facility) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
+		return taskDao.getTask(service, facility);
 	}
 
 	@Override
@@ -67,23 +65,8 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 	}
 
 	@Override
-	public List<Task> listTasksScheduledBetweenDates(PerunSession perunSession, Date olderThen, Date youngerThen) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		return taskDao.listTasksScheduledBetweenDates(olderThen, youngerThen);
-	}
-
-	@Override
-	public List<Task> listTasksStartedBetweenDates(PerunSession perunSession,Date olderThen, Date youngerThen) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		return taskDao.listTasksStartedBetweenDates(olderThen, youngerThen);
-	}
-
-	@Override
-	public List<Task> listTasksEndedBetweenDates(PerunSession perunSession,Date olderThen, Date youngerThen) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		return taskDao.listTasksEndedBetweenDates(olderThen, youngerThen);
-	}
-
-	@Override
-	public boolean isThereSuchTask(ExecService execService, Facility facility) {
-		return taskDao.isThereSuchTask(execService, facility);
+	public boolean isThereSuchTask(Service service, Facility facility) {
+		return taskDao.isThereSuchTask(service, facility);
 	}
 
 	@Override
@@ -147,7 +130,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 			}
 
 			// get destination status
-			if (task.getExecService() != null) {
+			if (task.getService() != null) {
 				List<TaskResult> results = taskResultDao.getTaskResultsByTask(task.getId());
 
 				Map<Service, Map<Destination, TaskResult>> latestResults = new HashMap<Service, Map<Destination, TaskResult>>();
@@ -297,20 +280,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 		for (Service service : perun.getServicesManagerBl().getAssignedServices(sess, facility)) {
 
 			serviceStates.put(service, new ServiceState(service, facility));
-
-			try {
-				// fill global allowance state based on existing exec services
-				List<ExecService> execs = getGeneralServiceManager().listExecServices(sess, service.getId());
-				for (ExecService ex : execs) {
-					if (!ex.isEnabled()) serviceStates.get(service).setBlockedGlobally(true);
-					// fill facility allowance state based on existing exec services
-					if (getGeneralServiceManager().isExecServiceDeniedOnFacility(ex, facility)) serviceStates.get(service).setBlockedOnFacility(true);
-				}
-
-			} catch (EmptyResultDataAccessException ex) {
-				// service has no exec services -> blocked globally
-				serviceStates.get(service).setBlockedGlobally(true);
-			}
+			serviceStates.get(service).setBlockedOnFacility(getGeneralServiceManager().isServiceBlockedOnFacility(service, facility));
 
 			// service has destination on facility
 			serviceStates.get(service).setHasDestinations(!perun.getServicesManagerBl().getDestinations(sess, service, facility).isEmpty());
@@ -323,7 +293,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 
 		for (Task task : tasks) {
 
-			Service taskService = task.getExecService().getService();
+			Service taskService = task.getService();
 
 			ServiceState serviceState = serviceStates.get(taskService);
 			if (serviceState == null) {
@@ -335,11 +305,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 
 			// fill service state
 			serviceState.setTask(task);
-
-			if (!task.getExecService().isEnabled()) {
-				serviceStates.get(taskService).setBlockedGlobally(true);
-			}
-			if (getGeneralServiceManager().isExecServiceDeniedOnFacility(task.getExecService(), facility)) serviceStates.get(taskService).setBlockedOnFacility(true);
+			serviceStates.get(taskService).setBlockedOnFacility(getGeneralServiceManager().isServiceBlockedOnFacility(task.getService(), facility));
 
 		}
 
@@ -351,7 +317,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 	public void deleteTask(PerunSession sess, Task task) throws InternalErrorException, PrivilegeException {
 
 		Facility facility = task.getFacility();
-		ExecService execService = task.getExecService();
+		Service service = task.getService();
 
 		if (!AuthzResolver.isAuthorized(sess, Role.FACILITYADMIN, facility)) {
 			throw new PrivilegeException("deleteTask");
@@ -361,7 +327,7 @@ public class PropagationStatsReaderImpl implements PropagationStatsReader {
 		taskResultDao.clearByTask(task.getId());
 
 		// remove task itself
-		taskDao.removeTask(execService, facility);
+		taskDao.removeTask(service, facility);
 
 	}
 

@@ -1,18 +1,13 @@
 package cz.metacentrum.perun.dispatcher.scheduling;
 
-import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
-import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
-import cz.metacentrum.perun.taskslib.model.TaskSchedule;
 import cz.metacentrum.perun.taskslib.service.TaskStore;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.DelayQueue;
 
 /**
  * @author Michal Voců

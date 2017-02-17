@@ -19,7 +19,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -31,8 +30,9 @@ import java.util.Properties;
  */
 @org.springframework.stereotype.Service(value = "jmsQueueManager")
 public class JMSQueueManager {
-	private final static Logger log = LoggerFactory
-			.getLogger(JMSQueueManager.class);
+
+	private final static Logger log = LoggerFactory.getLogger(JMSQueueManager.class);
+
 	private static final String systemQueueName = "systemQueue";
 	@Autowired
 	private Properties propertiesBean;

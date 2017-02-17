@@ -13,7 +13,7 @@ import cz.metacentrum.perun.webgui.client.PerunWebSession;
 import cz.metacentrum.perun.webgui.client.resources.TableSorter;
 import cz.metacentrum.perun.webgui.json.*;
 import cz.metacentrum.perun.webgui.json.keyproviders.GeneralKeyProvider;
-import cz.metacentrum.perun.webgui.model.ExecService;
+import cz.metacentrum.perun.webgui.model.Service;
 import cz.metacentrum.perun.webgui.model.PerunError;
 import cz.metacentrum.perun.webgui.widgets.AjaxLoaderImage;
 import cz.metacentrum.perun.webgui.widgets.PerunTable;
@@ -22,27 +22,28 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 /**
- * Ajax query to get exec services which are denied on facility
+ * Ajax query to get services which are denied on facility
  *
  * @author Pavel Zlamal <256627@mail.muni.cz>
  */
-public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<ExecService> {
+public class GetServicesBlockedOnFacility implements JsonCallback, JsonCallbackTable<Service> {
+
 	// Session
 	private PerunWebSession session = PerunWebSession.getInstance();
 	// facility ID
 	private int facilityId = 0;
 	// JSON URL
-	private static final String JSON_URL = "generalServiceManager/listDenialsForFacility";
+	private static final String JSON_URL = "generalServiceManager/getServicesBlockedOnFacility";
 	// Selection model for the table
-	final MultiSelectionModel<ExecService> selectionModel = new MultiSelectionModel<ExecService>(new GeneralKeyProvider<ExecService>());
+	final MultiSelectionModel<Service> selectionModel = new MultiSelectionModel<Service>(new GeneralKeyProvider<Service>());
 	// Table data provider.
-	private ListDataProvider<ExecService> dataProvider = new ListDataProvider<ExecService>();
+	private ListDataProvider<Service> dataProvider = new ListDataProvider<Service>();
 	// Cell table
-	private PerunTable<ExecService> table;
-	// List of exec services
-	private ArrayList<ExecService> list = new ArrayList<ExecService>();
+	private PerunTable<Service> table;
+	// List of services
+	private ArrayList<Service> list = new ArrayList<Service>();
 	// Table field updater
-	private FieldUpdater<ExecService, String> tableFieldUpdater;
+	private FieldUpdater<Service, String> tableFieldUpdater;
 	// External events
 	private JsonCallbackEvents events = new JsonCallbackEvents();
 	// loader image
@@ -54,7 +55,7 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 *
 	 * @param id ID of facility
 	 */
-	public ListDenialsForFacility(int id) {
+	public GetServicesBlockedOnFacility(int id) {
 		this.facilityId = id;
 	}
 
@@ -64,130 +65,129 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 * @param id ID of facility
 	 * @param events external events
 	 */
-	public ListDenialsForFacility(int id, JsonCallbackEvents events) {
+	public GetServicesBlockedOnFacility(int id, JsonCallbackEvents events) {
 		this.facilityId = id;
 		this.events = events;
 	}
 
 	/**
-	 * Returns the table with exec services
+	 * Returns the table with services
 	 *
 	 * @param fu Custom field updater
 	 * @return CellTable widget
 	 */
-	public CellTable<ExecService> getTable(FieldUpdater<ExecService, String> fu){
+	public CellTable<Service> getTable(FieldUpdater<Service, String> fu){
 		this.tableFieldUpdater = fu;
 		return this.getTable();
 	}
 
 	/**
-	 * Returns the table with exec services
+	 * Returns the table with services
 	 *
 	 * @return CellTable widget
 	 */
-	public CellTable<ExecService> getTable() {
+	public CellTable<Service> getTable() {
 
 		// retrieves data
 		retrieveData();
 
 		// Table data provider.
-		dataProvider = new ListDataProvider<ExecService>(list);
+		dataProvider = new ListDataProvider<Service>(list);
 
 		// Cell table
-		table = new PerunTable<ExecService>(list);
+		table = new PerunTable<Service>(list);
 
 		// Connect the table to the data provider.
 		dataProvider.addDataDisplay(table);
 
 		// Sorting
-		ListHandler<ExecService> columnSortHandler = new ListHandler<ExecService>(dataProvider.getList());
+		ListHandler<Service> columnSortHandler = new ListHandler<Service>(dataProvider.getList());
 		table.addColumnSortHandler(columnSortHandler);
 
 		// table selection
-		table.setSelectionModel(selectionModel, DefaultSelectionEventManager.<ExecService> createCheckboxManager());
+		table.setSelectionModel(selectionModel, DefaultSelectionEventManager.<Service> createCheckboxManager());
 
 		// set empty content & loader
 		table.setEmptyTableWidget(loaderImage);
 
-		if(this.checkable)
-		{
+		if(this.checkable) {
 			// checkbox column column
 			table.addCheckBoxColumn();
 		}
 
 		//add id column
-		table.addIdColumn("ExecService ID", tableFieldUpdater);
+		table.addIdColumn("Service ID", tableFieldUpdater);
 
 		// Create service name column.
-		Column<ExecService, String> serviceNameColumn = JsonUtils.addColumn(new JsonUtils.GetValue<ExecService, String>() {
-			public String getValue(ExecService object) {
-				return object.getService().getName();
+		Column<Service, String> serviceNameColumn = JsonUtils.addColumn(new JsonUtils.GetValue<Service, String>() {
+			public String getValue(Service object) {
+				return object.getName();
 			}
 		},this.tableFieldUpdater);
 
 		// Create enabled column
-		Column<ExecService, String> localEnabledColumn = JsonUtils.addColumn(new JsonUtils.GetValue<ExecService, String>() {
-			public String getValue(ExecService object) {
+		Column<Service, String> localEnabledColumn = JsonUtils.addColumn(new JsonUtils.GetValue<Service, String>() {
+			public String getValue(Service object) {
 				// translate hack
 				return object.isLocalEnabled();
 			}
 		},this.tableFieldUpdater);
 
 		// Create enabled column
-		Column<ExecService, String> enabledColumn = JsonUtils.addColumn(new JsonUtils.GetValue<ExecService, String>() {
-			public String getValue(ExecService object) {
+		Column<Service, String> enabledColumn = JsonUtils.addColumn(new JsonUtils.GetValue<Service, String>() {
+			public String getValue(Service object) {
 				// translate hack
-				if (object.isEnabled() == true) { return "Enabled"; }
+				if (object.isEnabled()) { return "Enabled"; }
 				else { return "Disabled"; }
 			}
 		},this.tableFieldUpdater);
 
 		// Create script path column
-		Column<ExecService, String> scriptPathColumn = JsonUtils.addColumn(new JsonUtils.GetValue<ExecService, String>() {
-			public String getValue(ExecService object) {
+		Column<Service, String> scriptPathColumn = JsonUtils.addColumn(new JsonUtils.GetValue<Service, String>() {
+			public String getValue(Service object) {
 				return String.valueOf(object.getScriptPath());
 			}
 		},this.tableFieldUpdater);
 
 		// Create delay column
-		Column<ExecService, String> delayColumn = JsonUtils.addColumn(new JsonUtils.GetValue<ExecService, String>() {
-			public String getValue(ExecService object) {
-				return String.valueOf(object.getDefaultDelay());
+		Column<Service, String> delayColumn = JsonUtils.addColumn(new JsonUtils.GetValue<Service, String>() {
+			public String getValue(Service object) {
+				return String.valueOf(object.getDelay());
 			}
 		},this.tableFieldUpdater);
 
 		serviceNameColumn.setSortable(true);
-		columnSortHandler.setComparator(serviceNameColumn, new Comparator<ExecService>() {
-			public int compare(ExecService o1, ExecService o2) {
-				return o1.getService().getName().compareToIgnoreCase(o2.getService().getName());
+		columnSortHandler.setComparator(serviceNameColumn, new Comparator<Service>() {
+			public int compare(Service o1, Service o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
 			}
 		});
 
 		enabledColumn.setSortable(true);
-		columnSortHandler.setComparator(enabledColumn, new Comparator<ExecService>() {
-			public int compare(ExecService o1, ExecService o2) {
+		columnSortHandler.setComparator(enabledColumn, new Comparator<Service>() {
+			public int compare(Service o1, Service o2) {
 				return String.valueOf(o1.isEnabled()).compareToIgnoreCase(String.valueOf(o2.isEnabled()));
 			}
 		});
 
 		localEnabledColumn.setSortable(true);
-		columnSortHandler.setComparator(localEnabledColumn, new Comparator<ExecService>() {
-			public int compare(ExecService o1, ExecService o2) {
+		columnSortHandler.setComparator(localEnabledColumn, new Comparator<Service>() {
+			public int compare(Service o1, Service o2) {
 				return o1.isLocalEnabled().compareToIgnoreCase(o2.isLocalEnabled());
 			}
 		});
 
 		scriptPathColumn.setSortable(true);
-		columnSortHandler.setComparator(scriptPathColumn, new Comparator<ExecService>() {
-			public int compare(ExecService o1, ExecService o2) {
+		columnSortHandler.setComparator(scriptPathColumn, new Comparator<Service>() {
+			public int compare(Service o1, Service o2) {
 				return o1.getScriptPath().compareToIgnoreCase(o2.getScriptPath());
 			}
 		});
 
 		delayColumn.setSortable(true);
-		columnSortHandler.setComparator(delayColumn, new Comparator<ExecService>() {
-			public int compare(ExecService o1, ExecService o2) {
-				return o1.getDefaultDelay() - o2.getDefaultDelay();
+		columnSortHandler.setComparator(delayColumn, new Comparator<Service>() {
+			public int compare(Service o1, Service o2) {
+				return o1.getDelay() - o2.getDelay();
 			}
 		});
 
@@ -222,7 +222,7 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 * Sorts table by objects date
 	 */
 	public void sortTable() {
-		list = new TableSorter<ExecService>().sortById(getList());
+		list = new TableSorter<Service>().sortById(getList());
 		dataProvider.flush();
 		dataProvider.refresh();
 	}
@@ -232,7 +232,7 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 *
 	 * @param object Resource to be added as new row
 	 */
-	public void addToTable(ExecService object) {
+	public void addToTable(Service object) {
 		list.add(object);
 		dataProvider.flush();
 		dataProvider.refresh();
@@ -243,7 +243,7 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 *
 	 * @param object Resource to be removed as row
 	 */
-	public void removeFromTable(ExecService object) {
+	public void removeFromTable(Service object) {
 		list.remove(object);
 		selectionModel.getSelectedSet().remove(object);
 		dataProvider.flush();
@@ -273,7 +273,7 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 *
 	 * @return return list of checked items
 	 */
-	public ArrayList<ExecService> getTableSelectedList(){
+	public ArrayList<Service> getTableSelectedList(){
 		return JsonUtils.setToList(selectionModel.getSelectedSet());
 	}
 
@@ -281,7 +281,7 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 * Called, when an error occurs
 	 */
 	public void onError(PerunError error) {
-		session.getUiElements().setLogErrorText("Error while loading ExecServices.");
+		session.getUiElements().setLogErrorText("Error while loading Services.");
 		loaderImage.loadingError(error);
 		events.onError(error);
 	}
@@ -290,7 +290,7 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 * Called, when loading starts
 	 */
 	public void onLoadingStart() {
-		session.getUiElements().setLogText("Loading ExecServices started.");
+		session.getUiElements().setLogText("Loading Services started.");
 		events.onLoadingStart();
 	}
 
@@ -298,18 +298,18 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 	 * Called when loading successfully finishes.
 	 */
 	public void onFinished(JavaScriptObject jso) {
-		for (ExecService e : JsonUtils.<ExecService>jsoAsList(jso)){
+		for (Service e : JsonUtils.<Service>jsoAsList(jso)){
 			e.setLocalEnabled("Disabled");
 			addToTable(e);
 		}
 		sortTable();
 		loaderImage.loadingFinished();
-		session.getUiElements().setLogText("ExecServices loaded: " + list.size());
+		session.getUiElements().setLogText("Services loaded: " + list.size());
 		events.onFinished(jso);
 
 	}
 
-	public void insertToTable(int index, ExecService object) {
+	public void insertToTable(int index, Service object) {
 		list.add(index, object);
 		dataProvider.flush();
 		dataProvider.refresh();
@@ -323,14 +323,14 @@ public class ListDenialsForFacility implements JsonCallback, JsonCallbackTable<E
 		this.checkable = checkable;
 	}
 
-	public void setList(ArrayList<ExecService> list) {
+	public void setList(ArrayList<Service> list) {
 		clearTable();
 		this.list.addAll(list);
 		dataProvider.flush();
 		dataProvider.refresh();
 	}
 
-	public ArrayList<ExecService> getList() {
+	public ArrayList<Service> getList() {
 		return this.list;
 	}
 

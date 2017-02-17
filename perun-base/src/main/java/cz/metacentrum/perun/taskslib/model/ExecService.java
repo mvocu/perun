@@ -9,6 +9,7 @@ import cz.metacentrum.perun.core.api.BeansUtils;
 /**
  * @author Michal Karm Babacek
  */
+@Deprecated
 public class ExecService extends PerunBean implements Serializable {
 	private static final long serialVersionUID = 1610949885568207786L;
 

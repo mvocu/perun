@@ -3,7 +3,14 @@ package cz.metacentrum.perun.webgui.tabs.servicestabs;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import cz.metacentrum.perun.webgui.client.PerunWebSession;
 import cz.metacentrum.perun.webgui.client.localization.ButtonTranslation;
 import cz.metacentrum.perun.webgui.client.resources.ButtonType;
@@ -11,21 +18,20 @@ import cz.metacentrum.perun.webgui.client.resources.SmallIcons;
 import cz.metacentrum.perun.webgui.client.resources.Utils;
 import cz.metacentrum.perun.webgui.json.JsonCallbackEvents;
 import cz.metacentrum.perun.webgui.json.JsonUtils;
-import cz.metacentrum.perun.webgui.json.servicesManager.CreateService;
+import cz.metacentrum.perun.webgui.json.servicesManager.UpdateService;
+import cz.metacentrum.perun.webgui.model.Service;
 import cz.metacentrum.perun.webgui.tabs.TabItem;
 import cz.metacentrum.perun.webgui.widgets.CustomButton;
 import cz.metacentrum.perun.webgui.widgets.ExtendedTextBox;
 import cz.metacentrum.perun.webgui.widgets.TabMenu;
 
 /**
- * Tab with create service form
- *
- * ! USE AS INNER TAB ONLY !
+ * !! USE ONLY AS INNER TAB !!!
+ * Edit Service details tab
  *
  * @author Pavel Zlamal <256627@mail.muni.cz>
- * @author Vaclav Mach <374430@mail.muni.cz>
  */
-public class CreateServiceTabItem implements TabItem {
+public class EditServiceDetailsTabItem implements TabItem {
 
 	/**
 	 * Perun web session
@@ -40,23 +46,35 @@ public class CreateServiceTabItem implements TabItem {
 	/**
 	 * Title widget
 	 */
-	private Label titleWidget = new Label("Create service");
-
-	private static final String DEFAULT_DELAY = "10";
+	private Label titleWidget = new Label("Edit: ");
 
 	/**
-	 * Tab with create service form
+	 * Data
 	 */
-	public CreateServiceTabItem(){}
+	private Service service;
+	private ButtonTranslation buttonTranslation = ButtonTranslation.INSTANCE;
+	private JsonCallbackEvents events;
+
+	/**
+	 * Creates a tab instance
+	 *
+	 * @param service
+	 * @param event
+	 */
+	public EditServiceDetailsTabItem(Service service, JsonCallbackEvents event){
+		this.service = service;
+		this.events = event;
+	}
 
 	public boolean isPrepared(){
-		return true;
+		return (service != null);
 	}
 
 	public Widget draw() {
 
+		titleWidget = new Label("Edit service");
+
 		VerticalPanel vp = new VerticalPanel();
-		vp.setSize("100%", "100%");
 
 		final ExtendedTextBox serviceName = new ExtendedTextBox();
 		final ExtendedTextBox serviceDescription = new ExtendedTextBox();
@@ -64,6 +82,13 @@ public class CreateServiceTabItem implements TabItem {
 		final CheckBox enabled = new CheckBox();
 		final ExtendedTextBox delay = new ExtendedTextBox();
 		final ExtendedTextBox recurrence = new ExtendedTextBox();
+
+		serviceName.getTextBox().setText(service.getName());
+		serviceDescription.getTextBox().setText(service.getDescription());
+		scriptPath.getTextBox().setText(service.getScriptPath());
+		enabled.setValue(service.isEnabled());
+		delay.getTextBox().setText(String.valueOf(service.getDelay()));
+		recurrence.getTextBox().setText(String.valueOf(service.getRecurrence()));
 
 		final ExtendedTextBox.TextBoxValidator validator = new ExtendedTextBox.TextBoxValidator() {
 			@Override
@@ -85,10 +110,6 @@ public class CreateServiceTabItem implements TabItem {
 		serviceName.setValidator(validator);
 
 		enabled.setText("Enabled / Disabled");
-		enabled.setValue(true);
-
-		delay.getTextBox().setText(DEFAULT_DELAY);
-		recurrence.getTextBox().setText("2");
 
 		final ExtendedTextBox.TextBoxValidator delayValidator = new ExtendedTextBox.TextBoxValidator() {
 			@Override
@@ -132,17 +153,46 @@ public class CreateServiceTabItem implements TabItem {
 		};
 		scriptPath.setValidator(scriptValidator);
 
-
 		// prepares layout
 		FlexTable layout = new FlexTable();
 		layout.setStyleName("inputFormFlexTable");
-		FlexTable.FlexCellFormatter cellFormatter = layout.getFlexCellFormatter();
+		FlexCellFormatter cellFormatter = layout.getFlexCellFormatter();
 
 		// close tab events
 		final TabItem tab = this;
 
 		TabMenu menu = new TabMenu();
 
+		// send button
+		final CustomButton saveButton = TabMenu.getPredefinedButton(ButtonType.SAVE, buttonTranslation.saveServiceDetails());
+		saveButton.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				if (validator.validateTextBox() && delayValidator.validateTextBox() && scriptValidator.validateTextBox() && recurrenceValidator.validateTextBox()) {
+					Service serv = JsonUtils.clone(service).cast();
+					serv.setName(serviceName.getTextBox().getText().trim());
+					String desc = serviceDescription.getTextBox().getText().trim();
+					if (desc.isEmpty()) desc = null;
+					serv.setDescription(desc);
+					serv.setDelay(Integer.parseInt(delay.getTextBox().getText().trim()));
+					serv.setRecurrence(Integer.parseInt(recurrence.getTextBox().getText().trim()));
+					serv.setEnabled(enabled.getValue());
+					serv.setScriptPath(scriptPath.getTextBox().getText().trim());
+					UpdateService request = new UpdateService(JsonCallbackEvents.closeTabDisableButtonEvents(saveButton, tab, events));
+					request.updateService(serv);
+				}
+			}
+		});
+
+		// cancel button
+		final CustomButton cancelButton = TabMenu.getPredefinedButton(ButtonType.CANCEL, "");
+		cancelButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent clickEvent) {
+				session.getTabManager().closeTab(tab, false);
+			}
+		});
+
+		// Add some standard form options
 		// fill form
 		layout.setHTML(0, 0, "Name:");
 		layout.setHTML(1, 0, "Description:");
@@ -162,41 +212,13 @@ public class CreateServiceTabItem implements TabItem {
 			cellFormatter.addStyleName(i, 0, "itemName");
 		}
 
-		// create button
-		final CustomButton createButton = TabMenu.getPredefinedButton(ButtonType.CREATE, ButtonTranslation.INSTANCE.createService());
-		createButton.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				if (validator.validateTextBox() && delayValidator.validateTextBox() && scriptValidator.validateTextBox() && recurrenceValidator.validateTextBox()) {
-					CreateService request = new CreateService(JsonCallbackEvents.closeTabDisableButtonEvents(createButton, tab));
-					String description = serviceDescription.getTextBox().getText().trim();
-					if (description.isEmpty()) description = null;
-					request.createService(serviceName.getTextBox().getText().trim(),
-							description,
-							Integer.parseInt(delay.getTextBox().getText().trim()),
-							Integer.parseInt(recurrence.getTextBox().getText().trim()),
-							enabled.getValue(),
-							scriptPath.getTextBox().getText().trim());
-				}
-			}
-		});
-
-		// cancel button
-		final CustomButton cancelButton = TabMenu.getPredefinedButton(ButtonType.CANCEL, "");
-		cancelButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent clickEvent) {
-				session.getTabManager().closeTab(tab, false);
-			}
-		});
-
-		menu.addWidget(createButton);
+		menu.addWidget(saveButton);
 		menu.addWidget(cancelButton);
 
 		vp.add(layout);
 		vp.add(menu);
 		vp.setCellHorizontalAlignment(menu, HasHorizontalAlignment.ALIGN_RIGHT);
 
-		// add tabs to the main panel
 		this.contentWidget.setWidget(vp);
 
 		return getWidget();
@@ -211,14 +233,14 @@ public class CreateServiceTabItem implements TabItem {
 	}
 
 	public ImageResource getIcon() {
-		return SmallIcons.INSTANCE.trafficLightsIcon();
+		return SmallIcons.INSTANCE.applicationFormEditIcon();
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 1063;
-		int result = 31;
-		result = prime * result;
+		final int prime = 593441861;
+		int result = 1;
+		result = prime * result + 6786786;
 		return result;
 	}
 
@@ -230,6 +252,10 @@ public class CreateServiceTabItem implements TabItem {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
+		EditServiceDetailsTabItem other = (EditServiceDetailsTabItem) obj;
+		if (service != other.service)
+			return false;
+
 		return true;
 	}
 
@@ -237,10 +263,7 @@ public class CreateServiceTabItem implements TabItem {
 		return false;
 	}
 
-	public void open()
-	{
-
-	}
+	public void open() { }
 
 	public boolean isAuthorized() {
 

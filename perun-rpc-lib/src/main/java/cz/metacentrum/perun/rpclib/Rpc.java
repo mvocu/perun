@@ -1144,7 +1144,7 @@ public class Rpc {
 			params.put("id", new Integer(execServiceId));
 
 			try {
-				return rpcCaller.call("generalServiceManager", "getExecService", params).read(ExecService.class);
+				return rpcCaller.call("generalServiceManager", "getService", params).read(ExecService.class);
 			} catch (ServiceNotExistsException e) {
 				throw e;
 			} catch (PrivilegeException e) {
@@ -1223,7 +1223,7 @@ public class Rpc {
 			params.put("facility", facility.getId());
 
 			try {
-				return 1 == rpcCaller.call("generalServiceManager", "isExecServiceDeniedOnFacility", params).readInt();
+				return 1 == rpcCaller.call("generalServiceManager", "isServiceBlockedOnFacility", params).readInt();
 			} catch (PrivilegeException e) {
 				throw e;
 			} catch (InternalErrorException e) {
@@ -1239,7 +1239,7 @@ public class Rpc {
 			params.put("destinationId", destinationId);
 
 			try {
-				return rpcCaller.call("generalServiceManager", "isExecServiceDeniedOnDestination", params).readInt();
+				return rpcCaller.call("generalServiceManager", "isServiceBlockedOnDestination", params).readInt();
 			} catch (PrivilegeException e) {
 				throw e;
 			} catch (InternalErrorException e) {
@@ -1320,7 +1320,7 @@ public class Rpc {
 			params.put("facility", facility.getId());
 
 			try {
-				rpcCaller.call("generalServiceManager", "banExecServiceOnFacility", params);
+				rpcCaller.call("generalServiceManager", "blockServiceOnFacility", params);
 			} catch(InternalErrorException  e) {    throw e;
 			} catch(PerunException e) {    throw new ConsistencyErrorException(e);
 			}
@@ -1332,7 +1332,7 @@ public class Rpc {
 			params.put("destination", destinationId);
 
 			try {
-				rpcCaller.call("generalServiceManager", "banExecServiceOnDestination", params);
+				rpcCaller.call("generalServiceManager", "blockServiceOnDestination", params);
 			} catch(InternalErrorException  e) {    throw e;
 			} catch(PerunException e) {    throw new ConsistencyErrorException(e);
 			}
@@ -1343,7 +1343,7 @@ public class Rpc {
 			params.put("facility", facility.getId());
 
 			try {
-				return rpcCaller.call("generalServiceManager", "listDenialsForFacility", params).readList(ExecService.class);
+				return rpcCaller.call("generalServiceManager", "getServicesBlockedOnFacility", params).readList(ExecService.class);
 			} catch(ServiceNotExistsException e) {    throw e;
 			} catch(InternalErrorException e) {    throw e;
 			} catch(PrivilegeException  e) {    throw e;
@@ -1356,7 +1356,7 @@ public class Rpc {
 			params.put("destination", destinationId);
 
 			try {
-				return rpcCaller.call("generalServiceManager", "listDenialsForDestination", params).readList(ExecService.class);
+				return rpcCaller.call("generalServiceManager", "getServicesBlockedOnDestination", params).readList(ExecService.class);
 			} catch(ServiceNotExistsException e) {    throw e;
 			} catch(InternalErrorException e) {    throw e;
 			} catch(PrivilegeException  e) {    throw e;
@@ -1369,7 +1369,7 @@ public class Rpc {
 			params.put("facility", facility.getId());
 
 			try {
-				rpcCaller.call("generalServiceManager", "freeAllDenialsOnFacility", params);
+				rpcCaller.call("generalServiceManager", "unblockAllServicesOnFacility", params);
 			} catch(PerunException e) {    throw new ConsistencyErrorException(e);
 			}
 		}
@@ -1379,7 +1379,7 @@ public class Rpc {
 			params.put("destination", destinationId);
 
 			try {
-				rpcCaller.call("generalServiceManager", "freeAllDenialsOnDestination", params);
+				rpcCaller.call("generalServiceManager", "unblockAllServicesOnDestination", params);
 			} catch(PerunException e) {    throw new ConsistencyErrorException(e);
 			}
 		}
@@ -1390,7 +1390,7 @@ public class Rpc {
 			params.put("facility", facility.getId());
 
 			try {
-				rpcCaller.call("generalServiceManager", "freeDenialOfExecServiceOnFacility", params);
+				rpcCaller.call("generalServiceManager", "unblockServiceOnFacility", params);
 			} catch(InternalErrorException  e) {    throw e;
 			} catch(PerunException e) {    throw new ConsistencyErrorException(e);
 			}
@@ -1402,7 +1402,7 @@ public class Rpc {
 			params.put("destination", destinationId);
 
 			try {
-				rpcCaller.call("generalServiceManager", "freeDenialOfExecServiceOnDestination", params);
+				rpcCaller.call("generalServiceManager", "unblockServiceOnDestination", params);
 			} catch(InternalErrorException  e) {    throw e;
 			} catch(PerunException e) {    throw new ConsistencyErrorException(e);
 			}

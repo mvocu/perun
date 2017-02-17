@@ -69,8 +69,8 @@ public class RichService extends JavaScriptObject {
 			}
 		}-*/;
 
-		public final native ExecService getExecService()/*-{
-			return this.execService;
+		public final native Service getService()/*-{
+			return this;
 		}-*/;
 
 		/**

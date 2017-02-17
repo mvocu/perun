@@ -41,17 +41,17 @@ import cz.metacentrum.perun.core.api.exceptions.ResourceNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.UserNotExistsException;
 import cz.metacentrum.perun.dispatcher.exceptions.InvalidEventMessageException;
-import cz.metacentrum.perun.dispatcher.processing.EventExecServiceResolver;
-import cz.metacentrum.perun.taskslib.model.ExecService;
+import cz.metacentrum.perun.dispatcher.processing.EventServiceResolver;
 
 /**
  *
  * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "eventExecServiceResolver")
-public class EventExecServiceResolverImpl implements EventExecServiceResolver {
-	private static final Logger log = LoggerFactory
-			.getLogger(EventExecServiceResolverImpl.class);
+public class EventServiceResolverImpl implements EventServiceResolver {
+
+	private static final Logger log = LoggerFactory.getLogger(EventServiceResolverImpl.class);
+
 	@Autowired
 	private Properties dispatcherProperties;
 	@Autowired
@@ -60,9 +60,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 	private GeneralServiceManager generalServiceManager;
 
 	@Override
-	public Map<Facility, Set<ExecService>> parseEvent(String event)
-			throws InvalidEventMessageException, ServiceNotExistsException,
-			InternalErrorException, PrivilegeException {
+	public Map<Facility, Set<Service>> parseEvent(String event) throws InvalidEventMessageException, ServiceNotExistsException, InternalErrorException, PrivilegeException {
 		log.info("I am going to process event:" + event);
 
 		/**
@@ -221,8 +219,7 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 				servicesResolvedFromEvent.add(service);
 			}
 
-			//List<Pair<List<ExecService>, Facility>> pairs = new ArrayList<Pair<List<ExecService>, Facility>>();
-			Map<Facility, Set<ExecService>> result = new HashMap<Facility, Set<ExecService>>();
+			Map<Facility, Set<Service>> result = new HashMap<Facility, Set<Service>>();
 			for (Resource r : resourcesResolvedFromEvent) {
 
 				Facility facilityResolvedFromEvent;
@@ -239,9 +236,6 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 				}
 
 				for (Service s : servicesResolvedFromResource) {
-					// TODO: Optimize with an SQL query...
-					List<ExecService> execServices = generalServiceManager
-							.listExecServices(perunSession, s.getId());
 
 					if (attributeDefinition != null) {
 						// remove from future processing services
@@ -257,9 +251,11 @@ public class EventExecServiceResolverImpl implements EventExecServiceResolver {
 					}
 
 					if(!result.containsKey(facilityResolvedFromEvent)) {
-						result.put(facilityResolvedFromEvent, new HashSet<ExecService>(execServices));
+						Set<Service> servicesToPut = new HashSet<Service>();
+						servicesToPut.add(s);
+						result.put(facilityResolvedFromEvent, servicesToPut);
 					} else {
-						result.get(facilityResolvedFromEvent).addAll(execServices);
+						result.get(facilityResolvedFromEvent).add(s);
 					}
 				}
 			}

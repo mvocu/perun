@@ -1,8 +1,8 @@
 package cz.metacentrum.perun.taskslib.service;
 
 import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.service.impl.TaskStoreImpl;
 import org.junit.Before;
@@ -31,30 +31,30 @@ public class TaskStoreTest {
 		facility.setDescription("Test");
 		facility.setId(1);
 
-		ExecService execService1 = new ExecService();
-		execService1.setId(1);
+		Service service1 = new Service();
+		service1.setId(1);
 
-		ExecService execService2 = new ExecService();
-		execService2.setId(2);
+		Service service2 = new Service();
+		service2.setId(2);
 
-		ExecService execService3 = new ExecService();
-		execService3.setId(3);
+		Service service3 = new Service();
+		service3.setId(3);
 
 		taskW = new Task();
 		taskW.setFacility(facility);
-		taskW.setExecService(execService1);
+		taskW.setService(service1);
 		taskW.setId(1);
 		taskW.setStatus(Task.TaskStatus.WAITING);
 
 		taskG = new Task();
 		taskG.setFacility(facility);
-		taskG.setExecService(execService2);
+		taskG.setService(service2);
 		taskG.setId(2);
 		taskG.setStatus(Task.TaskStatus.GENERATED);
 
 		taskD = new Task();
 		taskD.setFacility(facility);
-		taskD.setExecService(execService3);
+		taskD.setService(service3);
 		taskD.setId(3);
 		taskD.setStatus(Task.TaskStatus.DONE);
 	}
@@ -63,7 +63,7 @@ public class TaskStoreTest {
 	public void testAddEqualTasks() throws Exception {
 		Task taskWW = new Task();
 		taskWW.setFacility(taskW.getFacility());
-		taskWW.setExecService(taskW.getExecService());
+		taskWW.setService(taskW.getService());
 		taskWW.setId(10);
 		taskStore.addToPool(taskW);
 		exception.expect(TaskStoreException.class);

@@ -11,26 +11,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import cz.metacentrum.perun.controller.model.ServiceForGUI;
 import cz.metacentrum.perun.controller.service.GeneralServiceManager;
-import cz.metacentrum.perun.core.api.AuthzResolver;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.PerunSession;
-import cz.metacentrum.perun.core.api.Role;
 import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.ServicesManager;
 import cz.metacentrum.perun.core.api.exceptions.FacilityNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
-import cz.metacentrum.perun.core.api.exceptions.RelationExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceAlreadyBannedException;
-import cz.metacentrum.perun.core.api.exceptions.ServiceAlreadyRemovedException;
-import cz.metacentrum.perun.core.api.exceptions.ServiceExistsException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
-import cz.metacentrum.perun.taskslib.dao.ExecServiceDao;
-import cz.metacentrum.perun.taskslib.dao.ExecServiceDenialDao;
-import cz.metacentrum.perun.taskslib.model.ExecService;
+import cz.metacentrum.perun.taskslib.dao.ServiceDenialDao;
 
 /**
+ * Propagation manager allows to plan/force propagation, block/unblock Services on Facilities and Destinations.
+ *
  * @author Michal Karm Babacek
+ * @author Pavel Zlámal
  */
 @Transactional
 @org.springframework.stereotype.Service(value = "generalServiceManager")
@@ -45,124 +41,76 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 	public final static String BAN_SERVICE = "ban :";
 
 	@Autowired
-	private ExecServiceDao execServiceDao;
-	@Autowired
-	private ExecServiceDenialDao execServiceDenialDao;
+	private ServiceDenialDao serviceDenialDao;
 	@Autowired
 	private ServicesManager servicesManager;
 
 	@Override
-	public List<ExecService> listExecServices(PerunSession perunSession) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		return execServiceDao.listExecServices();
-	}
-
-	@Override
-	public List<ExecService> listExecServices(PerunSession perunSession, int serviceId) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		return execServiceDao.listExecServices(serviceId);
-	}
-
-	@Override
-	public int countExecServices() {
-		return execServiceDao.countExecServices();
-	}
-
-	@Override
-	public ExecService getExecService(PerunSession perunSession, int execServiceId) throws InternalErrorException {
-		return execServiceDao.getExecService(execServiceId);
-	}
-
-	@Override
-	public int insertExecService(PerunSession perunSession, ExecService execService) throws InternalErrorException, PrivilegeException, ServiceExistsException {
-		Service service = null;
-		try {
-			service = servicesManager.getServiceByName(perunSession, execService.getService().getName());
-		} catch (ServiceNotExistsException e) {
-			service = servicesManager.createService(perunSession, execService.getService());
-		}
-		execService.setService(service);
-		return execServiceDao.insertExecService(execService);
-	}
-
-	@Override
-	public void updateExecService(PerunSession perunSession, ExecService execService) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		servicesManager.updateService(perunSession, execService.getService());
-		execServiceDao.updateExecService(execService);
-	}
-
-	@Override
-	public void deleteExecService(ExecService execService) {
-		execServiceDao.deleteExecService(execService.getId());
-	}
-
-	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void banExecServiceOnFacility(PerunSession sess, ExecService execService, Facility facility) throws InternalErrorException, ServiceAlreadyBannedException {
+	public void blockServiceOnFacility(PerunSession sess, Service service, Facility facility) throws InternalErrorException, ServiceAlreadyBannedException {
 		try {
-			execServiceDenialDao.banExecServiceOnFacility(execService.getId(), facility.getId());
+			serviceDenialDao.blockServiceOnFacility(service.getId(), facility.getId());
 		} catch (DuplicateKeyException ex) {
-			throw new ServiceAlreadyBannedException(execService.getService(), facility);
+			throw new ServiceAlreadyBannedException(service, facility);
 		}
-		sess.getPerun().getAuditer().log(sess, "{} {} on {}", BAN_SERVICE, execService, facility);
+		sess.getPerun().getAuditer().log(sess, "{} {} on {}", BAN_SERVICE, service, facility);
 	}
 
 	@Override
-	public void banExecServiceOnDestination(PerunSession sess, ExecService execService, int destinationId) throws InternalErrorException {
-		execServiceDenialDao.banExecServiceOnDestination(execService.getId(), destinationId);
-		sess.getPerun().getAuditer().log(sess, "{} {} on {}", BAN_SERVICE, execService, destinationId);
+	public void blockServiceOnDestination(PerunSession sess, Service service, int destinationId) throws InternalErrorException {
+		serviceDenialDao.blockServiceOnDestination(service.getId(), destinationId);
+		sess.getPerun().getAuditer().log(sess, "{} {} on {}", BAN_SERVICE, service, destinationId);
 	}
 
 	@Override
-	public List<ExecService> listDenialsForFacility(PerunSession perunSession, Facility facility) throws InternalErrorException {
-		return execServiceDenialDao.listDenialsForFacility(facility.getId());
+	public List<Service> getServicesBlockedOnFacility(PerunSession perunSession, Facility facility) throws InternalErrorException {
+		return serviceDenialDao.getServicesBlockedOnFacility(facility.getId());
 	}
 
 	@Override
-	public List<ExecService> listDenialsForDestination(PerunSession perunSession, int destinationId) throws InternalErrorException {
-		return execServiceDenialDao.listDenialsForDestination(destinationId);
+	public List<Service> getServicesBlockedOnDestination(PerunSession perunSession, int destinationId) throws InternalErrorException {
+		return serviceDenialDao.getServicesBlockedOnDestination(destinationId);
 	}
 
 	@Override
-	public boolean isExecServiceDeniedOnFacility(ExecService execService, Facility facility) {
-		return execServiceDenialDao.isExecServiceDeniedOnFacility(execService.getId(), facility.getId());
+	public boolean isServiceBlockedOnFacility(Service service, Facility facility) {
+		return serviceDenialDao.isServiceBlockedOnFacility(service.getId(), facility.getId());
 	}
 
 	@Override
-	public boolean isExecServiceDeniedOnDestination(ExecService execService, int destinationId) {
-		return execServiceDenialDao.isExecServiceDeniedOnDestination(execService.getId(), destinationId);
+	public boolean isServiceBlockedOnDestination(Service service, int destinationId) {
+		return serviceDenialDao.isServiceBlockedOnDestination(service.getId(), destinationId);
 	}
 	@Override
-	public void freeAllDenialsOnFacility(PerunSession sess, Facility facility) throws InternalErrorException{
-		execServiceDenialDao.freeAllDenialsOnFacility(facility.getId());
+	public void unblockAllServicesOnFacility(PerunSession sess, Facility facility) throws InternalErrorException{
+		serviceDenialDao.unblockAllServicesOnFacility(facility.getId());
 		sess.getPerun().getAuditer().log(sess, "{} on {}" ,FREE_ALL_DEN, facility);
 	}
 
 	@Override
-	public void freeAllDenialsOnDestination(PerunSession sess, int destinationId) throws InternalErrorException {
-		execServiceDenialDao.freeAllDenialsOnDestination(destinationId);
+	public void unblockAllServicesOnDestination(PerunSession sess, int destinationId) throws InternalErrorException {
+		serviceDenialDao.unblockAllServicesOnDestination(destinationId);
 		sess.getPerun().getAuditer().log(sess, "{} on {}", FREE_ALL_DEN, destinationId);
 	}
 
 	@Override
-	public void freeDenialOfExecServiceOnFacility(PerunSession sess, ExecService execService, Facility facility) throws InternalErrorException {
-		execServiceDenialDao.freeDenialOfExecServiceOnFacility(execService.getId(), facility.getId());
-		sess.getPerun().getAuditer().log(sess, "{} {} on {}", FREE_DEN_OF_EXECSERVICE, execService, facility);
+	public void unblockServiceOnFacility(PerunSession sess, Service service, Facility facility) throws InternalErrorException {
+		serviceDenialDao.unblockServiceOnFacility(service.getId(), facility.getId());
+		sess.getPerun().getAuditer().log(sess, "{} {} on {}", FREE_DEN_OF_EXECSERVICE, service, facility);
 	}
 
 	@Override
-	public void freeDenialOfExecServiceOnDestination(PerunSession sess, ExecService execService, int destinationId) throws InternalErrorException {
-		execServiceDenialDao.freeDenialOfExecServiceOnDestination(execService.getId(), destinationId);
-		sess.getPerun().getAuditer().log(sess, "{} {} on {}", FREE_DEN_OF_EXECSERVICE, execService, destinationId);
+	public void unblockServiceOnDestination(PerunSession sess, Service service, int destinationId) throws InternalErrorException {
+		serviceDenialDao.unblockServiceOnDestination(service.getId(), destinationId);
+		sess.getPerun().getAuditer().log(sess, "{} {} on {}", FREE_DEN_OF_EXECSERVICE, service, destinationId);
 	}
 
 	@Override
 	public boolean forceServicePropagation(PerunSession sess, Facility facility, Service service) throws ServiceNotExistsException, FacilityNotExistsException, InternalErrorException, PrivilegeException {
-		List<ExecService> listOfExecServices = listExecServices(sess, service.getId());
-		for(ExecService es: listOfExecServices) {
-			//Global
-			if(!es.isEnabled()) return false;
-			//Local
-			if(execServiceDenialDao.isExecServiceDeniedOnFacility(es.getId(), facility.getId())) return false;
-		}
+		//Global
+		if(!service.isEnabled()) return false;
+		//Local
+		if(serviceDenialDao.isServiceBlockedOnFacility(service.getId(), facility.getId())) return false;
 		//Call log method out of transaction
 		sess.getPerun().getAuditer().log(sess, FORCE_PROPAGATION + "On {} and {}", facility, service);
 		return true;
@@ -170,11 +118,8 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 
 	@Override
 	public boolean forceServicePropagation(PerunSession sess, Service service) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		List<ExecService> listOfExecServices = listExecServices(sess, service.getId());
-		for(ExecService es: listOfExecServices) {
-			//Global
-			if(!es.isEnabled()) return false;
-		}
+		//Global
+		if(!service.isEnabled()) return false;
 		//Call log method out of transaction
 		sess.getPerun().getAuditer().log(sess, FORCE_PROPAGATION + "On {} ", service);
 		return true;
@@ -182,13 +127,10 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 
 	@Override
 	public boolean planServicePropagation(PerunSession perunSession, Facility facility, Service service) throws ServiceNotExistsException, FacilityNotExistsException, InternalErrorException, PrivilegeException {
-		List<ExecService> listOfExecServices = listExecServices(perunSession, service.getId());
-		for(ExecService es: listOfExecServices) {
-			//Global
-			if(!es.isEnabled()) return false;
-			//Local
-			if(execServiceDenialDao.isExecServiceDeniedOnFacility(es.getId(), facility.getId())) return false;
-		}
+		//Global
+		if(!service.isEnabled()) return false;
+		//Local
+		if(serviceDenialDao.isServiceBlockedOnFacility(service.getId(), facility.getId())) return false;
 		//Call log method out of transaction
 		perunSession.getPerun().getAuditer().log(perunSession, PROPAGATION_PLANNED + "On {} and {}", facility, service);
 		return true;
@@ -196,30 +138,11 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 
 	@Override
 	public boolean planServicePropagation(PerunSession perunSession, Service service) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		List<ExecService> listOfExecServices = listExecServices(perunSession, service.getId());
-		for(ExecService es: listOfExecServices) {
-			//Global
-			if(!es.isEnabled()) return false;
-		}
+		//Global
+		if(!service.isEnabled()) return false;
 		//Call log method out of transaction
 		perunSession.getPerun().getAuditer().log(perunSession, PROPAGATION_PLANNED + "On {} ", service);
 		return true;
-	}
-
-	@Override
-	public void deleteService(PerunSession perunSession, Service service) throws InternalErrorException, ServiceNotExistsException, PrivilegeException, RelationExistsException, ServiceAlreadyRemovedException {
-		execServiceDao.deleteAllExecServicesByService(service.getId());
-		servicesManager.deleteService(perunSession, service);
-	}
-
-	@Override
-	public List<Service> listServices(PerunSession perunSession) throws InternalErrorException, PrivilegeException {
-		return servicesManager.getServices(perunSession);
-	}
-
-	@Override
-	public Service getService(PerunSession perunSession, int serviceId) throws ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		return servicesManager.getServiceById(perunSession, serviceId);
 	}
 
 	@Override
@@ -232,37 +155,19 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 		for (Service service : services){
 			// new ServiceForGUI
 			ServiceForGUI newService = new ServiceForGUI(service);
-			// get their exec services
-			List<ExecService> execs = execServiceDao.listExecServices(service.getId());
-			for (ExecService exec : execs) {
-				if (execServiceDenialDao.isExecServiceDeniedOnFacility(exec.getId(), facility.getId())) {
-					newService.setAllowedOnFacility(false);
-				} else {
-					newService.setAllowedOnFacility(true);
-				}
-				newService.setExecService(exec);
-			}
+			newService.setAllowedOnFacility(!serviceDenialDao.isServiceBlockedOnFacility(service.getId(), facility.getId()));
 			result.add(newService);
 		}
-
 		return result;
 
 	}
 
-	public ExecServiceDao getExecServiceDao() {
-		return execServiceDao;
+	public ServiceDenialDao getServiceDenialDao() {
+		return serviceDenialDao;
 	}
 
-	public void setExecServiceDao(ExecServiceDao execServiceDao) {
-		this.execServiceDao = execServiceDao;
-	}
-
-	public ExecServiceDenialDao getExecServiceDenialDao() {
-		return execServiceDenialDao;
-	}
-
-	public void setExecServiceDenialDao(ExecServiceDenialDao execServiceDenialDao) {
-		this.execServiceDenialDao = execServiceDenialDao;
+	public void setServiceDenialDao(ServiceDenialDao serviceDenialDao) {
+		this.serviceDenialDao = serviceDenialDao;
 	}
 
 	public void setServicesManager(ServicesManager servicesManager) {
@@ -273,35 +178,4 @@ public class GeneralServiceManagerImpl implements GeneralServiceManager {
 		return servicesManager;
 	}
 
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public Service createCompleteService(PerunSession perunSession, String serviceName, String scriptPath, int defaultDelay, boolean enabled) throws InternalErrorException, PrivilegeException, ServiceExistsException {
-
-		if (!AuthzResolver.isAuthorized(perunSession, Role.PERUNADMIN)) {
-			throw new PrivilegeException(perunSession, "createCompleteService");
-		}
-
-		Service service = null;
-
-		try {
-			service = servicesManager.getServiceByName(perunSession, serviceName);
-			if (service != null) {
-				throw new ServiceExistsException(service);
-			}
-		} catch (ServiceNotExistsException e) {
-			service = new Service();
-			service.setName(serviceName);
-			service = servicesManager.createService(perunSession, service);
-		}
-
-		ExecService execService = new ExecService();
-		execService.setService(service);
-		execService.setDefaultDelay(defaultDelay);
-		execService.setEnabled(enabled);
-		execService.setScript(scriptPath);
-		execService.setId(execServiceDao.insertExecService(execService));
-
-		return service;
-
-	}
 }

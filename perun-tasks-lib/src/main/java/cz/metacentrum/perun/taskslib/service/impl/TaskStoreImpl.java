@@ -2,9 +2,10 @@ package cz.metacentrum.perun.taskslib.service.impl;
 
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.service.TaskStore;
-import cz.metacentrum.perun.taskslib.model.ExecService;
+
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 public class TaskStoreImpl implements TaskStore {
+
 	private final static Logger log = LoggerFactory.getLogger(TaskStoreImpl.class);
 	private final Map<Integer, Task> tasksById = new HashMap<>();
-	private final Map<Pair<Facility, ExecService>, Task> tasksByFacilityAndExecService = new HashMap<>();
+	private final Map<Pair<Facility, Service>, Task> tasksByFacilityAndService = new HashMap<>();
 
 	public TaskStoreImpl() {
 	}
@@ -30,8 +32,8 @@ public class TaskStoreImpl implements TaskStore {
 	}
 
 	@Override
-	public Task getTask(Facility facility, ExecService execService) {
-		return tasksByFacilityAndExecService.get(new Pair<>(facility, execService));
+	public Task getTask(Facility facility, Service service) {
+		return tasksByFacilityAndService.get(new Pair<>(facility, service));
 	}
 
 	@Override
@@ -41,7 +43,7 @@ public class TaskStoreImpl implements TaskStore {
 
 	@Override
 	public Task addToPool(Task task) throws TaskStoreException {
-		if (task.getExecService() == null) {
+		if (task.getService() == null) {
 			log.error("Tried to insert Task {} with no ExecService", task);
 			throw new IllegalArgumentException("Tasks ExecService not set.");
 		} else if (task.getFacility() == null) {
@@ -52,8 +54,8 @@ public class TaskStoreImpl implements TaskStore {
 		Task otherAdded;
 		synchronized (this) {
 			idAdded = tasksById.put(task.getId(), task);
-			otherAdded = tasksByFacilityAndExecService.put(
-					new Pair<>(task.getFacility(), task.getExecService()), task);
+			otherAdded = tasksByFacilityAndService.put(
+					new Pair<>(task.getFacility(), task.getService()), task);
 		}
 		if (idAdded != otherAdded) {
 			log.error("Task returned from both Maps after insert differ. taskById {}, taskByFacilityAndExecService {}", idAdded, otherAdded);
@@ -87,7 +89,7 @@ public class TaskStoreImpl implements TaskStore {
 		Task otherRemoved;
 		synchronized (this) {
 			idRemoved = tasksById.remove(task.getId());
-			otherRemoved = tasksByFacilityAndExecService.remove(new Pair<>(task.getFacility(), task.getExecService()));
+			otherRemoved = tasksByFacilityAndService.remove(new Pair<>(task.getFacility(), task.getService()));
 		}
 		if (idRemoved != otherRemoved) {
 			log.error("Inconsistent state occurred after removing Task {} from TaskStore", task);
@@ -108,6 +110,6 @@ public class TaskStoreImpl implements TaskStore {
 	@Override
 	public void clear() {
 		tasksById.clear();
-		tasksByFacilityAndExecService.clear();
+		tasksByFacilityAndService.clear();
 	}
 }

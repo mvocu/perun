@@ -6,16 +6,16 @@ import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.PerunClient;
 import cz.metacentrum.perun.core.api.PerunPrincipal;
 import cz.metacentrum.perun.core.api.PerunSession;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.exceptions.FacilityNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
-import cz.metacentrum.perun.dispatcher.scheduling.DenialsResolver;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
-import cz.metacentrum.perun.taskslib.model.ExecService;
+import cz.metacentrum.perun.taskslib.dao.ServiceDenialDao;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskSchedule;
@@ -50,7 +50,7 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 	@Autowired
 	private DispatcherQueuePool dispatcherQueuePool;
 	@Autowired
-	private DenialsResolver denialsResolver;
+	private ServiceDenialDao serviceDenialDao;
 	@Autowired
 	private DelayQueue<TaskSchedule> waitingTasksQueue;
 	@Autowired
@@ -110,7 +110,7 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 						log.info("Task {} was successfully queued for sending to Engine.", task);
 						break;
 					case DB_ERROR:
-						log.warn("Facility and ExecService could not be found in DB for Task {}.", task);
+						log.warn("Facility and Service could not be found in DB for Task {}.", task);
 						//#TODO: Figure out
 						break;
 				}
@@ -146,9 +146,8 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 
 	@Override
 	public TaskScheduled scheduleTask(Task task) {
-		ExecService execService = task.getExecService();
+		Service service = task.getService();
 		Facility facility = task.getFacility();
-		Date time = new Date(System.currentTimeMillis());
 		DispatcherQueue dispatcherQueue = null;
 
 		log.debug("Scheduling Task {}.", task.toString());
@@ -181,28 +180,28 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 			}
 		}
 
-		log.debug("Facility to be processed: {}, ExecService to be processed: {}",
-				facility.getId(), execService.getId());
-		log.debug("Is the execService ID: {} enabled globally?", execService.getId());
-		if (execService.isEnabled()) {
+		log.debug("Facility to be processed: {}, Service to be processed: {}",
+				facility.getId(), service.getId());
+		log.debug("Is the Service ID: {} enabled globally?", service.getId());
+		if (service.isEnabled()) {
 			log.debug("   Yes, it is globally enabled.");
 		} else {
-			log.debug("   No, execService ID: {} is not enabled globally. Task will not run.", execService.getId());
+			log.debug("   No, Service ID: {} is not enabled globally. Task will not run.", service.getId());
 			return DENIED;
 		}
 
-		log.debug("   Is the execService ID: {} denied on facility ID: {}?",
-				execService.getId(), facility.getId());
+		log.debug("   Is the Service ID: {} denied on facility ID: {}?",
+				service.getId(), facility.getId());
 		try {
-			if (!denialsResolver.isExecServiceDeniedOnFacility(execService, facility)) {
+			if (!serviceDenialDao.isServiceBlockedOnFacility(service.getId(), facility.getId())) {
 				log.debug("   No, it is not.");
 			} else {
-				log.debug("   Yes, the execService ID: {} is denied on facility ID: {}. Task will not run.",
-						execService.getId(), facility.getId());
+				log.debug("   Yes, the Service ID: {} is denied on facility ID: {}. Task will not run.",
+						service.getId(), facility.getId());
 				return DENIED;
 			}
-		} catch (InternalErrorException e) {
-			log.error("Error getting disabled status for execService, task will not run now.");
+		} catch (Exception e) {
+			log.error("Error getting disabled status for Service, task will not run now.");
 			return ERROR;
 		}
 		return sendToEngine(task);
@@ -244,7 +243,7 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 			try {
 				initPerunSession();
 				destinations = perun.getServicesManager().getDestinations(
-						perunSession, task.getExecService().getService(),
+						perunSession, task.getService(),
 						task.getFacility());
 			} catch (ServiceNotExistsException e) {
 				log.error("No destinations found for task {}", task.getId());
@@ -279,7 +278,7 @@ public class TaskSchedulerImpl extends AbstractRunner implements TaskScheduler {
 		destinations_s.append("]");
 		dispatcherQueue.sendMessage("[" + task.getId() + "]["
 				+ task.isPropagationForced() + "]|["
-				+ fixStringSeparators(task.getExecService().serializeToString()) + "]|["
+				+ fixStringSeparators(task.getService().serializeToString()) + "]|["
 				+ fixStringSeparators(task.getFacility().serializeToString()) + "]|["
 				+ fixStringSeparators(destinations_s.toString()) + "]");
 		task.setStartTime(new Date(System.currentTimeMillis()));

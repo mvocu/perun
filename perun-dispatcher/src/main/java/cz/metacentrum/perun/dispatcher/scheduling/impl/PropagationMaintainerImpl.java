@@ -15,7 +15,6 @@ import cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskResult;
@@ -104,7 +103,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 			log.info("TASK [{}] in ERROR state completed {} minutes ago.", task, howManyMinutesAgo);
 			// If DELAY time has passed, we reschedule...
 			int recurrence = task.getRecurrence() + 1;
-			if (recurrence > task.getExecService().getDefaultRecurrence() &&
+			if (recurrence > task.getService().getRecurrence() &&
 					howManyMinutesAgo < 60 * 12 &&
 					!task.isSourceUpdated()) {
 				log.info("TASK [{}] in ERROR state has no more retries, bailing out.", task);
@@ -114,18 +113,18 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				boolean removeTask = false;
 				try {
 					List<Service> assignedServices = perun.getServicesManager().getAssignedServices(perunSession, task.getFacility());
-					if (assignedServices.contains(task.getExecService().getService())) {
-						ExecService execService = task.getExecService();
+					if (assignedServices.contains(task.getService())) {
+						Service service = task.getService();
 						Facility facility = task.getFacility();
-						if (recurrence > execService.getDefaultRecurrence()) {
+						if (recurrence > service.getRecurrence()) {
 							// this ERROR task is rescheduled for being here too long
 							task.setRecurrence(0);
 							task.setDestinations(null);
 							log.info("TASK id {} is in ERROR state long enough.", task.getId());
 						}
 						task.setRecurrence(recurrence);
-						log.info("TASK [{}] in ERROR state is going to be rescheduled with ExecService id: {} " +
-								"on Facility id: {}", new Object[]{task, execService.getId(), facility.getId()});
+						log.info("TASK [{}] in ERROR state is going to be rescheduled with Service id: {} " +
+								"on Facility id: {}", new Object[]{task, service.getId(), facility.getId()});
 						schedulingPool.addTaskSchedule(task, -1);
 
 					} else {

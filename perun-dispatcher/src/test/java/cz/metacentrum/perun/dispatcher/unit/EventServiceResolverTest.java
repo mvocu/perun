@@ -4,13 +4,14 @@ import java.util.Map;
 import java.util.Set;
 
 import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.dispatcher.AbstractDispatcherTest;
 import cz.metacentrum.perun.dispatcher.exceptions.InvalidEventMessageException;
 import cz.metacentrum.perun.dispatcher.model.Event;
-import cz.metacentrum.perun.dispatcher.processing.EventExecServiceResolver;
+import cz.metacentrum.perun.dispatcher.processing.EventServiceResolver;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 
 import org.junit.Assert;
@@ -22,10 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Michal Voců
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
-public class EventExecServiceResolverTest extends AbstractDispatcherTest {
+public class EventServiceResolverTest extends AbstractDispatcherTest {
 
 	@Autowired
-	private EventExecServiceResolver eventExecServiceResolver;
+	private EventServiceResolver eventServiceResolver;
 
 	@Test
 	public void parseEventTest() throws ServiceNotExistsException, InvalidEventMessageException, InternalErrorException, PrivilegeException {
@@ -37,14 +38,14 @@ public class EventExecServiceResolverTest extends AbstractDispatcherTest {
 		event.setTimeStamp(System.currentTimeMillis());
 		event.setHeader("portishead");
 		event.setData(message);
-		Map<Facility, Set<ExecService>> resolvedServices = eventExecServiceResolver.parseEvent(event.toString());
+		Map<Facility, Set<Service>> resolvedServices = eventServiceResolver.parseEvent(event.toString());
 
 		Assert.assertTrue("We should resolved only one facility-service", resolvedServices.size() == 1);
 
-		Set<ExecService> resolved = resolvedServices.get(facility1);
-		Assert.assertTrue("We should have 2 exec services", resolved.size() == 2);
-		Assert.assertTrue("Our exec service 1 is missing", resolved.contains(execservice1));
-		Assert.assertTrue("Our exec service 2 is missing", resolved.contains(execservice2));
+		Set<Service> resolved = resolvedServices.get(facility1);
+		Assert.assertTrue("We should have 2 service", resolved.size() == 2);
+		Assert.assertTrue("Our Service 1 is missing", resolved.contains(service1));
+		Assert.assertTrue("Our Service 2 is missing", resolved.contains(service2));
 
 	}
 

@@ -13,7 +13,7 @@ import cz.metacentrum.perun.webgui.model.PerunError;
  *
  * @author Pavel Zlamal <256627@mail.muni.cz>
  */
-public class IsServiceDeniedOnFacility implements JsonCallback {
+public class IsServiceBlockedOnFacility implements JsonCallback {
 
 	// Session
 	private PerunWebSession session = PerunWebSession.getInstance();
@@ -23,7 +23,7 @@ public class IsServiceDeniedOnFacility implements JsonCallback {
 	// returned object
 	private BasicOverlayType bot;
 	// JSON URL
-	private static final String JSON_URL = "generalServiceManager/isServiceDeniedOnFacility";
+	private static final String JSON_URL = "generalServiceManager/isServiceBlockedOnFacility";
 	// External events
 	private JsonCallbackEvents events = new JsonCallbackEvents();
 
@@ -33,7 +33,7 @@ public class IsServiceDeniedOnFacility implements JsonCallback {
 	 * @param facilityId ID of facility
 	 * @param serviceId ID of service
 	 */
-	public IsServiceDeniedOnFacility(int facilityId, int serviceId) {
+	public IsServiceBlockedOnFacility(int facilityId, int serviceId) {
 		this.facilityId = facilityId;
 		this.serviceId = serviceId;
 	}
@@ -45,7 +45,7 @@ public class IsServiceDeniedOnFacility implements JsonCallback {
 	 * @param serviceId ID of service
 	 * @param events external events
 	 */
-	public IsServiceDeniedOnFacility(int facilityId, int serviceId, JsonCallbackEvents events) {
+	public IsServiceBlockedOnFacility(int facilityId, int serviceId, JsonCallbackEvents events) {
 		this.facilityId = facilityId;
 		this.serviceId = serviceId;
 		this.events = events;
@@ -62,7 +62,7 @@ public class IsServiceDeniedOnFacility implements JsonCallback {
 	}
 
 	/**
-	 * Updates exec services in table from RPC request
+	 * Updates services in table from RPC request
 	 *
 	 * @param bot services array of js objects returned from RPC
 	 */

@@ -2,13 +2,13 @@ package cz.metacentrum.perun.dispatcher.scheduling.impl;
 
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.exceptions.IllegalArgumentException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskSchedule;
@@ -65,8 +65,8 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public Task getTask(Facility facility, ExecService execService) {
-		return taskStore.getTask(facility, execService);
+	public Task getTask(Facility facility, Service service) {
+		return taskStore.getTask(facility, service);
 	}
 
 	@Override
@@ -155,7 +155,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			throws InternalErrorException, TaskStoreException {
 		int engineId = (dispatcherQueue == null) ? -1 : dispatcherQueue.getClientID();
 		if (task.getId() == 0) {
-			if (getTask(task.getFacility(), task.getExecService()) == null) {
+			if (getTask(task.getFacility(), task.getService()) == null) {
 				log.debug("Adding new task to pool {}", task);
 
 				try {

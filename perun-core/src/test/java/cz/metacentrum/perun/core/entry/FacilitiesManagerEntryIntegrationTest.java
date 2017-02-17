@@ -1669,7 +1669,7 @@ public class FacilitiesManagerEntryIntegrationTest extends AbstractPerunIntegrat
 	 	String hostName = "TestHost";
 		Host hostOne = new Host(0, hostName);
 		Destination destination = new Destination(0, hostName, Destination.DESTINATIONHOSTTYPE);
-		Service service = new Service(0, "testService");
+		Service service = new Service(0, "testService", null);
 		ServicesManager servicesManagerEntry = perun.getServicesManager();
 		service = servicesManagerEntry.createService(sess, service);
 		// Creates second facility
@@ -1747,7 +1747,7 @@ public class FacilitiesManagerEntryIntegrationTest extends AbstractPerunIntegrat
 	 	String hostName = "TestHost";
 		Host host = new Host(0, hostName);
 		Destination destination = new Destination(0, hostName, Destination.DESTINATIONHOSTTYPE);
-		Service service = new Service(0, "testService");
+		Service service = new Service(0, "testService", null);
 		ServicesManager servicesManagerEntry = perun.getServicesManager();
 		service = servicesManagerEntry.createService(sess, service);
 
@@ -1829,7 +1829,7 @@ public class FacilitiesManagerEntryIntegrationTest extends AbstractPerunIntegrat
 		listOfHosts.add(hostName);
 		// Initialize destination and service
 		Destination destination = new Destination(0, hostName, Destination.DESTINATIONHOSTTYPE);
-		Service service = new Service(0, "testService");
+		Service service = new Service(0, "testService", null);
 		ServicesManager servicesManagerEntry = perun.getServicesManager();
 		service = servicesManagerEntry.createService(sess, service);
 
@@ -1912,7 +1912,7 @@ public class FacilitiesManagerEntryIntegrationTest extends AbstractPerunIntegrat
 		listOfHosts.add(testHost);
 		// Initialize destination and service
 		Destination destination = new Destination(0, hostName, Destination.DESTINATIONHOSTTYPE);
-		Service service = new Service(0, "testService");
+		Service service = new Service(0, "testService", null);
 		ServicesManager servicesManagerEntry = perun.getServicesManager();
 		service = servicesManagerEntry.createService(sess, service);
 
@@ -2053,7 +2053,7 @@ public class FacilitiesManagerEntryIntegrationTest extends AbstractPerunIntegrat
 		assertTrue(resources.contains(resource1));
 		assertTrue(!resources.contains(resource2));
 
-		Service service = new Service(0, "TestService01");
+		Service service = new Service(0, "TestService01", null);
 		service = perun.getServicesManager().createService(sess, service);
 
 		perun.getResourcesManager().assignService(sess, resource1, service);

@@ -6,6 +6,7 @@ import java.util.List;
 
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Service;
 
 /**
  *
@@ -30,13 +31,13 @@ public class Task implements Serializable {
 	private Date genEndTime;
 	private Date sendEndTime;
 	private Date endTime;
-	private ExecService execService;
+	private Service service;
 	private Facility facility;
 	private List<Destination> destinations;
 	private TaskStatus status;
-	private boolean sourceUpdated;	
-	private boolean propagationForced; 
-	
+	private boolean sourceUpdated;
+	private boolean propagationForced;
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -54,7 +55,7 @@ public class Task implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Task other = (Task) obj;
-		if (!execService.equals(other.execService))
+		if (!service.equals(other.service))
 			return false;
 		if (!facility.equals(other.facility))
 			return false;
@@ -104,20 +105,20 @@ public class Task implements Serializable {
 	}
 
 
-	public int getExecServiceId() {
-		if (execService != null) {
-			return execService.getId();
+	public int getServiceId() {
+		if (service != null) {
+			return service.getId();
 		} else {
 			return -1;
 		}
 	}
 
-	public void setExecService(ExecService execService) {
-		this.execService = execService;
+	public void setService(Service service) {
+		this.service = service;
 	}
 
-	public ExecService getExecService() {
-		return execService;
+	public Service getService() {
+		return service;
 	}
 
 	public int getFacilityId() {
@@ -187,11 +188,11 @@ public class Task implements Serializable {
 	public List<Destination> getDestinations() {
 		return destinations;
 	}
-	
+
 	public void setDestinations(List<Destination> destinations) {
 		this.destinations = destinations;
 	}
-	
+
 	public TaskStatus getStatus() {
 		return status;
 	}
@@ -214,7 +215,7 @@ public class Task implements Serializable {
 				", schedule=" + schedule +
 				", genEndTime=" + genEndTime +
 				", sendEndTime=" + sendEndTime+
-				", execService=" + execService +
+				", service=" + service +
 				", facility=" + facility +
 				", destinations=" + destinations +
 				", status=" + status + "]";

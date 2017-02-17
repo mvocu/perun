@@ -1,8 +1,8 @@
 package cz.metacentrum.perun.engine.scheduling.impl;
 
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.scheduling.GenWorker;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +30,11 @@ public class GenWorkerImpl extends AbstractWorker implements GenWorker {
 	@Override
 	public Task call() throws TaskExecutionException {
 		getTask().setGenStartTime(new Date(System.currentTimeMillis()));
-		ExecService execService = getTask().getExecService();
+		Service service = getTask().getService();
 		log.info("EXECUTING GEN(worker:{}): Task ID:{}, Facility ID:{}",
 				new Object[]{hashCode(), getTask().getId(), getTask().getFacilityId()});
 
-		ProcessBuilder pb = new ProcessBuilder(execService.getScript(), "-f", String.valueOf(getTask().getFacilityId()));
+		ProcessBuilder pb = new ProcessBuilder(service.getScript(), "-f", String.valueOf(getTask().getFacilityId()));
 
 		try {
 			super.execute(pb);

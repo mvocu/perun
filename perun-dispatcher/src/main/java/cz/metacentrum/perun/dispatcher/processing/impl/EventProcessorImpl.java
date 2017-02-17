@@ -1,6 +1,7 @@
 package cz.metacentrum.perun.dispatcher.processing.impl;
 
 import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
@@ -8,15 +9,14 @@ import cz.metacentrum.perun.dispatcher.exceptions.InvalidEventMessageException;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
 import cz.metacentrum.perun.dispatcher.model.Event;
-import cz.metacentrum.perun.dispatcher.processing.EventExecServiceResolver;
+import cz.metacentrum.perun.dispatcher.processing.EventServiceResolver;
 import cz.metacentrum.perun.dispatcher.processing.EventLogger;
 import cz.metacentrum.perun.dispatcher.processing.EventProcessor;
 import cz.metacentrum.perun.dispatcher.processing.EventQueue;
-import cz.metacentrum.perun.dispatcher.scheduling.DenialsResolver;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
+import cz.metacentrum.perun.taskslib.dao.ServiceDenialDao;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import org.slf4j.Logger;
@@ -50,9 +50,9 @@ public class EventProcessorImpl implements EventProcessor {
 	private TaskExecutor taskExecutor;
 	private EvProcessor evProcessor;
 	@Autowired
-	private EventExecServiceResolver eventExecServiceResolver;
+	private EventServiceResolver eventServiceResolver;
 	@Autowired
-	private DenialsResolver denialsResolver;
+	private ServiceDenialDao serviceDenialDao;
 	@Autowired
 	private SchedulingPool schedulingPool;
 	@Autowired
@@ -113,21 +113,21 @@ public class EventProcessorImpl implements EventProcessor {
 		this.evProcessor = evProcessor;
 	}
 
-	public EventExecServiceResolver getEventExecServiceResolver() {
-		return eventExecServiceResolver;
+	public EventServiceResolver getEventServiceResolver() {
+		return eventServiceResolver;
 	}
 
-	public void setEventExecServiceResolver(
-			EventExecServiceResolver eventExecServiceResolver) {
-		this.eventExecServiceResolver = eventExecServiceResolver;
+	public void setEventServiceResolver(
+			EventServiceResolver eventServiceResolver) {
+		this.eventServiceResolver = eventServiceResolver;
 	}
 
-	public DenialsResolver getDenialsResolver() {
-		return denialsResolver;
+	public ServiceDenialDao getServiceDenialDao() {
+		return serviceDenialDao;
 	}
 
-	public void setDenialsResolver(DenialsResolver denialsResolver) {
-		this.denialsResolver = denialsResolver;
+	public void setServiceDenialDao(ServiceDenialDao serviceDenialDao) {
+		this.serviceDenialDao = serviceDenialDao;
 	}
 
 	public SchedulingPool getSchedulingPool() {
@@ -161,29 +161,26 @@ public class EventProcessorImpl implements EventProcessor {
 		private void createTask(DispatcherQueue dispatcherQueue, Event event)
 				throws ServiceNotExistsException, InvalidEventMessageException,
 				InternalErrorException, PrivilegeException {
-			// Resolve the services in event, send the resulting <ExecService,
-			// Facility> pairs to engine
-			Map<Facility, Set<ExecService>> resolvedServices = eventExecServiceResolver
-					.parseEvent(event.toString());
-			for (Entry<Facility, Set<ExecService>> service : resolvedServices.entrySet()) {
-				Facility facility = service.getKey();
-				for (ExecService execService : service.getValue()) {
-					if (!execService.isEnabled()) {
-						log.debug("ExecService {} is not enabled globally", execService);
+			// Resolve the services in event, send the resulting <Service, Facility> pairs to engine
+			Map<Facility, Set<Service>> resolvedServices = eventServiceResolver.parseEvent(event.toString());
+			for (Entry<Facility, Set<Service>> map : resolvedServices.entrySet()) {
+				Facility facility = map.getKey();
+				for (Service service : map.getValue()) {
+					if (!service.isEnabled()) {
+						log.debug("Service {} is not enabled globally", service);
 						continue;
 					}
 
-					if (denialsResolver.isExecServiceDeniedOnFacility(execService, facility)) {
-						log.debug("ExecService {} is denied on Facility {}", execService, facility);
+					if (serviceDenialDao.isServiceBlockedOnFacility(service.getId(), facility.getId())) {
+						log.debug("Service {} is denied on Facility {}", service, facility);
 						continue;
 					}
 
-					// check for presence of task for this <execService,
-					// facility> pair
+					// check for presence of task for this <Service, Facility> pair
 					// NOTE: this must be atomic enough to not create duplicate
 					// tasks in schedulingPool (are we running in parallel
 					// here?)
-					Task task = schedulingPool.getTask(facility, execService);
+					Task task = schedulingPool.getTask(facility, service);
 					if (task != null) {
 						// there already is a task in schedulingPool
 						log.debug("Task is in the pool already.\n" +
@@ -197,7 +194,7 @@ public class EventProcessorImpl implements EventProcessor {
 						// no such task yet, create one
 						task = new Task();
 						task.setFacility(facility);
-						task.setExecService(execService);
+						task.setService(service);
 						task.setStatus(TaskStatus.WAITING);
 						task.setRecurrence(0);
 						task.setSchedule(new Date(System.currentTimeMillis()));

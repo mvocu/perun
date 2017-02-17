@@ -23,11 +23,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
       <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="execServiceDao" class="cz.metacentrum.perun.taskslib.dao.jdbc.ExecServiceDaoJdbc">
-      <property name="dataSource" ref="dataSource"/>
-    </bean>
-
-    <bean id="execServiceDenialDao" class="cz.metacentrum.perun.taskslib.dao.jdbc.ExecServiceDenialDaoJdbc">
+    <bean id="execServiceDenialDao" class="cz.metacentrum.perun.taskslib.dao.jdbc.ServiceDenialDaoJdbc">
       <property name="dataSource" ref="dataSource"/>
     </bean>
 

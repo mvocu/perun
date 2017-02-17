@@ -96,7 +96,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				try {
 					taskResult = schedulingPool.createTaskResult(sendTask.getId().getLeft(),
 							sendTask.getDestination().getId(), sendTask.getStderr(), sendTask.getStdout(),
-							sendTask.getReturnCode(), sendTask.getTask().getExecService().getService());
+							sendTask.getReturnCode(), sendTask.getTask().getService());
 					jmsQueueManager.reportTaskResult(taskResult);
 				} catch (JMSException e) {
 					log.warn("Error trying to send {} to Dispatcher: {}", taskResult, e);

@@ -50,7 +50,7 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 		List<Facility> facilities = new LinkedList<>();
 
 		for (Task task : addedTasks) {
-			Assert.isTrue(execservice1.equals(task.getExecService()) || execservice2.equals(task.getExecService()),
+			Assert.isTrue(service1.equals(task.getService()) || service2.equals(task.getService()),
 					"task execService is different");
 			Assert.isTrue(facility1.equals(task.getFacility()), "task Facility is different");
 			Assert.isTrue(task.getStatus().equals(TaskStatus.WAITING));

@@ -10,7 +10,6 @@ import cz.metacentrum.perun.engine.scheduling.BlockingBoundedMap;
 import cz.metacentrum.perun.engine.scheduling.SchedulingPool;
 import cz.metacentrum.perun.taskslib.model.TaskResult;
 import cz.metacentrum.perun.taskslib.service.TaskStore;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
@@ -74,8 +73,8 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public Task getTask(Facility facility, ExecService execService) {
-		return taskStore.getTask(facility, execService);
+	public Task getTask(Facility facility, Service service) {
+		return taskStore.getTask(facility, service);
 	}
 
 	@Override

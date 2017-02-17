@@ -10,29 +10,29 @@ import cz.metacentrum.perun.webgui.json.JsonPostClient;
 import cz.metacentrum.perun.webgui.model.PerunError;
 
 /**
- * Ajax query to free denial of selected exec service on facility
+ * Ajax query to free denial of selected service on facility
  *
  * @author Pavel Zlamal <256627@mail.muni.cz>
  */
 
-public class FreeDenialOfExecServiceOnFacility {
+public class UnblockServiceOnFacility {
 
 	// web session
 	private PerunWebSession session = PerunWebSession.getInstance();
 	// URL to call
-	final String JSON_URL = "generalServiceManager/freeDenialOfExecServiceOnFacility";
+	final String JSON_URL = "generalServiceManager/unblockServiceOnFacility";
 	// custom events
 	private JsonCallbackEvents events = new JsonCallbackEvents();
 	// ids
 	private int facilityId = 0;
-	private int execServiceId = 0;
+	private int serviceId = 0;
 
 	/**
 	 * Creates a new request
 	 *
 	 * @param facilityId facility ID
 	 */
-	public FreeDenialOfExecServiceOnFacility(int facilityId) {
+	public UnblockServiceOnFacility(int facilityId) {
 		this.facilityId = facilityId;
 	}
 
@@ -42,7 +42,7 @@ public class FreeDenialOfExecServiceOnFacility {
 	 * @param facilityId facility ID
 	 * @param events Custom events
 	 */
-	public FreeDenialOfExecServiceOnFacility(int facilityId, JsonCallbackEvents events) {
+	public UnblockServiceOnFacility(int facilityId, JsonCallbackEvents events) {
 		this.facilityId = facilityId;
 		this.events = events;
 	}
@@ -62,8 +62,8 @@ public class FreeDenialOfExecServiceOnFacility {
 			result = false;
 		}
 
-		if(execServiceId == 0){
-			errorMsg += "Wrong parameter 'Exec service ID'.\n";
+		if(serviceId == 0){
+			errorMsg += "Wrong parameter 'Service ID'.\n";
 			result = false;
 		}
 
@@ -75,24 +75,24 @@ public class FreeDenialOfExecServiceOnFacility {
 	}
 
 	/**
-	 * Attempts to free denial of selected exec service for specified facility
+	 * Attempts to free denial of selected service for specified facility
 	 *
-	 * @param execServiceId
+	 * @param serviceId
 	 * @param facilityId
 	 */
-	public void freeDenialOfExecService(int execServiceId, int facilityId){
+	public void unblockService(int serviceId, int facilityId){
 		this.facilityId = facilityId;
-		freeDenialOfExecService(execServiceId);
+		unblockService(serviceId);
 	};
 
 	/**
-	 * Attempts to free denial of selected exec service on facility
+	 * Attempts to free denial of selected service on facility
 	 *
-	 * @param execServiceId
+	 * @param serviceId
 	 */
-	public void freeDenialOfExecService(final int execServiceId){
+	public void unblockService(final int serviceId){
 
-		this.execServiceId = execServiceId;
+		this.serviceId = serviceId;
 
 		// test arguments
 		if(!this.testCreating()){
@@ -102,12 +102,12 @@ public class FreeDenialOfExecServiceOnFacility {
 		// new events
 		JsonCallbackEvents newEvents = new JsonCallbackEvents(){
 			public void onError(PerunError error) {
-				session.getUiElements().setLogErrorText("Allowing of exec service "+ execServiceId +" failed.");
+				session.getUiElements().setLogErrorText("Allowing of service "+ serviceId +" failed.");
 				events.onError(error);
 			};
 
 			public void onFinished(JavaScriptObject jso) {
-				session.getUiElements().setLogSuccessText("Exec service " + execServiceId + " allowed on facility.");
+				session.getUiElements().setLogSuccessText("Service " + serviceId + " allowed on facility.");
 				events.onFinished(jso);
 			};
 
@@ -132,7 +132,7 @@ public class FreeDenialOfExecServiceOnFacility {
 
 		JSONObject jsonQuery = new JSONObject();
 		jsonQuery.put("facility", new JSONNumber(facilityId));
-		jsonQuery.put("execService", new JSONNumber(execServiceId));
+		jsonQuery.put("service", new JSONNumber(serviceId));
 		return jsonQuery;
 
 	}

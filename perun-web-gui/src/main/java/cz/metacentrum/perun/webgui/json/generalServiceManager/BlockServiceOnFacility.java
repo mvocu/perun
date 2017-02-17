@@ -10,29 +10,29 @@ import cz.metacentrum.perun.webgui.json.JsonPostClient;
 import cz.metacentrum.perun.webgui.model.PerunError;
 
 /**
- * Ajax query to ban selected exec service on facility
+ * Ajax query to ban selected service on facility
  *
  * @author Pavel Zlamal <256627@mail.muni.cz>
  */
 
-public class BanExecServiceOnFacility {
+public class BlockServiceOnFacility {
 
 	// web session
 	private PerunWebSession session = PerunWebSession.getInstance();
 	// URL to call
-	final String JSON_URL = "generalServiceManager/banExecServiceOnFacility";
+	final String JSON_URL = "generalServiceManager/blockServiceOnFacility";
 	// custom events
 	private JsonCallbackEvents events = new JsonCallbackEvents();
 	// ids
 	private int facilityId = 0;
-	private int execServiceId = 0;
+	private int serviceId = 0;
 
 	/**
 	 * Creates a new request
 	 *
 	 * @param facilityId ID of Facility
 	 */
-	public BanExecServiceOnFacility(int facilityId) {
+	public BlockServiceOnFacility(int facilityId) {
 		this.facilityId = facilityId;
 	}
 
@@ -42,7 +42,7 @@ public class BanExecServiceOnFacility {
 	 * @param facilityId ID of Facility
 	 * @param events Custom events
 	 */
-	public BanExecServiceOnFacility(int facilityId, JsonCallbackEvents events) {
+	public BlockServiceOnFacility(int facilityId, JsonCallbackEvents events) {
 		this.facilityId = facilityId;
 		this.events = events;
 	}
@@ -62,8 +62,8 @@ public class BanExecServiceOnFacility {
 			result = false;
 		}
 
-		if(execServiceId == 0){
-			errorMsg += "Wrong parameter Exec service ID'.\n";
+		if(serviceId == 0){
+			errorMsg += "Wrong parameter Service ID'.\n";
 			result = false;
 		}
 
@@ -75,24 +75,24 @@ public class BanExecServiceOnFacility {
 	}
 
 	/**
-	 * Attempts to ban selected exec service for specified facility
+	 * Attempts to ban selected service for specified facility
 	 *
-	 * @param execServiceId
+	 * @param serviceId
 	 * @param facilityId
 	 */
-	public void banExecService(int execServiceId, int facilityId){
+	public void blockService(int serviceId, int facilityId){
 		this.facilityId = facilityId;
-		banExecService(execServiceId);
-	};
+		blockService(serviceId);
+	}
 
 	/**
-	 * Attempts to ban selected exec service on facility
+	 * Attempts to ban selected service on facility
 	 *
-	 * @param execServiceId
+	 * @param serviceId
 	 */
-	public void banExecService(final int execServiceId){
+	public void blockService(final int serviceId){
 
-		this.execServiceId = execServiceId;
+		this.serviceId = serviceId;
 
 		// test arguments
 		if(!this.testCreating()){
@@ -102,12 +102,12 @@ public class BanExecServiceOnFacility {
 		// new events
 		JsonCallbackEvents newEvents = new JsonCallbackEvents(){
 			public void onError(PerunError error) {
-				session.getUiElements().setLogErrorText("Blocking exec service "+ execServiceId +" failed.");
+				session.getUiElements().setLogErrorText("Blocking service "+ serviceId +" failed.");
 				events.onError(error);
 			};
 
 			public void onFinished(JavaScriptObject jso) {
-				session.getUiElements().setLogSuccessText("Exec service " + execServiceId + " blocked on facility.");
+				session.getUiElements().setLogSuccessText("Exec service " + serviceId + " blocked on facility.");
 				events.onFinished(jso);
 			};
 
@@ -132,7 +132,7 @@ public class BanExecServiceOnFacility {
 
 		JSONObject jsonQuery = new JSONObject();
 		jsonQuery.put("facility", new JSONNumber(facilityId));
-		jsonQuery.put("service", new JSONNumber(execServiceId));
+		jsonQuery.put("service", new JSONNumber(serviceId));
 		return jsonQuery;
 
 	}

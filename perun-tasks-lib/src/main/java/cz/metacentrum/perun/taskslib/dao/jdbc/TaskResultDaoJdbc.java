@@ -24,6 +24,7 @@ import java.util.List;
 
 @Transactional
 public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
+
 	private static final Logger log = LoggerFactory.getLogger(TaskResultDaoJdbc.class);
 	private NamedParameterJdbcTemplate  namedParameterJdbcTemplate;
 
@@ -121,9 +122,11 @@ public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
 				"select " + taskResultMappingSelectQuery + ", " + ServicesManagerImpl.destinationMappingSelectQuery + ", " +
 				ServicesManagerImpl.serviceMappingSelectQuery +
 				" from tasks_results left join destinations on tasks_results.destination_id = destinations.id " +
-				" left join tasks on tasks.id = tasks_results.task_id left join exec_services on exec_services.id = tasks.exec_service_id" +
-				" left join services on services.id = exec_services.service_id where tasks_results.engine_id = ?", new Integer[] { engineID },
-				TASKRESULT_ROWMAPPER);
+				" left join tasks on tasks.id = tasks_results.task_id" +
+				" left join services on services.id = tasks.service_id" +
+				" where tasks_results.engine_id = ?",
+				TASKRESULT_ROWMAPPER,
+				engineID);
 		if (taskResults != null) {
 			return taskResults;
 		} else {
@@ -138,8 +141,7 @@ public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
 				ServicesManagerImpl.serviceMappingSelectQuery +
 				" from tasks_results left join destinations on tasks_results.destination_id = destinations.id " +
 				" left join tasks on tasks.id = tasks_results.task_id " +
-				" left join exec_services on exec_services.id = tasks.exec_service_id" +
-				" left join services on services.id = exec_services.service_id ",
+				" left join services on services.id = tasks.service_id",
 				TASKRESULT_ROWMAPPER);
 		if (taskResults != null) {
 			return taskResults;
@@ -155,10 +157,9 @@ public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
 				ServicesManagerImpl.serviceMappingSelectQuery +
 				" from tasks_results left join destinations on tasks_results.destination_id = destinations.id " +
 				" left join tasks on tasks.id = tasks_results.task_id" +
-				" left join exec_services on exec_services.id = tasks.exec_service_id" +
-				" left join services on services.id = exec_services.service_id " +
+				" left join services on services.id = tasks.service_id" +
 				"where tasks_results.id = ? and tasks_results.engine_id = ?",
-				new Object[] { taskResultId, engineID }, TASKRESULT_ROWMAPPER);
+				TASKRESULT_ROWMAPPER, taskResultId, engineID);
 	}
 
 	@Override
@@ -167,19 +168,19 @@ public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
 				ServicesManagerImpl.serviceMappingSelectQuery +
 				" from tasks_results left join destinations on tasks_results.destination_id = destinations.id " +
 				" left join tasks on tasks.id = tasks_results.task_id" +
-				" left join exec_services on exec_services.id = tasks.exec_service_id" +
-				" left join services on services.id = exec_services.service_id where tasks_results.id = ?",
-				new Object[] { taskResultId }, TASKRESULT_ROWMAPPER);
+				" left join services on services.id = tasks.service_id" +
+				" where tasks_results.id = ?",
+				TASKRESULT_ROWMAPPER, taskResultId);
 	}
 
 	@Override
 	public int clearByTask(int taskId, int engineID) {
-		return this.getJdbcTemplate().update("delete from tasks_results where task_id = ? and engine_id = ?", new Object[] { taskId, engineID });
+		return this.getJdbcTemplate().update("delete from tasks_results where task_id = ? and engine_id = ?", taskId, engineID);
 	}
 
 	@Override
 	public int clearByTask(int taskId) {
-		return this.getJdbcTemplate().update("delete from tasks_results where task_id = ?", new Object[] { taskId });
+		return this.getJdbcTemplate().update("delete from tasks_results where task_id = ?", taskId);
 	}
 
 	@Override
@@ -220,10 +221,9 @@ public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
 				ServicesManagerImpl.serviceMappingSelectQuery +
 				" from tasks_results left join destinations on tasks_results.destination_id = destinations.id" +
 				" left join tasks on tasks.id = tasks_results.task_id " +
-				" left join exec_services on exec_services.id = tasks.exec_service_id" +
-				" left join services on services.id = exec_services.service_id " +
+				" left join services on services.id = tasks.service_id" +
 				" where tasks_results.task_id = ? and tasks_results.engine_id = ?",
-				new Integer[] { taskId, engineID }, TASKRESULT_ROWMAPPER);
+				TASKRESULT_ROWMAPPER, taskId, engineID);
 		if (taskResults != null) {
 			return taskResults;
 		} else {
@@ -238,8 +238,9 @@ public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
 				ServicesManagerImpl.serviceMappingSelectQuery +
 				" from tasks_results left join destinations on tasks_results.destination_id = destinations.id" +
 				" left join tasks on tasks.id = tasks_results.task_id " +
-				" left join exec_services on exec_services.id = tasks.exec_service_id" +
-				" left join services on services.id = exec_services.service_id where tasks_results.task_id = ?", new Integer[] { taskId }, TASKRESULT_ROWMAPPER);
+				" left join services on services.id = tasks.service_id" +
+				" where tasks_results.task_id = ?",
+				TASKRESULT_ROWMAPPER, taskId);
 		if (taskResults != null) {
 			return taskResults;
 		} else {
@@ -257,8 +258,8 @@ public class TaskResultDaoJdbc extends JdbcDaoSupport implements TaskResultDao {
 					ServicesManagerImpl.serviceMappingSelectQuery +
 					" from tasks_results left join destinations on tasks_results.destination_id = destinations.id" +
 					" left join tasks on tasks.id = tasks_results.task_id " +
-					" left join exec_services on exec_services.id = tasks.exec_service_id" +
-					" left join services on services.id = exec_services.service_id where destinations.destination in ( :destinations )", parameters, TASKRESULT_ROWMAPPER);
+					" left join services on services.id = tasks.service_id" +
+					" where destinations.destination in ( :destinations )", parameters, TASKRESULT_ROWMAPPER);
 		} catch (RuntimeException e) {
 			throw new InternalErrorException(e);
 		}

@@ -8,9 +8,9 @@ import cz.metacentrum.perun.controller.model.ResourceState;
 import cz.metacentrum.perun.controller.model.ServiceState;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.PerunSession;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.Vo;
 import cz.metacentrum.perun.core.api.exceptions.*;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
 import cz.metacentrum.perun.taskslib.model.TaskResult;
@@ -23,7 +23,7 @@ import cz.metacentrum.perun.taskslib.model.TaskResult;
  */
 public interface PropagationStatsReader {
 
-	Task getTask(PerunSession perunSession, ExecService execService, Facility facility) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
+	Task getTask(PerunSession perunSession, Service service, Facility facility) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
 
 	Task getTaskById(PerunSession perunSession, int id) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
 
@@ -46,13 +46,7 @@ public interface PropagationStatsReader {
 
 	List<Task> listAllTasksInState(PerunSession perunSession, TaskStatus state) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
 
-	List<Task> listTasksScheduledBetweenDates(PerunSession perunSession, Date olderThen, Date youngerThen) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
-
-	List<Task> listTasksStartedBetweenDates(PerunSession perunSession, Date olderThen, Date youngerThen) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
-
-	List<Task> listTasksEndedBetweenDates(PerunSession perunSession, Date olderThen, Date youngerThen) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
-
-	boolean isThereSuchTask(ExecService execService, Facility facility);
+	boolean isThereSuchTask(Service service, Facility facility);
 
 	int countTasks();
 
@@ -126,7 +120,7 @@ public interface PropagationStatsReader {
 	 * @throws InternalErrorException
 	 */
 	List<ResourceState> getResourcesState(PerunSession session, Vo vo) throws PrivilegeException, VoNotExistsException, InternalErrorException;
-	
+
 	/**
 	 * Returns list of ServiceStates for given facility. It lists states for all services, which are currently
 	 * assigned to the facility or has any Task related to this facility.
@@ -139,7 +133,7 @@ public interface PropagationStatsReader {
 	 * @throws InternalErrorException
 	 * @throws ServiceNotExistsException
 	 * @throws PrivilegeException
-	 */	
+	 */
 	List<ServiceState> getFacilityServicesState(PerunSession sess, Facility facility) throws InternalErrorException, ServiceNotExistsException, PrivilegeException;
 
 	/**

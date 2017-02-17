@@ -17,7 +17,6 @@ public class ServiceState {
 	private Service service;
 	private Facility facility;
 	private Task task;
-	private boolean isBlockedGlobally;
 	private boolean isBlockedOnFacility;
 	private boolean hasDestinations;
 
@@ -57,11 +56,7 @@ public class ServiceState {
 	}
 
 	public boolean isBlockedGlobally() {
-		return isBlockedGlobally;
-	}
-
-	public void setBlockedGlobally(boolean isBlockedGlobally) {
-		this.isBlockedGlobally = isBlockedGlobally;
+		return (service != null) && !service.isEnabled();
 	}
 
 	public boolean isBlockedOnFacility() {

@@ -10,6 +10,7 @@ import cz.metacentrum.perun.webgui.client.UiElements;
 import cz.metacentrum.perun.webgui.json.JsonCallbackEvents;
 import cz.metacentrum.perun.webgui.json.JsonPostClient;
 import cz.metacentrum.perun.webgui.model.PerunError;
+import cz.metacentrum.perun.webgui.model.Service;
 
 /**
  * Ajax query which creates a new service.
@@ -17,25 +18,22 @@ import cz.metacentrum.perun.webgui.model.PerunError;
  * @author Pavel Zlamal <256627@mail.muni.cz>
  * @author Vaclav Mach <374430@mail.muni.cz>
  */
-public class CreateCompleteService {
+public class UpdateService {
 
 	// web session
 	private PerunWebSession session = PerunWebSession.getInstance();
 	// service name
-	private String serviceName = "";
-	private String scriptPath = "";
-	private boolean enabled = true;
-	private int defaultDelay = 10;
+	Service service;
 
 	// URL to call
-	final String JSON_URL = "servicesManager/createCompleteService";
+	final String JSON_URL = "servicesManager/updateService";
 	// custom events
 	private JsonCallbackEvents events = new JsonCallbackEvents();
 
 	/**
 	 * Creates a new request
 	 */
-	public CreateCompleteService() {
+	public UpdateService() {
 	}
 
 	/**
@@ -43,7 +41,7 @@ public class CreateCompleteService {
 	 *
 	 * @param events external events
 	 */
-	public CreateCompleteService(final JsonCallbackEvents events) {
+	public UpdateService(final JsonCallbackEvents events) {
 		this.events = events;
 	}
 
@@ -52,23 +50,13 @@ public class CreateCompleteService {
 	 *
 	 * @return true/false for continue/stop
 	 */
-	private boolean testCreating() {
-
+	private boolean testCreating()
+	{
 		boolean result = true;
 		String errorMsg = "";
 
-		if(serviceName.length() == 0){
+		if(service.getName().length() == 0){
 			errorMsg += "You must fill in the parameter 'Name'.</br>";
-			result = false;
-		}
-
-		if(scriptPath.length() == 0){
-			errorMsg += "You must fill in the parameter 'Script path'.</br>";
-			result = false;
-		}
-
-		if(defaultDelay <= 0){
-			errorMsg += "Parameter 'Default delay' must be > 0.</br>";
 			result = false;
 		}
 
@@ -80,20 +68,13 @@ public class CreateCompleteService {
 	}
 
 	/**
-	 * Attempts to create a new Service including both ExecServices with dependency,
-	 * it first tests the values and then submits them.
+	 * Attempts to update Service, it first tests the values and then submits them.
 	 *
-	 * @param name service Name
-	 * @param scriptPath Path to the service script, default "./service_name"
-	 * @param defaultDelay Delay in minutes when service is rescheduled (10 min is default)
-	 * @param enabled TRUE if service should be enabled
+	 * @param service service
 	 */
-	public void createCompleteService(final String name, final String scriptPath, final int defaultDelay, final boolean enabled)  {
-
-		this.serviceName = name;
-		this.scriptPath = scriptPath;
-		this.defaultDelay = defaultDelay;
-		this.enabled = enabled;
+	public void updateService(final Service service)
+	{
+		this.service = service;
 
 		// test arguments
 		if(!this.testCreating()){
@@ -103,12 +84,12 @@ public class CreateCompleteService {
 		// new events
 		JsonCallbackEvents newEvents = new JsonCallbackEvents(){
 			public void onError(PerunError error) {
-				session.getUiElements().setLogErrorText("Creating service " + serviceName + " failed.");
+				session.getUiElements().setLogErrorText("Updating service " + service.getName() + " failed.");
 				events.onError(error); // custom events
 			};
 
 			public void onFinished(JavaScriptObject jso) {
-				session.getUiElements().setLogSuccessText("Service " + serviceName + " created.");
+				session.getUiElements().setLogSuccessText("Service " + service.getName()+ " updated.");
 				events.onFinished(jso);
 			};
 
@@ -127,14 +108,21 @@ public class CreateCompleteService {
 	 * Prepares a JSON object
 	 * @return JSONObject the whole query
 	 */
-	private JSONObject prepareJSONObject() {
+	private JSONObject prepareJSONObject()
+	{
+		// service
+		JSONObject newService = new JSONObject();
+		newService.put("id", new JSONNumber(service.getId()));
+		newService.put("name", new JSONString(service.getName()));
+		newService.put("description", new JSONString(service.getDescription()));
+		newService.put("delay", new JSONNumber(service.getDelay()));
+		newService.put("recurrence", new JSONNumber(service.getRecurrence()));
+		newService.put("enabled", JSONBoolean.getInstance(service.isEnabled()));
+		newService.put("script", new JSONString(service.getScriptPath()));
 
 		// whole JSON query
 		JSONObject jsonQuery = new JSONObject();
-		jsonQuery.put("name", new JSONString(serviceName));
-		jsonQuery.put("scriptPath", new JSONString(scriptPath));
-		jsonQuery.put("defaultDelay", new JSONNumber(defaultDelay));
-		jsonQuery.put("enabled", JSONBoolean.getInstance(enabled));
+		jsonQuery.put("service", newService);           // service object
 		return jsonQuery;
 	}
 

@@ -148,9 +148,8 @@ public class GetFacilityAssignedServicesForGUI implements JsonCallback, JsonCall
 		Column<RichService, String> allowedGloballyColumn = JsonUtils.addColumn(new JsonUtils.GetValue<RichService, String>() {
 			public String getValue(RichService object) {
 				String send = "";
-
-				if (object.getExecService() != null) {
-					if (object.getExecService().isEnabled()==true) {
+				if (object.getService() != null) {
+					if (object.getService().isEnabled()) {
 						send = "Allowed";
 					} else {
 						send = "Denied";

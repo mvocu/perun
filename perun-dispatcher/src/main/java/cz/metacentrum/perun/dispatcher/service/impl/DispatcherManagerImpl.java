@@ -146,7 +146,7 @@ public class DispatcherManagerImpl implements DispatcherManager {
 		Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread thread, Throwable throwable) {
-				log.error("Unknow exception was caught in TaskScheduler", throwable);
+				log.error("Unknown exception was caught in TaskScheduler", throwable);
 			}
 		};
 

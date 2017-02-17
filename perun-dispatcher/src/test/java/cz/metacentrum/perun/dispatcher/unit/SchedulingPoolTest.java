@@ -50,7 +50,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 	public void setup() throws InternalErrorException, TaskStoreException {
 		task1 = new Task();
 		task1.setId(1);
-		task1.setExecService(execservice1);
+		task1.setService(service1);
 		task1.setFacility(facility1);
 		task1.setDestinations(destinations);
 
@@ -75,7 +75,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 		Assert.isTrue(schedulingPool.getSize() == 1, "new size is 1"); // pool already contains this task
 		task2 = new Task();
 		task2.setId(2);
-		task2.setExecService(execservice2);
+		task2.setService(service2);
 		task2.setFacility(facility1);
 		task2.setDestinations(destinations);
 		task2.setSchedule(new Date(System.currentTimeMillis()));

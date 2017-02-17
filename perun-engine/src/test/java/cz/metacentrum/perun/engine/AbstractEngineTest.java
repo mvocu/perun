@@ -49,13 +49,11 @@ public abstract class AbstractEngineTest {
 	// base objects needed as test environment
 	public Facility facility;
 	public Service service;
+	public Service service2;
 	public Destination destination1;
 	public Destination destination2;
 	public Destination destination3;
 	public Destination destination4;
-	public ExecService execService1;
-	public ExecService execService2;
-	public ExecService execService_gen;
 	public Task task1;
 	public Task task2;
 	public SendTask sendTask1;
@@ -83,7 +81,19 @@ public abstract class AbstractEngineTest {
 		// create expected core objects
 
 		facility = perun.getFacilitiesManagerBl().createFacility(sess, new Facility(0, "EngineTestFacility"));
-		service = perun.getServicesManagerBl().createService(sess, new Service(0, "test_service"));
+		Service srv = new Service(0, "test_service", null);
+		srv.setEnabled(true);
+		srv.setDelay(1);
+		srv.setRecurrence(2);
+		srv.setScript("/bin/true"); // this command always return true
+		service = perun.getServicesManagerBl().createService(sess, srv);
+
+		Service srv2 = new Service(0, "test_service2", null);
+		srv2.setEnabled(true);
+		srv2.setDelay(1);
+		srv2.setRecurrence(2);
+		srv2.setScript("/bin/false"); // this command always return false
+		service2 = perun.getServicesManagerBl().createService(sess, srv2);
 
 		destination1 = perun.getServicesManagerBl().addDestination(
 				sess, service, facility, new Destination(0, "par_dest1", "host", "PARALLEL"));
@@ -93,27 +103,6 @@ public abstract class AbstractEngineTest {
 				sess, service, facility, new Destination(0, "one_dest1", "host", "ONE"));
 		destination4 = perun.getServicesManagerBl().addDestination(
 				sess, service, facility, new Destination(0, "one_dest2", "host", "ONE"));
-
-		execService1 = new ExecService();
-		execService1.setService(service);
-		execService1.setEnabled(true);
-		execService1.setDefaultDelay(1);
-		execService1.setScript("/bin/true"); // this command always return true
-		execService1.setId(controller.insertExecService(sess, execService1));
-
-		execService2 = new ExecService();
-		execService2.setService(service);
-		execService2.setEnabled(true);
-		execService2.setDefaultDelay(1);
-		execService2.setScript("/bin/false"); // this command always return true
-		execService2.setId(controller.insertExecService(sess, execService2));
-
-		execService_gen = new ExecService();
-		execService_gen.setService(service);
-		execService_gen.setEnabled(true);
-		execService_gen.setDefaultDelay(1);
-		execService_gen.setScript("/bin/true"); // this command always return true
-		execService_gen.setId(controller.insertExecService(sess, execService_gen));
 
 		List<Destination> destinations = new ArrayList<Destination>() {{
 			add(destination1);
@@ -127,7 +116,7 @@ public abstract class AbstractEngineTest {
 		task1 = new Task();
 		task1.setDestinations(destinations);
 		task1.setFacility(facility);
-		task1.setExecService(execService1);
+		task1.setService(service);
 		task1.setSchedule(new Date());
 		task1.setStatus(Task.TaskStatus.PLANNED);
 		task1.setId(taskDaoCore.scheduleNewTask(task1, engineId));
@@ -135,7 +124,7 @@ public abstract class AbstractEngineTest {
 		task2 = new Task();
 		task2.setDestinations(destinations);
 		task2.setFacility(facility);
-		task2.setExecService(execService2);
+		task2.setService(service2);
 		task2.setSchedule(new Date());
 		task2.setStatus(Task.TaskStatus.PLANNED);
 		task2.setId(taskDaoCore.scheduleNewTask(task2, engineId));

@@ -15,9 +15,9 @@ import cz.metacentrum.perun.webgui.client.resources.*;
 import cz.metacentrum.perun.webgui.json.GetEntityById;
 import cz.metacentrum.perun.webgui.json.JsonCallbackEvents;
 import cz.metacentrum.perun.webgui.json.JsonUtils;
-import cz.metacentrum.perun.webgui.json.generalServiceManager.BanExecServiceOnFacility;
+import cz.metacentrum.perun.webgui.json.generalServiceManager.BlockServiceOnFacility;
 import cz.metacentrum.perun.webgui.json.generalServiceManager.ForceServicePropagation;
-import cz.metacentrum.perun.webgui.json.generalServiceManager.FreeDenialOfExecServiceOnFacility;
+import cz.metacentrum.perun.webgui.json.generalServiceManager.UnblockServiceOnFacility;
 import cz.metacentrum.perun.webgui.json.propagationStatsReader.DeleteTask;
 import cz.metacentrum.perun.webgui.json.propagationStatsReader.GetFacilityServicesState;
 import cz.metacentrum.perun.webgui.model.*;
@@ -180,10 +180,10 @@ public class FacilityStatusTabItem implements TabItem, TabItemWithUrl {
 				if (UiElements.cantSaveEmptyListDialogBox(list)) {
 					for (int i = 0; i < list.size(); i++) {
 						// TODO - SHOULD HAVE ONLY ONE CALLBACK TO CORE !!
-						BanExecServiceOnFacility sendRequest = new BanExecServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(blockButton));
+						BlockServiceOnFacility sendRequest = new BlockServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(blockButton));
 						JsonCallbackEvents events = JsonCallbackEvents.disableButtonEvents(blockButton, JsonCallbackEvents.refreshTableEvents(callback));
 						if (i == list.size()-1) sendRequest.setEvents(events);
-						if (list.get(i).getTask() != null) sendRequest.banExecService(list.get(i).getTask().getExecService().getId());
+						if (list.get(i).getTask() != null) sendRequest.blockService(list.get(i).getTask().getService().getId());
 					}
 				}
 			}
@@ -196,10 +196,10 @@ public class FacilityStatusTabItem implements TabItem, TabItemWithUrl {
 				if (UiElements.cantSaveEmptyListDialogBox(list)) {
 					for (int i = 0; i < list.size(); i++) {
 						// TODO - SHOULD HAVE ONLY ONE CALLBACK TO CORE !!
-						FreeDenialOfExecServiceOnFacility sendRequest = new FreeDenialOfExecServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(allowButton));
+						UnblockServiceOnFacility sendRequest = new UnblockServiceOnFacility(facilityId, JsonCallbackEvents.disableButtonEvents(allowButton));
 						JsonCallbackEvents events = JsonCallbackEvents.disableButtonEvents(allowButton, JsonCallbackEvents.refreshTableEvents(callback));
 						if (i == list.size()-1) sendRequest.setEvents(events);
-						if (list.get(i).getTask() != null) sendRequest.freeDenialOfExecService(list.get(i).getTask().getExecService().getId());
+						if (list.get(i).getTask() != null) sendRequest.unblockService(list.get(i).getTask().getService().getId());
 					}
 				}
 			}

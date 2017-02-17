@@ -4,12 +4,12 @@ import cz.metacentrum.perun.auditparser.AuditParser;
 import cz.metacentrum.perun.core.api.Destination;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.PerunBean;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.engine.exceptions.InvalidEventMessageException;
 import cz.metacentrum.perun.engine.processing.EventParser;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class EventParserImpl implements EventParser {
 
 		/*
 		 * Expected string format:
-		 * "task|[engine_id]|[task_id][is_forced]|[exec_service]|[facility]|[destination_list]|[dependency_list]"
+		 * "task|[engine_id]|[task_id][is_forced]|[service]|[facility]|[destination_list]|[dependency_list]"
 		 *
 		 *  String eventParsingPattern =
 		 * "^event\\|([0-9]{1,6})\\|\\[([a-zA-Z0-9: ]+)\\]\\[([^\\]]+)\\]\\[(.*)\\]$";
@@ -64,18 +64,18 @@ public class EventParserImpl implements EventParser {
 			} catch (Exception e) {
 				throw new InvalidEventMessageException("Wrong Engine ID: parse exception", e);
 			}
-			// Data should provide information regarding the target ExecService (Processing rule).
+			// Data should provide information regarding the target Service (Processing rule).
 			String eventTaskId = matcher.group(2);
 			String eventIsForced = matcher.group(3);
-			String eventExecService = matcher.group(4);
+			String eventService = matcher.group(4);
 			String eventFacility = matcher.group(5);
 			String eventDestinationList = matcher.group(6);
 
 			// check possible enconding
-			if (!eventExecService.startsWith("ExecService")) {
-				eventExecService = new String(Base64.decodeBase64(eventExecService));
+			if (!eventService.startsWith("Service")) {
+				eventService = new String(Base64.decodeBase64(eventService));
 			}
-			if (!eventExecService.startsWith("ExecService")) {
+			if (!eventService.startsWith("Service")) {
 				throw new InvalidEventMessageException("Wrong exec service: parse exception");
 			}
 			if (!eventFacility.startsWith("Facility")) {
@@ -91,12 +91,12 @@ public class EventParserImpl implements EventParser {
 				throw new InvalidEventMessageException("Wrong destination list: parse exception");
 			}
 
-			log.debug("Event data to be parsed: task id {}, forced {}, facility {}, exec service {}, destination list {}",
-					new Object[]{eventTaskId, eventIsForced, eventFacility, eventExecService, eventDestinationList});
+			log.debug("Event data to be parsed: task id {}, forced {}, facility {}, service {}, destination list {}",
+					new Object[]{eventTaskId, eventIsForced, eventFacility, eventService, eventDestinationList});
 
 			// Prepare variables
 			Facility facility;
-			ExecService execService;
+			Service service;
 			List<Destination> destinationList = new ArrayList<Destination>();
 
 			// resolve facility and deserialize event data
@@ -110,13 +110,11 @@ public class EventParserImpl implements EventParser {
 			}
 
 			// resolve exec service and deserialize event data
-			listOfBeans = AuditParser.parseLog(eventExecService);
+			listOfBeans = AuditParser.parseLog(eventService);
 			try {
-				execService = (ExecService) listOfBeans.get(0);
+				service = (Service) listOfBeans.get(0);
 			} catch (Exception e) {
-				throw new InvalidEventMessageException(
-						"Could not resolve exec service from event ["
-								+ eventExecService + "]", e);
+				throw new InvalidEventMessageException("Could not resolve service from event [" + eventService + "]", e);
 			}
 
 			// resolve list of destinations
@@ -134,10 +132,10 @@ public class EventParserImpl implements EventParser {
 			Task task = new Task();
 			task.setId(Integer.parseInt(eventTaskId));
 			task.setFacility(facility);
-			task.setExecService(execService);
+			task.setService(service);
 			task.setDestinations(destinationList);
-			task.setDelay(execService.getDefaultDelay());
-			task.setRecurrence(execService.getDefaultRecurrence());
+			task.setDelay(service.getDelay());
+			task.setRecurrence(service.getRecurrence());
 			task.setPropagationForced(Boolean.parseBoolean(eventIsForced));
 
 			return task;

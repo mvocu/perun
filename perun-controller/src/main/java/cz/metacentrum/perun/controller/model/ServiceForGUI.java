@@ -1,7 +1,6 @@
 package cz.metacentrum.perun.controller.model;
 
 import cz.metacentrum.perun.core.api.Service;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 
 /**
  * Extension of Service (from Perun-Core) to provide more info for GUI
@@ -10,16 +9,17 @@ import cz.metacentrum.perun.taskslib.model.ExecService;
  */
 public class ServiceForGUI extends Service {
 
-	// global service info calculated by GeneralServiceManager
-	// (based on allowed status of exec services)
+	// contextual info
 	private boolean allowedOnFacility;
-	private ExecService execService;
 
 	public ServiceForGUI(Service service){
-
 		setId(service.getId());
 		setName(service.getName());
-
+		setDescription(service.getDescription());
+		setDelay(service.getDelay());
+		setRecurrence(service.getRecurrence());
+		setScript(service.getScript());
+		setEnabled(service.isEnabled());
 	}
 
 	public void setAllowedOnFacility(boolean allowed){
@@ -28,14 +28,6 @@ public class ServiceForGUI extends Service {
 
 	public boolean getAllowedOnFacility(){
 		return allowedOnFacility;
-	}
-
-	public void setExecService(ExecService send){
-		this.execService = send;
-	}
-
-	public ExecService getExecService(){
-		return this.execService;
 	}
 
 	@Override
@@ -57,8 +49,6 @@ public class ServiceForGUI extends Service {
 		ServiceForGUI other = (ServiceForGUI) obj;
 		if (allowedOnFacility != other.allowedOnFacility)
 			return false;
-		if (execService != other.execService)
-			return false;
 
 		return true;
 	}
@@ -66,8 +56,7 @@ public class ServiceForGUI extends Service {
 	@Override
 	public String toString() {
 		return "ServiceForGUI [allowedOnFacility=" + allowedOnFacility
-			+ ", execService = " + execService
-			+ ", Service=" + super.toString() + "]";
+				+ ", Service=" + super.toString() + "]";
 	}
 
 }

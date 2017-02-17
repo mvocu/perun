@@ -120,11 +120,11 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 		properties.setProperty("dispatcher.new_task.delay.count", "1");
 		schedulingPool.setDispatcherProperties(properties);
 		Task testTask1 = new Task();
-		testTask1.setExecService(execservice1);
+		testTask1.setService(service1);
 		testTask1.setId(0);
 		Task testTask2 = new Task();
 		testTask2.setId(2);
-		testTask2.setExecService(execservice2);
+		testTask2.setService(service2);
 
 		return new Task[]{testTask1, testTask2};
 	}

@@ -358,6 +358,11 @@ create table auditer_consumers (
 create table services (
 	id integer not null,
 	name varchar(128) not null,
+	description varchar(1024),
+	delay integer not null,
+	recurrence integer not null,
+	enabled char(1) not null,
+	script varchar(256) not null,
 	created_at timestamp default now not null,
 	created_by varchar(1300) default user not null,
 	modified_at timestamp default now not null,
@@ -401,25 +406,9 @@ create table specific_user_users (
 	status char(1) default '0' not null
 );
 
-create table exec_services (
-	id integer not null,
-	service_id integer not null,
-	default_delay integer not null,
-	enabled char(1) not null,
-	default_recurrence integer not null,
-	script varchar(256) not null,
-	created_at timestamp default now not null,
-	created_by varchar(1300) default user not null,
-	modified_at timestamp default now not null,
-	modified_by varchar(1300) default user not null,
-	status char(1) default '0' not null,
-	created_by_uid integer,
-	modified_by_uid integer
-);
-
 create table service_denials (
 	id integer not null,
-	exec_service_id integer not null,
+	service_id integer not null,
 	facility_id integer,
 	destination_id integer,
 	created_at timestamp default now not null,
@@ -429,19 +418,6 @@ create table service_denials (
 	status char(1) default '0' not null,
 	created_by_uid integer,
 	modified_by_uid integer
-);
-
-create table service_dependencies (
-	exec_service_id integer not null,
-	dependency_id integer not null,
-	created_at timestamp default now not null,
-	created_by varchar(1300) default user not null,
-	modified_at timestamp default now not null,
-	modified_by varchar(1300) default user not null,
-	status char(1) default '0' not null,
-	created_by_uid integer,
-	modified_by_uid integer,
-	type varchar(16) default 'SERVICE' not null
 );
 
 create table resource_services (
@@ -848,7 +824,7 @@ create table service_service_packages (
 
 create table tasks (
 	id integer not null,
-	exec_service_id integer not null,
+	service_id integer not null,
 	facility_id integer not null,
 	schedule timestamp not null,
 	recurrence integer not null,
@@ -1129,7 +1105,6 @@ create sequence attr_names_id_seq;
 create sequence auditer_consumers_id_seq;
 create sequence auditer_log_id_seq;
 create sequence destinations_id_seq;
-create sequence exec_services_id_seq start with 20 increment by 1;
 create sequence ext_sources_id_seq;
 create sequence facilities_id_seq;
 create sequence groups_id_seq;
@@ -1185,7 +1160,6 @@ create index idx_fk_usrex_usersrc on user_ext_sources(ext_sources_id);
 create index idx_fk_mem_user on members(user_id);
 create index idx_fk_mem_vo on members(vo_id);
 create index idx_fk_host_fac on hosts(facility_id);
-create index idx_fk_exsrv_srv on exec_services(service_id);
 create index idx_fk_dest_srv on facility_service_destinations(service_id);
 create index idx_fk_dest_fac on facility_service_destinations(facility_id);
 create index idx_fk_dest_destc on facility_service_destinations(destination_id);
@@ -1220,18 +1194,16 @@ create index idx_fk_memgav_accattnam on member_group_attr_values(attr_id);
 create index idx_fk_usrfacav_mem on user_facility_attr_values(user_id);
 create index idx_fk_usrfacav_fac on user_facility_attr_values(facility_id);
 create index idx_fk_usrfacav_accattnam on user_facility_attr_values(attr_id);
-create index idx_fk_task_exsrv on tasks(exec_service_id);
+create index idx_fk_task_srv on tasks(service_id);
 create index idx_fk_task_fac on tasks(facility_id);
 create index idx_fk_task_eng on tasks(engine_id);
 create index idx_fk_taskres_task on tasks_results(task_id);
 create index idx_fk_taskres_dest on tasks_results(destination_id);
 create index idx_fk_taskres_eng on tasks_results(engine_id);
-create index idx_fk_srvden_exsrv on service_denials(exec_service_id);
+create index idx_fk_srvden_srv on service_denials(service_id);
 create index idx_fk_srvden_fac on service_denials(facility_id);
 create index idx_fk_srvden_dest on service_denials(destination_id);
-create unique index idx_srvden_u ON service_denials(exec_service_id,facility_id,destination_id);
-create index idx_fk_srvdep_exsrv on service_dependencies(exec_service_id);
-create index idx_fk_srvdep_depexsrv on service_dependencies(dependency_id);
+create unique index idx_srvden_u ON service_denials(service_id,facility_id,destination_id);
 create index idx_fk_srvreqattr_srv on service_required_attrs(service_id);
 create index idx_fk_srvreqattr_attr on service_required_attrs(attr_id);
 create index idx_fk_resrcsrv_srv on resource_services(service_id);
@@ -1360,9 +1332,6 @@ alter table hosts add constraint host_fac_fk foreign key(facility_id) references
 alter table services add constraint serv_pk primary key(id);
 alter table services add constraint serv_u unique(name);
 
-alter table exec_services add constraint exsrv_pk primary key(id);
-alter table exec_services add constraint exsrv_srv_fk foreign key (service_id) references services(id);
-
 alter table destinations add constraint dest_pk primary key (id);
 alter table destinations add constraint dest_u unique(destination,type);
 
@@ -1437,15 +1406,10 @@ alter table user_facility_attr_values add constraint usrfacav_accattnam_fk forei
 alter table user_facility_attr_values add constraint usrfacav_u unique(user_id,facility_id,attr_id);
 
 alter table service_denials add constraint srvden_pk primary key (id);
-alter table service_denials add constraint srvden_exsrv_fk foreign key (exec_service_id) references exec_services(id);
+alter table service_denials add constraint srvden_srv_fk foreign key (service_id) references services(id);
 alter table service_denials add constraint srvden_fac_fk foreign key (facility_id) references facilities(id);
 alter table service_denials add constraint srvden_dest_fk foreign key (destination_id) references destinations(id);
-alter table service_denials add constraint srvden_u check(exec_service_id is not null and ((facility_id is not null and destination_id is null) or (facility_id is null and destination_id is not null)));
-
-alter table service_dependencies add constraint srvdep_exsrv_fk foreign key (exec_service_id) references exec_services(id);
-alter table service_dependencies add constraint srvdep_depexsrv_fk foreign key (dependency_id) references exec_services(id);
-alter table service_dependencies add constraint srvdep_type_chk check (type in ('SERVICE','DESTINATION'));
-alter table service_dependencies add constraint srvdep_u unique(exec_service_id,dependency_id);
+alter table service_denials add constraint srvden_u check(service_id is not null and ((facility_id is not null and destination_id is null) or (facility_id is null and destination_id is not null)));
 
 alter table engines add constraint eng_pk primary key (id);
 
@@ -1604,8 +1568,8 @@ alter table tags_resources add constraint tags_res_tags_fk foreign key (tag_id) 
 alter table tags_resources add constraint tags_res_res_fk foreign key (resource_id) references resources(id);
 
 alter table tasks add constraint task_pk primary key (id);
-alter table tasks add constraint task_u unique (exec_service_id,facility_id);
-alter table tasks add constraint task_exsrv_fk foreign key (exec_service_id) references exec_services(id);
+alter table tasks add constraint task_u unique (service_id,facility_id);
+alter table tasks add constraint task_srv_fk foreign key (service_id) references services(id);
 alter table tasks add constraint task_fac_fk foreign key (facility_id) references facilities(id);
 alter table tasks add constraint task_eng_fk foreign key (engine_id) references engines(id);
 alter table tasks add constraint task_stat_chk check (status in ('WAITING','PLANNED','SENDERROR','GENERROR','GENERATING','GENERATED', 'SENDING', 'DONE', 'ERROR'));

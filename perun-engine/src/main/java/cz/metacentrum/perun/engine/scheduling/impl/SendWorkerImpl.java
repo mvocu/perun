@@ -1,9 +1,9 @@
 package cz.metacentrum.perun.engine.scheduling.impl;
 
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.core.api.Service;
 import cz.metacentrum.perun.engine.exceptions.TaskExecutionException;
 import cz.metacentrum.perun.engine.scheduling.SendWorker;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.SendTask;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.slf4j.Logger;
@@ -30,8 +30,8 @@ public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 	@Override
 	public SendTask call() throws TaskExecutionException {
 		Task task = sendTask.getTask();
-		ExecService execService = task.getExecService();
-		ProcessBuilder pb = new ProcessBuilder(execService.getScript(), task.getFacility().getName(),
+		Service service = task.getService();
+		ProcessBuilder pb = new ProcessBuilder(service.getScript(), task.getFacility().getName(),
 				sendTask.getDestination().getDestination(), sendTask.getDestination().getType());
 
 		try {
@@ -56,7 +56,7 @@ public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 			}
 
 		} catch (IOException e) {
-			String errorMsg = "IOException occured when sending SendTask " + sendTask;
+			String errorMsg = "IOException when sending SendTask " + sendTask;
 			log.warn(errorMsg, e);
 			sendTask.setStatus(ERROR);
 			throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), 2, "", e.getMessage());
