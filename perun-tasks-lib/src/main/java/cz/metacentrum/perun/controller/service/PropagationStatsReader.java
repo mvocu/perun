@@ -1,6 +1,5 @@
 package cz.metacentrum.perun.controller.service;
 
-import java.util.Date;
 import java.util.List;
 
 import cz.metacentrum.perun.controller.model.FacilityState;

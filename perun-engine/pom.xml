@@ -150,14 +150,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>cz.metacentrum.perun</groupId>
-			<artifactId>perun-controller</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-
 		<!-- DB -->
 
 		<!-- SPRING -->

@@ -152,12 +152,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>cz.metacentrum.perun</groupId>
-			<artifactId>perun-controller</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 		<!-- DB -->
 
 		<!-- use tomcat dbcp instead

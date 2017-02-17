@@ -28,7 +28,7 @@ import static org.mockito.Mockito.mock;
 @Transactional
 @TransactionConfiguration(defaultRollback = true, transactionManager = "springTransactionManager")
 // !! order of app context files matter in order to correctly recognize both data sources !!
-@ContextConfiguration(locations = { "classpath:perun-controller.xml", "classpath:perun-engine.xml", "classpath:perun-engine-jdbc-local-test.xml" })
+@ContextConfiguration(locations = { "classpath:perun-tasks-lib.xml", "classpath:perun-engine.xml", "classpath:perun-engine-jdbc-local-test.xml" })
 public abstract class AbstractEngineTest {
 
 	@Autowired Properties propertiesBean;

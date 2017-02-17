@@ -37,7 +37,6 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            classpath:perun-controller.xml
             classpath:perun-core.xml
             classpath:perun-core-jdbc.xml
             classpath:perun-core-synchronizers.xml
