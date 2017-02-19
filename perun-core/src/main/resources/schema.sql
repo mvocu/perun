@@ -204,19 +204,6 @@ create table routing_rules (
 	modified_by_uid integer
 );
 
-create table dispatcher_settings (
-	ip_address varchar(40) not null,
-	port integer not null,
-	last_check_in timestamp default now,
-	created_at timestamp default now not null,
-	created_by varchar(1300) default user not null,
-	modified_at timestamp default now not null,
-	modified_by varchar(1300) default user not null,
-	status char(1) default '0' not null,
-	created_by_uid integer,
-	modified_by_uid integer
-);
-
 create table engines (
 	id integer not null,
 	ip_address varchar(40) not null,

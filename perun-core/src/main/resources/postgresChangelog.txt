@@ -53,6 +53,7 @@ alter table exec_services drop constraint exsrv_srv_fk;
 alter table exec_services drop constraint exsrv_type_chk;
 drop table exec_services;
 drop sequence exec_services_id_seq;
+drop table dispatcher_settings;
 
 3.1.41
 alter table tasks add constraint task_u unique (exec_service_id, facility_id);

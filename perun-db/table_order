@@ -14,7 +14,6 @@ groups
 facility_contacts
 members
 routing_rules
-dispatcher_settings
 engines
 engine_routing_rule
 processing_rules

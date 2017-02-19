@@ -222,20 +222,6 @@ create table "routing_rules" (
 	modified_by_uid integer
 );
 
--- DISPATCHER_SETTINGS - settings of daemon-dispatcher of services
-create table "dispatcher_settings" (
-	ip_address varchar(40) not null, --IP address
-	port integer not null,           -- port
-	last_check_in timestamp default (now()), --time of last activation
-	created_at timestamp default now() not null,
-	created_by varchar(1300) default user not null,
-	modified_at timestamp default now() not null,
-	modified_by varchar(1300) default user not null,
-	status char(1) default '0' not null,
-	created_by_uid integer,
-	modified_by_uid integer
-);
-
 -- ENGINES - information for daemons controles services planning
 create table "engines" (
 	id integer not null, --identifier of daemon
@@ -1746,7 +1732,6 @@ grant all on tasks to perun;
 grant all on tasks_results to perun;
 grant all on service_denials to perun;
 grant all on engines to perun;
-grant all on dispatcher_settings to perun;
 grant all on service_required_attrs to perun;
 grant all on resource_services to perun;
 grant all on routing_rules to perun;

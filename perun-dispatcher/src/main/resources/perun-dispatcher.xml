@@ -54,10 +54,6 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 	<bean id="waitingForcedTasksQueue" class="java.util.concurrent.DelayQueue"/>
 
 	<!-- DAOs -->
-	<bean id="dispatcherDao" class="cz.metacentrum.perun.dispatcher.dao.jdbc.DispatcherDaoJdbc">
-		<property name="dataSource" ref="dataSource"/>
-	</bean>
-
 	<bean id="rulesDao" class="cz.metacentrum.perun.dispatcher.dao.jdbc.RulesDaoJdbc">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>

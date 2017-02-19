@@ -9,5 +9,4 @@ service_required_attrs
 engines
 routing_rules
 engine_routing_rule
-dispatcher_settings
 configurations

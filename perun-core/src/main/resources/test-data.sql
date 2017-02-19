@@ -1961,8 +1961,6 @@ insert into routing_rules (created_by_uid,modified_by_uid,id,routing_rule,create
 insert into routing_rules (created_by_uid,modified_by_uid,id,routing_rule,created_at,created_by,modified_at,modified_by,status) values (null,null,2,'portishead',timestamp '2011-11-15 14:43:06.3','PERUNV3',timestamp '2011-11-15 14:43:06.3','PERUNV3','0');
 insert into engine_routing_rule (created_by_uid,modified_by_uid,engine_id,routing_rule_id,created_at,created_by,modified_at,modified_by,status) values (null,null,1,1,timestamp '2011-11-15 14:42:35.3','PERUNV3',timestamp '2011-11-15 14:42:35.3','PERUNV3','0');
 insert into engine_routing_rule (created_by_uid,modified_by_uid,engine_id,routing_rule_id,created_at,created_by,modified_at,modified_by,status) values (null,null,1,2,timestamp '2011-11-15 14:43:13.3','PERUNV3',timestamp '2011-11-15 14:43:13.3','PERUNV3','0');
-insert into dispatcher_settings (created_by_uid,modified_by_uid,ip_address,port,last_check_in,created_at,created_by,modified_at,modified_by,status) values (null,null,'127.0.0.1',6071,timestamp '2015-01-21 13:05:00.4',timestamp '2015-01-16 14:29:29.6','PERUNV3',timestamp '2015-01-16 14:29:29.6','PERUNV3','0');
-insert into dispatcher_settings (created_by_uid,modified_by_uid,ip_address,port,last_check_in,created_at,created_by,modified_at,modified_by,status) values (null,null,'127.0.0.1',6060,timestamp '2015-01-16 14:25:00.6',timestamp '2015-01-16 09:39:07.6','PERUNV3',timestamp '2015-01-16 09:39:07.6','PERUNV3','0');
 insert into configurations (property,value) values ('DATABASE VERSION','3.1.42');
 
 drop sequence service_principals_id_seq;
