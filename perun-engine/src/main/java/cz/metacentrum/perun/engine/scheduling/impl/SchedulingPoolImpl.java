@@ -89,12 +89,12 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	 * @param task Task that will be added to the pool.
 	 * @return Task that was added to the pool.
 	 */
-	public Task addToPool(Task task) throws TaskStoreException {
+	public Task addTask(Task task) throws TaskStoreException {
 		if (task.getStatus() != PLANNED) {
 			throw new IllegalArgumentException("Only Tasks with PLANNED status can be added to SchedulingPool");
 		}
 
-		Task addedTask = taskStore.addToPool(task);
+		Task addedTask = taskStore.addTask(task);
 		if (task.isPropagationForced()) {
 			try {
 				newTasksQueue.putFirst(task);

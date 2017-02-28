@@ -121,7 +121,6 @@ public class TaskDaoJdbc extends JdbcDaoSupport implements TaskDao {
 
 	@Override
 	public int scheduleNewTask(Task task, int engineID) throws InternalErrorException {
-		log.debug("TESTSTR -> scheduleNewTask entered.");
 		int newTaskId = 0;
 		try {
 			newTaskId = Utils.getNewId(this.getJdbcTemplate(), "tasks_id_seq");

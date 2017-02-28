@@ -44,51 +44,79 @@ import cz.metacentrum.perun.dispatcher.exceptions.InvalidEventMessageException;
 import cz.metacentrum.perun.dispatcher.processing.EventServiceResolver;
 
 /**
+ * Implementation of EventServiceResolver.
+ *
+ * @see cz.metacentrum.perun.dispatcher.processing.EventServiceResolver
  *
  * @author Michal Karm Babacek
+ * @author Michal Voců
+ * @author David Šarman
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 @org.springframework.stereotype.Service(value = "eventExecServiceResolver")
 public class EventServiceResolverImpl implements EventServiceResolver {
 
 	private static final Logger log = LoggerFactory.getLogger(EventServiceResolverImpl.class);
 
-	@Autowired
+	/**
+	 * Expected string format as on: event|x|[timestamp][Event header][Event data]
+	 */
+	private final static String eventParsingPattern = "^\\[([a-zA-Z0-9+: ]+)\\]\\[([^\\]]+)\\]\\[(.*)\\]$";
+	private final static Pattern pattern = Pattern.compile(eventParsingPattern);
+
 	private Properties dispatcherProperties;
-	@Autowired
 	private Perun perun;
-	@Autowired
 	private GeneralServiceManager generalServiceManager;
+
+	private PerunSession perunSession = null;
+
+	// ----- setters -------------------------------------
+
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
+	}
+
+	@Autowired
+	public void setDispatcherProperties(Properties dispatcherProperties) {
+		this.dispatcherProperties = dispatcherProperties;
+	}
+
+	public Perun getPerun() {
+		return perun;
+	}
+
+	@Autowired
+	public void setPerun(Perun perun) {
+		this.perun = perun;
+	}
+
+	public GeneralServiceManager getGeneralServiceManager() {
+		return generalServiceManager;
+	}
+
+	@Autowired
+	public void setGeneralServiceManager(GeneralServiceManager generalServiceManager) {
+		this.generalServiceManager = generalServiceManager;
+	}
+
+	// ----- methods -------------------------------------
 
 	@Override
 	public Map<Facility, Set<Service>> parseEvent(String event) throws InvalidEventMessageException, ServiceNotExistsException, InternalErrorException, PrivilegeException {
-		log.info("I am going to process event:" + event);
 
-		/**
-		 * Expected string format as on:
-		 * https://projekty.ics.muni.cz/perunv3/trac
-		 * /wiki/PerunEngineDispatcherController event|x|[timestamp][Event
-		 * header][Event data]
-		 */
-		String eventParsingPattern = "^\\[([a-zA-Z0-9+: ]+)\\]\\[([^\\]]+)\\]\\[(.*)\\]$";
-		Pattern pattern = Pattern.compile(eventParsingPattern);
+		log.info("Event - I am going to process event:" + event);
+
 		Matcher matcher = pattern.matcher(event);
 		boolean matchFound = matcher.find();
 
 		if (matchFound) {
-			log.debug("Message format matched ok.");
-			// Header should provide information regarding the target facility.
-			String eventHeader = matcher.group(2);
-			// We expect the string to contain something like this:
-			// facility.id=2 ???
-			// String headerParsingPattern = ".*facility.id\\=([0-9]+).*";
-			// Pattern headerPattern = Pattern.compile(headerParsingPattern);
-			// Matcher headerMatcher = headerPattern.matcher(eventHeader);
 
-			// Data should provide information regarding the target ExecService
-			// (Processing rule).
+			// TODO: will we ever user clockworkorange/portishead headers ?
+			//String eventHeader = matcher.group(2);
+
 			String eventData = matcher.group(3);
 
-			log.debug("Event data to be parsed: {}", eventData);
+			log.debug("Event - Data to be parsed: {}", eventData);
 
 			// GET All Beans (only PerunBeans) from message
 			List<PerunBean> listOfBeans = new ArrayList<PerunBean>();
@@ -106,11 +134,9 @@ public class EventServiceResolverImpl implements EventServiceResolver {
 			Host host = null;
 
 			// Recognize every object in List of PerunBeans from eventData
-			// TODO: What about more than 1 resources, or more than 1 facilities
-			// etc. ?
+			// TODO: What about more than 1 resources, or more than 1 facilities etc. ?
 			for (PerunBean pb : listOfBeans) {
-				if (pb instanceof AttributeDefinition
-						&& pb instanceof Attribute) {
+				if (pb instanceof AttributeDefinition && pb instanceof Attribute) {
 					attribute = (Attribute) pb;
 				} else if (pb instanceof Facility) {
 					facility = (Facility) pb;
@@ -141,12 +167,14 @@ public class EventServiceResolverImpl implements EventServiceResolver {
 
 			// =============== Resolve facilities from event======================
 
-			PerunSession perunSession = perun
-					.getPerunSession(new PerunPrincipal(
-							dispatcherProperties.getProperty("perun.principal.name"),
-							dispatcherProperties.getProperty("perun.principal.extSourceName"),
-							dispatcherProperties.getProperty("perun.principal.extSourceType")),
-							new PerunClient());
+			if (perunSession == null) {
+				perunSession = perun.getPerunSession(new PerunPrincipal(
+								dispatcherProperties.getProperty("perun.principal.name"),
+								dispatcherProperties.getProperty("perun.principal.extSourceName"),
+								dispatcherProperties.getProperty("perun.principal.extSourceType")),
+								new PerunClient());
+			}
+
 			// Try to find FACILITY in event
 			if (facility != null) {
 				try {
@@ -266,30 +294,6 @@ public class EventServiceResolverImpl implements EventServiceResolver {
 		} else {
 			throw new InvalidEventMessageException("Message[" + event + "]");
 		}
-	}
-
-	public Properties getDispatcherProperties() {
-		return dispatcherProperties;
-	}
-
-	public void setDispatcherProperties(Properties propertiesBean) {
-		this.dispatcherProperties = propertiesBean;
-	}
-
-	public Perun getPerun() {
-		return perun;
-	}
-
-	public void setPerun(Perun perun) {
-		this.perun = perun;
-	}
-
-	public GeneralServiceManager getGeneralServiceManager() {
-		return generalServiceManager;
-	}
-
-	public void setGeneralServiceManager(GeneralServiceManager generalServiceManager) {
-		this.generalServiceManager = generalServiceManager;
 	}
 
 }

@@ -27,8 +27,9 @@ import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENT;
  * once all its SendTask are executed.
  */
 public class SendCollector extends AbstractRunner {
-	private final static Logger log = LoggerFactory
-			.getLogger(SendCollector.class);
+
+	private final static Logger log = LoggerFactory.getLogger(SendCollector.class);
+
 	@Autowired
 	private BlockingSendExecutorCompletionService sendCompletionService;
 	@Autowired

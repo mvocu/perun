@@ -36,13 +36,13 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 	</tx:advice>
 
 	<!-- THIS BEAN STARTS THE WHOLE DISPATCHER COMPONENT -->
-	<bean id="dispatcherStarter" class="cz.metacentrum.perun.dispatcher.main.DispatcherStarter" init-method="init" />
+	<bean id="dispatcherManager" class="cz.metacentrum.perun.dispatcher.service.impl.DispatcherManagerImpl" init-method="init" />
 
 	<!-- Beans -->
 	<bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-		<property name="corePoolSize" value="10" />
+		<property name="corePoolSize" value="0" />
 		<property name="maxPoolSize" value="50" />
-		<property name="queueCapacity" value="100" />
+		<property name="queueCapacity" value="0" />
 	</bean>
 
 	<bean id="taskStore" class="cz.metacentrum.perun.taskslib.service.impl.TaskStoreImpl"/>

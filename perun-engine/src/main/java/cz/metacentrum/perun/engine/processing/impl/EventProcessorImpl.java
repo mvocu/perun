@@ -53,7 +53,7 @@ public class EventProcessorImpl implements EventProcessor {
 			log.debug("TESTSTRE -> Found {}", currentTask);
 			if (currentTask == null) {
 				try {
-					schedulingPool.addToPool(task);
+					schedulingPool.addTask(task);
 				} catch (TaskStoreException e) {
 					log.error("Could not save Task {} into Engine SchedulingPool because of {}, it will be ignored",
 							task, e);

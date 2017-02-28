@@ -6,7 +6,12 @@ import cz.metacentrum.perun.dispatcher.processing.EventQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
+ * Implementation of EventQueue.
+ *
+ * @see cz.metacentrum.perun.dispatcher.processing.EventQueue
+ *
  * @author Michal Karm Babacek
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 @org.springframework.stereotype.Service(value = "eventQueue")
 public class EventQueueImpl implements EventQueue {

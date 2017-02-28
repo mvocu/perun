@@ -1,6 +1,5 @@
 package cz.metacentrum.perun.taskslib.service.impl;
 
-import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ public class TaskManagerImpl implements TaskManager {
 
 	@Override
 	public int scheduleNewTask(Task task, int engineID) throws InternalErrorException {
-		log.debug("TESTSTR -> Entered taskmanager");
 		return taskDao.scheduleNewTask(task, engineID);
 	}
 

@@ -2,6 +2,7 @@ package cz.metacentrum.perun.dispatcher.parser;
 
 import javax.sql.DataSource;
 
+import cz.metacentrum.perun.taskslib.runners.impl.AbstractRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,19 +15,31 @@ import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
+/**
+ * This class wraps AuditerConsumer for Dispatcher.
+ *
+ * It ensure continuous reading of audit messages and convert them to Events,
+ * which are then pushed to EventQueue for further processing by EventProcessor.
+ *
+ * Its started by DispatcherManager when Spring context is initialized.
+ *
+ * @see cz.metacentrum.perun.dispatcher.processing.EventQueue
+ * @see cz.metacentrum.perun.dispatcher.processing.EventProcessor
+ * @see cz.metacentrum.perun.dispatcher.service.DispatcherManager
+ *
+ * @author Michal Babacek
+ * @author Michal Vocu
+ * @author David Šarman
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
+ */
 @Service(value = "auditerListener")
-public class AuditerListener {
+public class AuditerListener extends AbstractRunner {
 
 	private final static Logger log = LoggerFactory.getLogger(AuditerListener.class);
 
-	private AuditerConsumer auditerConsumer;
-	private String dispatcherName;
-	private boolean running = true;
-	boolean whichOfTwoRules = false;
-
-	@Autowired private EventQueue eventQueue;
-	@Autowired private DataSource dataSource;
-	@Autowired private Properties dispatcherProperties;
+	private EventQueue eventQueue;
+	private DataSource dataSource;
+	private Properties dispatcherProperties;
 
 	// ----- setters -------------------------------------
 
@@ -34,6 +47,7 @@ public class AuditerListener {
 		return eventQueue;
 	}
 
+	@Autowired
 	public void setEventQueue(EventQueue eventQueue) {
 		this.eventQueue = eventQueue;
 	}
@@ -42,6 +56,7 @@ public class AuditerListener {
 		return dataSource;
 	}
 
+	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
@@ -50,22 +65,28 @@ public class AuditerListener {
 		return dispatcherProperties;
 	}
 
+	@Autowired
 	public void setDispatcherProperties(Properties dispatcherProperties) {
 		this.dispatcherProperties = dispatcherProperties;
 	}
 
 	// ----- methods -------------------------------------
 
-	public void init() {
+	@Override
+	public void run() {
 
-		dispatcherName = dispatcherProperties.getProperty("dispatcher.ip.address") + ":" + dispatcherProperties.getProperty("dispatcher.port");
+		boolean whichOfTwoRules = false;
+
+		String dispatcherName = dispatcherProperties.getProperty("dispatcher.ip.address") + ":" + dispatcherProperties.getProperty("dispatcher.port");
 
 		try {
-			while(running) {
+			AuditerConsumer auditerConsumer;
+			while(!shouldStop()) {
 				try {
-					this.auditerConsumer = new AuditerConsumer(dispatcherName, dataSource);
-					while (running) {
+					auditerConsumer = new AuditerConsumer(dispatcherName, dataSource);
+					while (!shouldStop()) {
 						for (String message : auditerConsumer.getMessagesForParser()) {
+							// create event for each message
 							Event event = new Event();
 							event.setTimeStamp(System.currentTimeMillis());
 							if (whichOfTwoRules) {
@@ -76,20 +97,23 @@ public class AuditerListener {
 								whichOfTwoRules = true;
 							}
 							event.setData(message);
+							// pass event to queue for further processing
 							eventQueue.add(event);
 						}
 						Thread.sleep(1000);
 					}
 				} catch (InternalErrorException e) {
 					log.error("Error in AuditerConsumer: " + e.getMessage() + ", trying to recover by getting a new one.");
-					this.auditerConsumer = null;
+					auditerConsumer = null;
 				}
 				Thread.sleep(10000);
 			}
+			log.debug("AuditerListener has stopped.");
 		} catch (InterruptedException e) {
 			log.error("Error in AuditerLister: {}" + e);
 			throw new RuntimeException("Somebody has interrupted us...", e);
 		}
+
 	}
 
 }

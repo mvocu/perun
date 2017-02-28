@@ -68,7 +68,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 	@IfProfileValue(name = "perun.test.groups", values = ("unit-tests"))
 	@Test
 	public void addToPoolTest() throws InternalErrorException, TaskStoreException {
-		System.out.println("SchedulingPool.addToPool()");
+		System.out.println("SchedulingPool.addTask()");
 
 		Assert.isTrue(schedulingPool.getSize() == 1, "original size is 1");
 		schedulingPool.addToPool(task1, dispatcherQueue);

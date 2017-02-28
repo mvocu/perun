@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
  * Start / stop and configure HornetQ server for Perun.
  *
  * @author Michal Karm Babacek
- * @author Pavel Zlámal
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 @Service(value = "perunHornetQServer")
 public class PerunHornetQServer {
@@ -30,11 +30,12 @@ public class PerunHornetQServer {
 	private boolean serverRunning = false;
 
 	/**
-	 * Start and configure HornetQ server wit default JMS queue (systemQueue).
+	 * Start and configure HornetQ server with default JMS queue (systemQueue).
 	 */
 	public void startServer() {
 		try {
 
+			log.debug("Starting HornetQ server...");
 			System.setProperty("perun.dispatcher.hornetq.remoting.netty.host", dispatcherProperties.getProperty("dispatcher.ip.address"));
 			System.setProperty("perun.dispatcher.hornetq.remoting.netty.port", dispatcherProperties.getProperty("dispatcher.port"));
 			System.setProperty("perun.dispatcher.hornetq.datadir", dispatcherProperties.getProperty("dispatcher.datadir"));
@@ -51,9 +52,10 @@ public class PerunHornetQServer {
 			jmsServerManager.setContext(null);
 			jmsServerManager.start();
 			serverRunning = true;
+			log.debug("HornetQ server started.");
 
 		} catch (Exception e) {
-			log.error(e.toString(), e);
+			log.error("Can't start HornetQ server: {}", e);
 		}
 	}
 
@@ -67,8 +69,9 @@ public class PerunHornetQServer {
 				server.stop();
 				configuration.stop();
 				serverRunning = false;
+				log.debug("HornetQ server has stopped.");
 			} catch (Exception e) {
-				log.error(e.toString(), e);
+				log.error("Can't stop HornetQ server: {}", e);
 			}
 		}
 	}

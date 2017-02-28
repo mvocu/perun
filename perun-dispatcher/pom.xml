@@ -15,11 +15,10 @@
 	<packaging>jar</packaging>
 
 	<name>perun-dispatcher</name>
-	<description></description>
+	<description>Module for service provisioning/deprovisioning planning.</description>
 
 	<properties>
 		<!-- custom properties for all profiles -->
-		<perun.test.groups>unit-tests</perun.test.groups>
 	</properties>
 
 	<!-- COMMON BUILD SETTINGS USED BY ALL PROFILES -->
@@ -56,68 +55,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
-
-			<!-- Package JAR with Main class -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<index>true</index>
-						<manifest>
-							<mainClass>cz.metacentrum.perun.dispatcher.main.DispatcherStarter</mainClass>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-						<manifestEntries>
-							<SplashScreen-Image>perun-dispatcher-splash.png</SplashScreen-Image>
-						</manifestEntries>
-					</archive>
-				</configuration>
-			</plugin>
-
-			<!-- Copy dependencies plug-in -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<configuration>
-					<outputDirectory>
-						target/lib
-					</outputDirectory>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>java</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Executing plug-in:  mvn exec:java -->
-			<!--<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>java</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>cz.metacentrum.perun.dispatcher.main.DispatcherStarter</mainClass>
-				</configuration>
-			</plugin>
-			-->
 
 		</plugins>
 

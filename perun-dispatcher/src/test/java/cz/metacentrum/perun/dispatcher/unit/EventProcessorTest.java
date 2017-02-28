@@ -117,7 +117,7 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 		}
 
 		@Override
-		public void addTaskSchedule(Task task, int delayCount) {
+		public void scheduleTask(Task task, int delayCount) {
 		}
 
 		public List<Task> getTasks() {

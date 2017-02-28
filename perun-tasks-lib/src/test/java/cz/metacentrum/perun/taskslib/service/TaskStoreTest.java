@@ -65,16 +65,16 @@ public class TaskStoreTest {
 		taskWW.setFacility(taskW.getFacility());
 		taskWW.setService(taskW.getService());
 		taskWW.setId(10);
-		taskStore.addToPool(taskW);
+		taskStore.addTask(taskW);
 		exception.expect(TaskStoreException.class);
-		taskStore.addToPool(taskWW);
+		taskStore.addTask(taskWW);
 	}
 
 	@Test
 	public void testGetTaskWithStatus() throws Exception {
-		taskStore.addToPool(taskW);
-		taskStore.addToPool(taskG);
-		taskStore.addToPool(taskD);
+		taskStore.addTask(taskW);
+		taskStore.addTask(taskG);
+		taskStore.addTask(taskD);
 
 		List<Task> tasks = taskStore.getTasksWithStatus(Task.TaskStatus.WAITING);
 		assertEquals(1, tasks.size());

@@ -8,7 +8,7 @@ import cz.metacentrum.perun.dispatcher.AbstractDispatcherTest;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.impl.TaskScheduled;
 import cz.metacentrum.perun.dispatcher.scheduling.impl.SchedulingPoolImpl;
-import cz.metacentrum.perun.dispatcher.scheduling.impl.TaskSchedulerImpl;
+import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
 import cz.metacentrum.perun.taskslib.model.Task;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -69,12 +69,12 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 		Long timeLimit = 100L;
 		Task[] tasks = simpleSetup(timeLimit, schedulingPool);
 		Task testTask1 = tasks[0], testTask2 = tasks[1];
-		schedulingPool.addTaskSchedule(testTask1, 4);
-		schedulingPool.addTaskSchedule(testTask1, 4);
+		schedulingPool.scheduleTask(testTask1, 4);
+		schedulingPool.scheduleTask(testTask1, 4);
 		Thread.sleep(timeLimit / 100);
-		schedulingPool.addTaskSchedule(testTask1, 4);
+		schedulingPool.scheduleTask(testTask1, 4);
 		Thread.sleep((timeLimit / 100) * 8);
-		schedulingPool.addTaskSchedule(testTask2, 4);
+		schedulingPool.scheduleTask(testTask2, 4);
 
 		simpleFutureTask.run();
 		assertFalse(simpleSpy.testFailed);
@@ -89,12 +89,12 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 		Task[] tasks = simpleSetup(timeLimit, schedulingPool);
 		Task testTask1 = tasks[0], testTask2 = tasks[1];
 		testTask2.setSourceUpdated(true);
-		schedulingPool.addTaskSchedule(testTask2, 4);
-		schedulingPool.addTaskSchedule(testTask1, 4);
+		schedulingPool.scheduleTask(testTask2, 4);
+		schedulingPool.scheduleTask(testTask1, 4);
 		Thread.sleep(timeLimit / 100);
-		schedulingPool.addTaskSchedule(testTask1, 4);
+		schedulingPool.scheduleTask(testTask1, 4);
 		Thread.sleep((timeLimit / 100) * 8);
-		schedulingPool.addTaskSchedule(testTask1, 4);
+		schedulingPool.scheduleTask(testTask1, 4);
 
 		simpleFutureTask.run();
 		assertFalse(simpleSpy.testFailed);
@@ -108,7 +108,7 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 		Long timeLimit = 100L;
 		Task[] tasks = simpleSetup(timeLimit, schedulingPool);
 		Task testTask1 = tasks[0];
-		schedulingPool.addTaskSchedule(testTask1, 2);
+		schedulingPool.scheduleTask(testTask1, 2);
 
 		recurrenceFutureTask.run();
 		assertFalse(recurrenceSpy.testFailed);
@@ -118,7 +118,7 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 		Properties properties = new Properties();
 		properties.setProperty("dispatcher.new_task.delay.time", timeLimit.toString());
 		properties.setProperty("dispatcher.new_task.delay.count", "1");
-		schedulingPool.setDispatcherProperties(properties);
+		((SchedulingPoolImpl)schedulingPool).setDispatcherProperties(properties);
 		Task testTask1 = new Task();
 		testTask1.setService(service1);
 		testTask1.setId(0);
@@ -129,7 +129,7 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 		return new Task[]{testTask1, testTask2};
 	}
 
-	private abstract class AbstractTaskSchedulerSpy extends TaskSchedulerImpl {
+	private abstract class AbstractTaskSchedulerSpy extends TaskScheduler {
 		@Override
 		protected void initPerunSession() throws InternalErrorException {
 		}
@@ -137,8 +137,8 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 
 	private class SchedulingPoolRecurrenceSpy extends SchedulingPoolImpl {
 		@Override
-		public void addTaskSchedule(Task task, int delayCount, boolean resetUpdated) {
-			super.addTaskSchedule(task, delayCount);
+		public void scheduleTask(Task task, int delayCount, boolean resetUpdated) {
+			super.scheduleTask(task, delayCount);
 		}
 	}
 

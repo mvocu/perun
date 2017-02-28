@@ -42,7 +42,7 @@ public class TaskStoreImpl implements TaskStore {
 	}
 
 	@Override
-	public Task addToPool(Task task) throws TaskStoreException {
+	public Task addTask(Task task) throws TaskStoreException {
 		if (task.getService() == null) {
 			log.error("Tried to insert Task {} with no ExecService", task);
 			throw new IllegalArgumentException("Tasks ExecService not set.");

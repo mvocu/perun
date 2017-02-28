@@ -12,14 +12,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 
 /**
- * 
- * @author Michal Karm Babacek JavaDoc coming soon...
- * 
+ * Instance of JMS queue for sending messages to engine.
+ * For each engine own queue is created, and stored in DispatcherQueuePool.
+ *
+ * @see cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool
+ *
+ * @author Michal Karm Babacek
+ * @author Michal Voců
+ * @author David Šarman
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 public class DispatcherQueue {
 
-	private final static Logger log = LoggerFactory
-			.getLogger(DispatcherQueue.class);
+	private final static Logger log = LoggerFactory.getLogger(DispatcherQueue.class);
 
 	private Queue queue;
 	private Session session;
@@ -53,41 +58,49 @@ public class DispatcherQueue {
 			log.error(e.toString(), e);
 		} catch (Exception e) {
 			log.error(e.toString(), e);
-			// TODO:Resrart connection...?
+			// TODO: Restart connection...?
 		}
 	}
 
 	/**
-	 * Send message This method does not block. It is going to be executed
-	 * asynchronously.
-	 * 
-	 * @param text
+	 * Send JMS message to the Engine associated with this queue.
+	 * This method does not block. It is going to be executed asynchronously.
+	 *
+	 * @param text Message content
 	 */
 	@Async
 	public void sendMessage(String text) {
 
 		try {
 			// Step 7. Create a Text Message
-			TextMessage message = session.createTextMessage("task|" + clientID
-					+ "|" + text);
+			TextMessage message = session.createTextMessage("task|" + clientID + "|" + text);
 			// Step 8. Send...
 			producer.send(message);
 			if (log.isDebugEnabled()) {
-				log.debug("Sent message (queue:" + queueName + "): "
-						+ message.getText());
+				log.debug("Sent message (queue:" + queueName + "): " + message.getText());
 			}
 		} catch (JMSException e) {
 			log.error(e.toString(), e);
 		} catch (Exception e) {
 			log.error(e.toString(), e);
-			// TODO:Restart connection...?
+			// TODO: Restart connection...?
 		}
 	}
 
+	/**
+	 * Get ID of engine.
+	 *
+	 * @return ID of engine
+	 */
 	public int getClientID() {
 		return clientID;
 	}
 
+	/**
+	 * Get name of the queue for engine.
+	 *
+	 * @return Name of queue
+	 */
 	public String getQueueName() {
 		return queueName;
 	}
