@@ -1,4 +1,4 @@
-package cz.metacentrum.perun.dispatcher.parser;
+package cz.metacentrum.perun.dispatcher.processing;
 
 import javax.sql.DataSource;
 
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.impl.AuditerConsumer;
 import cz.metacentrum.perun.dispatcher.model.Event;
-import cz.metacentrum.perun.dispatcher.processing.EventQueue;
 import org.springframework.stereotype.Service;
 
 import java.util.Properties;

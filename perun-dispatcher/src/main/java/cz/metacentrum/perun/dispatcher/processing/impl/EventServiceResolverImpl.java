@@ -53,7 +53,7 @@ import cz.metacentrum.perun.dispatcher.processing.EventServiceResolver;
  * @author David Šarman
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
-@org.springframework.stereotype.Service(value = "eventExecServiceResolver")
+@org.springframework.stereotype.Service(value = "eventServiceResolver")
 public class EventServiceResolverImpl implements EventServiceResolver {
 
 	private static final Logger log = LoggerFactory.getLogger(EventServiceResolverImpl.class);

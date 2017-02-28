@@ -5,9 +5,8 @@ import cz.metacentrum.perun.dispatcher.hornetq.PerunHornetQServer;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
 import cz.metacentrum.perun.dispatcher.jms.SystemQueueProcessor;
-import cz.metacentrum.perun.dispatcher.job.CleanTaskResultsJob;
 import cz.metacentrum.perun.dispatcher.job.PropagationMaintainerJob;
-import cz.metacentrum.perun.dispatcher.parser.AuditerListener;
+import cz.metacentrum.perun.dispatcher.processing.AuditerListener;
 import cz.metacentrum.perun.dispatcher.processing.EventProcessor;
 import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
@@ -46,7 +45,9 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	private AuditerListener auditerListener;
 	private Properties dispatcherProperties;
 	private PropagationMaintainerJob propagationMaintainerJob;
-	private CleanTaskResultsJob cleanTaskResultsJob;
+
+	// allow cleaning of old TaskResults
+	private boolean cleanTaskResultsJobEnabled = true;
 
 
 	// ----- setters -------------------------------------
@@ -160,13 +161,12 @@ public class DispatcherManagerImpl implements DispatcherManager {
 		this.propagationMaintainerJob = propagationMaintainerJob;
 	}
 
-	public CleanTaskResultsJob getCleanTaskResultsJob() {
-		return cleanTaskResultsJob;
+	public boolean isCleanTaskResultsJobEnabled() {
+		return cleanTaskResultsJobEnabled;
 	}
 
-	@Autowired
-	public void setCleanTaskResultsJob(CleanTaskResultsJob cleanTaskResultsJob) {
-		this.cleanTaskResultsJob = cleanTaskResultsJob;
+	public void setCleanTaskResultsJobEnabled(boolean enabled) {
+		this.cleanTaskResultsJobEnabled = enabled;
 	}
 
 
@@ -201,7 +201,11 @@ public class DispatcherManagerImpl implements DispatcherManager {
 
 	@Override
 	public void startAuditerListener() {
-		taskExecutor.execute(auditerListener);
+		try {
+			taskExecutor.execute(auditerListener);
+		} catch (Exception ex) {
+			log.error("Unable to start AuditerListener thread.");
+		}
 	}
 
 	@Override
@@ -211,12 +215,16 @@ public class DispatcherManagerImpl implements DispatcherManager {
 
 	@Override
 	public void startProcessingEvents() {
-		eventProcessor.startProcessingEvents();
+		try {
+			taskExecutor.execute(eventProcessor);
+		} catch (Exception ex) {
+			log.error("Unable to start EventProcessor thread.");
+		}
 	}
 
 	@Override
 	public void stopProcessingEvents() {
-		eventProcessor.stopProcessingEvents();
+		eventProcessor.stop();
 	}
 
 	@Override
@@ -225,31 +233,33 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	}
 
 	@Override
-	public void cleanOldTaskResults() {
-		for(DispatcherQueue queue: dispatcherQueuePool.getPool()) {
-			try {
-				int numRows = resultManager.clearOld(queue.getClientID(), 3);
-				log.debug("Cleaned {} old task results for engine {}", numRows, queue.getClientID());
-			} catch (Throwable e) {
-				log.error("Error cleaning old task results for engine {} : {}", queue.getClientID(), e);
-			}
+	public void startTasksScheduling() {
+		try {
+			taskExecutor.execute(taskScheduler);
+		} catch (Exception ex) {
+			log.error("Unable to start TaskScheduler thread.");
 		}
 	}
 
 	@Override
-	public void startTasksScheduling() {
+	public void stopTaskScheduling() {
+		taskScheduler.stop();
+	}
 
-		Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
-			@Override
-			public void uncaughtException(Thread thread, Throwable throwable) {
-				log.error("Unknown exception was caught in TaskScheduler", throwable);
+	@Override
+	public void cleanOldTaskResults() {
+		if (cleanTaskResultsJobEnabled) {
+			for (DispatcherQueue queue : dispatcherQueuePool.getPool()) {
+				try {
+					int numRows = resultManager.clearOld(queue.getClientID(), 3);
+					log.debug("Cleaned {} old task results for engine {}", numRows, queue.getClientID());
+				} catch (Throwable e) {
+					log.error("Error cleaning old task results for engine {} : {}", queue.getClientID(), e);
+				}
 			}
-		};
-
-		Thread t = new Thread(taskScheduler);
-		t.setUncaughtExceptionHandler(h);
-		t.start();
-
+		} else {
+			log.debug("Cleaning of old task results is disabled.");
+		}
 	}
 
 	/**
@@ -262,7 +272,7 @@ public class DispatcherManagerImpl implements DispatcherManager {
 		// skip start of HornetQ and other dispatcher jobs if dispatcher is disabled
 		if(dispatcherEnabled != null && !Boolean.parseBoolean(dispatcherEnabled)) {
 			propagationMaintainerJob.setEnabled(false);
-			cleanTaskResultsJob.setEnabled(false);
+			cleanTaskResultsJobEnabled = false;
 			log.debug("Perun-Dispatcher startup disabled by configuration.");
 			return;
 		}
@@ -279,11 +289,11 @@ public class DispatcherManagerImpl implements DispatcherManager {
 			prefetchRulesAndDispatcherQueues();
 			// Reload tasks from database
 			loadSchedulingPool();
-			// Start parsers (mining data both from Grouper and PerunDB)
+			// Start listening to Audit messages
 			startAuditerListener();
 			// Start Event Processor
 			startProcessingEvents();
-			// Start thread for Task scheduling
+			// Start Task scheduling
 			startTasksScheduling();
 
 			log.info("Perun-Dispatcher has started.");
@@ -301,10 +311,11 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	public void destroy() {
 		// stop current scheduler
 		propagationMaintainerJob.setEnabled(false);
-		cleanTaskResultsJob.setEnabled(false);
+		cleanTaskResultsJobEnabled = false;
 		// stop currently running jobs
 		stopAuditerListener();
 		stopProcessingEvents();
+		stopTaskScheduling();
 		stopProcessingSystemMessages();
 		stopPerunHornetQServer();
 	}

@@ -49,7 +49,9 @@ public interface SchedulingPool extends TaskStore {
 	 * Always retrieve Service/Facility from DB to cross-check actual data.
 	 * Check if Service/Facility exists and has connection and is not blocked.
 	 *
-	 * If check fails, Task is not scheduled, if passes, status is changed to WAITING.
+	 * If check fails, Task is not scheduled.
+	 * If passes, status is changed to WAITING and timestamps are re-set.
+	 * If Task was already in WAITING, timestamps are kept (so we could tell, when it was scheduled first time).
 	 *
 	 * @see #scheduleTask(Task, int, boolean)
 	 * @param task Task to schedule propagation for
@@ -67,7 +69,9 @@ public interface SchedulingPool extends TaskStore {
 	 * Always retrieve Service/Facility from DB to cross-check actual data.
 	 * Check if Service/Facility exists and has connection and is not blocked.
 	 *
-	 * If check fails, Task is not scheduled, if passes, status is changed to WAITING.
+	 * If check fails, Task is not scheduled.
+	 * If passes, status is changed to WAITING and timestamps are re-set.
+	 * If Task was already in WAITING, timestamps are kept (so we could tell, when it was scheduled first time).
 	 *
 	 * @see #scheduleTask(Task, int)
 	 * @param task Task to schedule propagation for

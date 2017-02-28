@@ -47,28 +47,98 @@ public class TaskScheduler extends AbstractRunner {
 	private final static Logger log = LoggerFactory.getLogger(TaskScheduler.class);
 	private PerunSession perunSession;
 
-	@Autowired
 	private SchedulingPool schedulingPool;
-	@Autowired
 	private Perun perun;
-	@Autowired
 	private Properties dispatcherProperties;
-	@Autowired
 	private DispatcherQueuePool dispatcherQueuePool;
-	@Autowired
 	private ServiceDenialDao serviceDenialDao;
-	@Autowired
 	private DelayQueue<TaskSchedule> waitingTasksQueue;
-	@Autowired
 	private DelayQueue<TaskSchedule> waitingForcedTasksQueue;
-	@Autowired
 	private TaskManager taskManager;
+
+	// ----- setters -------------------------------------
+
+	public SchedulingPool getSchedulingPool() {
+		return schedulingPool;
+	}
+
+	@Autowired
+	public void setSchedulingPool(SchedulingPool schedulingPool) {
+		this.schedulingPool = schedulingPool;
+	}
+
+	public Perun getPerun() {
+		return perun;
+	}
+
+	@Autowired
+	public void setPerun(Perun perun) {
+		this.perun = perun;
+	}
+
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
+	}
+
+	@Autowired
+	public void setDispatcherProperties(Properties dispatcherProperties) {
+		this.dispatcherProperties = dispatcherProperties;
+	}
+
+	public DispatcherQueuePool getDispatcherQueuePool() {
+		return dispatcherQueuePool;
+	}
+
+	@Autowired
+	public void setDispatcherQueuePool(DispatcherQueuePool dispatcherQueuePool) {
+		this.dispatcherQueuePool = dispatcherQueuePool;
+	}
+
+	public ServiceDenialDao getServiceDenialDao() {
+		return serviceDenialDao;
+	}
+
+	@Autowired
+	public void setServiceDenialDao(ServiceDenialDao serviceDenialDao) {
+		this.serviceDenialDao = serviceDenialDao;
+	}
+
+	public DelayQueue<TaskSchedule> getWaitingTasksQueue() {
+		return waitingTasksQueue;
+	}
+
+	@Autowired
+	public void setWaitingTasksQueue(DelayQueue<TaskSchedule> waitingTasksQueue) {
+		this.waitingTasksQueue = waitingTasksQueue;
+	}
+
+	public DelayQueue<TaskSchedule> getWaitingForcedTasksQueue() {
+		return waitingForcedTasksQueue;
+	}
+
+	@Autowired
+	public void setWaitingForcedTasksQueue(DelayQueue<TaskSchedule> waitingForcedTasksQueue) {
+		this.waitingForcedTasksQueue = waitingForcedTasksQueue;
+	}
+
+	public TaskManager getTaskManager() {
+		return taskManager;
+	}
+
+	@Autowired
+	public void setTaskManager(TaskManager taskManager) {
+		this.taskManager = taskManager;
+	}
+
+
+	// ----- methods -------------------------------------
+
 
 	/**
 	 * This method runs in separate thread perpetually trying to take tasks from delay queue, blocking if none are available.
 	 * If there is Task ready, we check if it source was updated. If it was, we put the task back to the queue (This
 	 * can happen only limited number of times). If on the other hand it was not updated we perform additional checks using
-	 * method scheduleTask.
+	 * method sendToEngine.
 	 */
 	@Override
 	public void run() {
@@ -83,8 +153,7 @@ public class TaskScheduler extends AbstractRunner {
 		TaskSchedule schedule;
 		while (!shouldStop()) {
 			try {
-				// get waiting tasks
-				schedule = getTaskSchedule();
+				schedule = getWaitingTaskSchedule();
 			} catch (InterruptedException e) {
 				String message = "Thread was interrupted, cannot continue.";
 				log.error(message, e);
@@ -92,29 +161,31 @@ public class TaskScheduler extends AbstractRunner {
 			}
 			Task task = schedule.getTask();
 			if (task.isSourceUpdated() && schedule.getDelayCount() > 0) {
+				// source data changed before sending, wait for more changes to come -> reschedule
 				log.info("[{}] Task was not allowed to be sent to Engine now: {}.", task.getId(), task);
 				schedulingPool.scheduleTask(task, schedule.getDelayCount() - 1, true);
 			} else {
-				TaskScheduled reason = scheduleTask(task);
+				// send it to engine
+				TaskScheduled reason = sendToEngine(task);
 				switch (reason) {
 					case QUEUE_ERROR:
 						log.warn("[{}] Task dispatcherQueue could not be set, so it is rescheduled: {}.", task.getId(), task);
 						schedulingPool.scheduleTask(task, -1);
 						break;
 					case DENIED:
-						log.info("[{}] Execution was denied for {}.", task.getId(), task);
-						//#TODO: Figure out
+						// Task is lost from waiting queue, since somebody blocked service on facility or globally
+						log.info("[{}] Execution was denied for Task before sending to Engine: {}.", task.getId(), task);
 						break;
 					case ERROR:
-						log.error("[{}] Unexpected error occurred while scheduling Task for sending to Engine: {}.", task.getId(), task);
+						log.error("[{}] Unexpected error when scheduling Task, so it is rescheduled: {}.", task.getId(), task);
 						schedulingPool.scheduleTask(task, -1);
 						break;
 					case SUCCESS:
-						log.info("[{}] Task was successfully queued for sending to Engine: {}.", task.getId(), task);
+						log.info("[{}] Task was successfully sent to Engine: {}.", task.getId(), task);
 						break;
 					case DB_ERROR:
-						log.warn("[{}] Facility and Service could not be found in DB for Task {}.", task.getId(), task);
-						//#TODO: Figure out
+						// Task is lost from waiting queue, will be cleared from pool by propagation maintainer
+						log.warn("[{}] Facility or Service could not be found in DB for Task {}.", task.getId(), task);
 						break;
 				}
 				// update task status in DB
@@ -130,7 +201,7 @@ public class TaskScheduler extends AbstractRunner {
 	 * @return Once one of the Queues returns non null TaskSchedule, we return it.
 	 * @throws InterruptedException When blocking queue polling was interrupted.
 	 */
-	private TaskSchedule getTaskSchedule() throws InterruptedException {
+	private TaskSchedule getWaitingTaskSchedule() throws InterruptedException {
 		TaskSchedule taskSchedule = null;
 		while (!shouldStop()) {
 			log.debug(schedulingPool.getReport());
@@ -147,7 +218,13 @@ public class TaskScheduler extends AbstractRunner {
 		return taskSchedule;
 	}
 
-	public TaskScheduled scheduleTask(Task task) {
+	/**
+	 * Send Task to Engine. Called when it waited long enough in a waiting queue (listening for other changes).
+	 *
+	 * @param task Task to be send to Engine
+	 * @return Resulting state if Task was sent or denied or any error happened.
+	 */
+	private TaskScheduled sendToEngine(Task task) {
 
 		Service service = task.getService();
 		Facility facility = task.getFacility();
@@ -230,35 +307,6 @@ public class TaskScheduler extends AbstractRunner {
 			log.error("[{}] Error getting disabled status for Service, task will not run now: {}.", task.getId(), e);
 			return ERROR;
 		}
-		return sendToEngine(task);
-	}
-
-	private TaskScheduled sendToEngine(Task task) {
-
-		DispatcherQueue dispatcherQueue;
-		try {
-			dispatcherQueue = schedulingPool.getQueueForTask(task);
-		} catch (InternalErrorException e1) {
-			log.error("[{}] No engine set for task, could not send it!", task.getId());
-			return ERROR;
-		}
-
-		if (dispatcherQueue == null) {
-			// where should we send the task?
-			if (dispatcherQueuePool.poolSize() > 0) {
-				dispatcherQueue = dispatcherQueuePool.getPool().iterator().next();
-				try {
-					schedulingPool.setQueueForTask(task, dispatcherQueue);
-				} catch (InternalErrorException e) {
-					log.error("[{}] Could not assign new queue for task: {}", task.getId(), e);
-					return QUEUE_ERROR;
-				}
-				log.debug("[{}] Assigned new queue {} to task.", task.getId(), dispatcherQueue.getQueueName());
-			} else {
-				log.error("[{}] Task has no engine assigned and there are no engines registered!", task.getId());
-				return QUEUE_ERROR;
-			}
-		}
 
 		// task|[engine_id]|[task_id][is_forced][exec_service_id][facility]|[destination_list]|[dependency_list]
 		// - the task|[engine_id] part is added by dispatcherQueue
@@ -290,6 +338,7 @@ public class TaskScheduler extends AbstractRunner {
 				return DB_ERROR;
 			}
 		}
+
 		log.debug("[{}] Fetched destinations: " + ((destinations == null) ? "[]" : destinations.toString()), task.getId());
 		task.setDestinations(destinations);
 
@@ -303,7 +352,7 @@ public class TaskScheduler extends AbstractRunner {
 		}
 		destinations_s.append("]");
 
-		// send message
+		// send message async
 
 		dispatcherQueue.sendMessage("[" + task.getId() + "]["
 				+ task.isPropagationForced() + "]|["
@@ -313,13 +362,18 @@ public class TaskScheduler extends AbstractRunner {
 
 		// modify task status
 
-		task.setStartTime(new Date(System.currentTimeMillis()));
-		task.setEndTime(null);
+		task.setSentToEngine(new Date(System.currentTimeMillis()));
 		task.setStatus(Task.TaskStatus.PLANNED);
 		return SUCCESS;
 
 	}
 
+	/**
+	 * Encode string to base64 when it contains any message divider character "|".
+	 *
+	 * @param data Data to be checked
+	 * @return Base64 encoded string if needed or original string
+	 */
 	private String fixStringSeparators(String data) {
 		if (data.contains("|")) {
 			return new String(Base64.encodeBase64(data.getBytes()));
@@ -328,33 +382,14 @@ public class TaskScheduler extends AbstractRunner {
 		}
 	}
 
-	public SchedulingPool getSchedulingPool() {
-		return schedulingPool;
-	}
-
-	public void setSchedulingPool(SchedulingPool schedulingPool) {
-		this.schedulingPool = schedulingPool;
-	}
-
 	protected void initPerunSession() throws InternalErrorException {
 		if (perunSession == null) {
-			perunSession = perun
-					.getPerunSession(new PerunPrincipal(
-							dispatcherProperties.getProperty("perun.principal.name"),
-							dispatcherProperties
-									.getProperty("perun.principal.extSourceName"),
-							dispatcherProperties
-									.getProperty("perun.principal.extSourceType")),
-							new PerunClient());
+			perunSession = perun.getPerunSession(new PerunPrincipal(
+					dispatcherProperties.getProperty("perun.principal.name"),
+					dispatcherProperties.getProperty("perun.principal.extSourceName"),
+					dispatcherProperties.getProperty("perun.principal.extSourceType")),
+					new PerunClient());
 		}
-	}
-
-	public TaskManager getTaskManager() {
-		return taskManager;
-	}
-
-	public void setTaskManager(TaskManager taskManager) {
-		this.taskManager = taskManager;
 	}
 
 }

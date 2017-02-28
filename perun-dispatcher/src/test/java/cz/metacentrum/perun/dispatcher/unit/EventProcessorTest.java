@@ -5,7 +5,7 @@ import cz.metacentrum.perun.dispatcher.AbstractDispatcherTest;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.dispatcher.model.Event;
 import cz.metacentrum.perun.dispatcher.processing.EventQueue;
-import cz.metacentrum.perun.dispatcher.processing.impl.EventProcessorImpl;
+import cz.metacentrum.perun.dispatcher.processing.EventProcessor;
 import cz.metacentrum.perun.dispatcher.scheduling.impl.SchedulingPoolImpl;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
@@ -28,9 +28,7 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 	private final static Logger log = LoggerFactory.getLogger(EventProcessorTest.class);
 
 	@Autowired
-	private EventProcessorImpl eventProcessor;
-
-	private EventProcessorImpl.EvProcessor evProcessor;
+	private EventProcessor eventProcessor;
 
 	@Test(timeout = 10000)
 	public void eventProcessorTest() {
@@ -41,10 +39,9 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 		eventProcessor.setEventQueue(new EventQueueMock());
 		SchedulingPoolMock pool = new SchedulingPoolMock(2);
 		eventProcessor.setSchedulingPool(pool);
-		evProcessor = eventProcessor.new EvProcessor();
 		// runs inside this thread, should end when message is delivered
 		// this necessitates the use of test timeout
-		evProcessor.run();
+		eventProcessor.run();
 		List<Task> addedTasks = pool.getTasks();
 		List<ExecService> execServices = new LinkedList<>();
 		List<Facility> facilities = new LinkedList<>();
@@ -111,7 +108,7 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 			tasks.add(task);
 			adds += 1;
 			if (adds == expectedAdds) {
-				evProcessor.stop();
+				eventProcessor.stop();
 			}
 			return 1;
 		}

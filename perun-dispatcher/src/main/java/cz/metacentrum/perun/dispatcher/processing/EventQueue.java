@@ -6,7 +6,7 @@ import cz.metacentrum.perun.dispatcher.model.Event;
  * Wrapper on ConcurrentLinkedQueue (FIFO) used to pass Events between two processes.
  * Queue is filled by AuditerListener. Events are taken by EventProcessor.
  *
- * @see cz.metacentrum.perun.dispatcher.parser.AuditerListener
+ * @see cz.metacentrum.perun.dispatcher.processing.AuditerListener
  * @see cz.metacentrum.perun.dispatcher.processing.EventProcessor
  *
  * @author Michal Karm Babacek

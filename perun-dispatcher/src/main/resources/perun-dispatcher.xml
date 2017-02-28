@@ -66,8 +66,6 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 
 	<bean id="propagationMaintainerJob" class="cz.metacentrum.perun.dispatcher.job.PropagationMaintainerJob" />
 
-	<bean id="cleanTaskResultsJob" class="cz.metacentrum.perun.dispatcher.job.CleanTaskResultsJob" />
-
 	<!-- END of quartz jobs definition -->
 
 	<!-- Dispatcher properties per-profile -->

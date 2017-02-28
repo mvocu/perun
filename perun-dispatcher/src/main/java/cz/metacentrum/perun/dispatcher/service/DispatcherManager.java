@@ -60,19 +60,25 @@ public interface DispatcherManager {
 	void stopProcessingEvents();
 
 	/**
-	 * Load last persistent state of service propagations (Tasks) to in-memory scheduling pool.
+	 * Load last persistent state of service propagation (Tasks) to in-memory scheduling pool.
 	 */
 	void loadSchedulingPool();
-
-	/**
-	 * Remove all TasksResults older than 3 days.
-	 * Last one TaskResult per facility/service/destination is always kept, even if older than 3 days.
-	 */
-	void cleanOldTaskResults();
 
 	/**
 	 * Start scheduling of Tasks suitable for propagation.
 	 */
 	void startTasksScheduling();
+
+	/**
+	 * Stop scheduling of Tasks suitable for propagation.
+	 */
+	void stopTaskScheduling();
+
+	/**
+	 * Remove all TasksResults older than 3 days.
+	 * Last one TaskResult per facility/service/destination is always kept, even if older than 3 days.
+	 * This method is supposed to be called by spring scheduler with defined cron.
+	 */
+	void cleanOldTaskResults();
 
 }

@@ -1,7 +1,6 @@
 package cz.metacentrum.perun.dispatcher.scheduling.impl;
 
 import cz.metacentrum.perun.auditparser.AuditParser;
-import cz.metacentrum.perun.controller.service.GeneralServiceManager;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.PerunBean;
@@ -14,7 +13,7 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
-import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
+import cz.metacentrum.perun.taskslib.dao.ServiceDenialDao;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
@@ -34,25 +33,76 @@ import java.util.Properties;
 public class PropagationMaintainerImpl implements PropagationMaintainer {
 
 	private final static Logger log = LoggerFactory.getLogger(PropagationMaintainerImpl.class);
-
-	@Autowired
-	private SchedulingPool schedulingPool;
-	@Autowired
-	private TaskScheduler taskScheduler;
-	@Autowired
-	private Perun perun;
-	@Autowired
-	private ResultManager resultManager;
-	@Autowired
-	private Properties dispatcherProperties;
-	@Autowired
-	private TaskManager taskManager;
-	@Autowired
-	private GeneralServiceManager generalServiceManager;
+	private final static int rescheduleTime = 190;
 
 	private PerunSession perunSession;
 
-	private final static int rescheduleTime = 190;
+	private Perun perun;
+	private SchedulingPool schedulingPool;
+	private ResultManager resultManager;
+	private TaskManager taskManager;
+	private ServiceDenialDao serviceDenialDao;
+	private Properties dispatcherProperties;
+
+	// ----- setters -------------------------------------
+
+	public SchedulingPool getSchedulingPool() {
+		return schedulingPool;
+	}
+
+	@Autowired
+	public void setSchedulingPool(SchedulingPool schedulingPool) {
+		this.schedulingPool = schedulingPool;
+	}
+
+	public Perun getPerun() {
+		return perun;
+	}
+
+	@Autowired
+	public void setPerun(Perun perun) {
+		this.perun = perun;
+	}
+
+	public ResultManager getResultManager() {
+		return resultManager;
+	}
+
+	@Autowired
+	public void setResultManager(ResultManager resultManager) {
+		this.resultManager = resultManager;
+	}
+
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
+	}
+
+	@Autowired
+	public void setDispatcherProperties(Properties dispatcherProperties) {
+		this.dispatcherProperties = dispatcherProperties;
+	}
+
+	public TaskManager getTaskManager() {
+		return taskManager;
+	}
+
+	@Autowired
+	public void setTaskManager(TaskManager taskManager) {
+		this.taskManager = taskManager;
+	}
+
+	public ServiceDenialDao getServiceDenialDao() {
+		return serviceDenialDao;
+	}
+
+	@Autowired
+	public void setServiceDenialDao(ServiceDenialDao serviceDenialDao) {
+		this.serviceDenialDao = serviceDenialDao;
+	}
+
+
+	// ----- methods -------------------------------------
+
 
 	@Override
 	public void checkResults() {
@@ -132,7 +182,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 							log.info("TASK id {} is in ERROR state long enough.", task.getId());
 						}
 						task.setSourceUpdated(false);
-						if (!generalServiceManager.isServiceBlockedOnFacility(service, facility) && service.isEnabled()) {
+						if (!serviceDenialDao.isServiceBlockedOnFacility(service.getId(), facility.getId()) && service.isEnabled()) {
 							log.info("TASK [{}] in ERROR state is going to be rescheduled with Service id: {} " +
 									"on Facility id: {}", new Object[]{task, service.getId(), facility.getId()});
 							schedulingPool.scheduleTask(task, -1);
@@ -203,7 +253,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 			Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 2);
 			if (task.isSourceUpdated()) {
 				// reschedule the task if not blocked
-				if (!generalServiceManager.isServiceBlockedOnFacility(task.getService(), task.getFacility())) {
+				if (!serviceDenialDao.isServiceBlockedOnFacility(task.getService().getId(), task.getFacility().getId())) {
 					List<Service> assignedServices = null;
 					try {
 						assignedServices = perun.getServicesManager().getAssignedServices(perunSession, task.getFacility());
@@ -234,6 +284,7 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 
 	@Override
 	public void closeTasksForEngine(int clientID) {
+
 		List<Task> tasks = schedulingPool.getTasksForEngine(clientID);
 		List<TaskStatus> engineStates = new ArrayList<>();
 		engineStates.add(TaskStatus.PLANNED);
@@ -242,48 +293,51 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 		engineStates.add(TaskStatus.SENDING);
 
 		// switch all processing tasks to error, remove the engine queue association
-		log.debug("Switching processing tasks on engine {} to ERROR, the engine went down", clientID);
+		log.debug("Switching processing tasks on engine {} to ERROR, the engine went down...", clientID);
 		for (Task task : tasks) {
 			if (engineStates.contains(task.getStatus())) {
-				log.debug("switching task {} to ERROR, the engine it was running on went down", task.getId());
+				log.debug("[{}] Switching Task to ERROR, the engine it was running on went down.", task.getId());
 				task.setStatus(TaskStatus.ERROR);
 			}
 			try {
 				schedulingPool.setQueueForTask(task, null);
 			} catch (InternalErrorException e) {
-				log.error("Could not remove output queue for task {}: {}", task.getId(), e.getMessage());
+				log.error("[{}] Could not remove dispatcher queue for task: {}.", task.getId(), e.getMessage());
 			}
 		}
+
 	}
 
 	@Override
 	public void onTaskStatusChange(int taskId, String status, String milliseconds) {
-		log.debug("TESTSTR --> onTaskSatusChange ran with taskId {} status {} date {}",
-				new Object[]{taskId, status, milliseconds});
-		log.debug("Changing state of Task with id 1{} to {} as reported by Engine", taskId, status);
+
 		Task task = schedulingPool.getTask(taskId);
 		if (task == null) {
-			log.error("Received status update about Task with id {} that is not in Dispatcher, will ignore it", taskId);
+			log.error("[{}] Received status update about Task which is not in Dispatcher anymore, will ignore it.", taskId);
 			return;
 		}
-		log.debug("TESTSTR --> Found task {} for if {}", task, taskId);
+
 		TaskStatus oldStatus = task.getStatus();
 		task.setStatus(TaskStatus.valueOf(status));
 		long ms;
 		try {
 			ms = Long.valueOf(milliseconds);
 		} catch (NumberFormatException e) {
-			log.warn("EndDate {} of {} could not be parsed, current time will be used instead.", milliseconds, task);
+			log.warn("[{}] Timestamp of change '{}' could not be parsed, current time will be used instead.", task.getId(), milliseconds);
 			ms = System.currentTimeMillis();
 		}
 		Date changeDate = new Date(ms);
 
+		// FIXME - based on state we should reset "forced" flag (but first we must handle it correctly from auditer events
+		// FIXME - and check how engine handles it).
+
 		switch (task.getStatus()) {
 			case WAITING:
 			case PLANNED:
-				log.error("Received {} {} from Engine, this should not happen.", task.getStatus(), task);
+				log.error("[{}] Received status change to {} from Engine, this should not happen.", task.getId(), task.getStatus());
 				return;
 			case GENERATING:
+				task.setStartTime(changeDate);
 				task.setGenStartTime(changeDate);
 				break;
 			case GENERROR:
@@ -303,14 +357,18 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 				task.setEndTime(changeDate);
 				break;
 		}
-		log.info("{} changed state from {} to {}", new Object[]{task, oldStatus, task.getStatus()});
+
 		taskManager.updateTask(task);
+
+		log.debug("[{}] Task status changed from {} to {} as reported by Engine: {}.", new Object[]{task.getId(), oldStatus, task.getStatus(), task});
+
 	}
 
 	@Override
 	public void onTaskDestinationComplete(int clientID, String string) {
+
 		if (string == null || string.isEmpty()) {
-			log.error("Could not parse taskresult message from engine " + clientID);
+			log.error("Could not parse TaskResult message from Engine " + clientID + ".");
 			return;
 		}
 
@@ -318,37 +376,15 @@ public class PropagationMaintainerImpl implements PropagationMaintainer {
 			List<PerunBean> listOfBeans = AuditParser.parseLog(string);
 			if (!listOfBeans.isEmpty()) {
 				TaskResult taskResult = (TaskResult) listOfBeans.get(0);
+				log.debug("[{}] Received TaskResult for Task from Engine {}.", taskResult.getTaskId(), clientID);
 				resultManager.insertNewTaskResult(taskResult, clientID);
 			} else {
-				log.error("No TaskResult bean found in message {} from engine {}", string, clientID);
+				log.error("No TaskResult found in message from Engine {}: {}.", clientID, string);
 			}
 		} catch (Exception e) {
-			log.error("Could not save taskresult message {} from engine " + clientID, string);
-			log.debug("Error storing taskresult message: " + e.getMessage());
+			log.error("Could not save TaskResult from Engine " + clientID + " {}, {}", string, e.getMessage());
 		}
+
 	}
 
-	public TaskScheduler getTaskScheduler() {
-		return taskScheduler;
-	}
-
-	public void setTaskScheduler(TaskScheduler taskScheduler) {
-		this.taskScheduler = taskScheduler;
-	}
-
-	public Properties getDispatcherProperties() {
-		return dispatcherProperties;
-	}
-
-	public void setDispatcherProperties(Properties propertiesBean) {
-		this.dispatcherProperties = propertiesBean;
-	}
-
-	public GeneralServiceManager getGeneralServiceManager() {
-		return generalServiceManager;
-	}
-
-	public void setGeneralServiceManager(GeneralServiceManager generalServiceManager) {
-		this.generalServiceManager = generalServiceManager;
-	}
 }

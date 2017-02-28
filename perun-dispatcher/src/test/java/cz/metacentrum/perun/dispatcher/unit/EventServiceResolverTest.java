@@ -30,7 +30,7 @@ public class EventServiceResolverTest extends AbstractDispatcherTest {
 
 	@Test
 	public void parseEventTest() throws ServiceNotExistsException, InvalidEventMessageException, InternalErrorException, PrivilegeException {
-		System.out.println("EventExecServiceResolver.parseEventTest()");
+		System.out.println("EventServiceResolver.parseEventTest()");
 
 		String message = member1.serializeToString() + " added to " + group1.serializeToString() + ".";
 

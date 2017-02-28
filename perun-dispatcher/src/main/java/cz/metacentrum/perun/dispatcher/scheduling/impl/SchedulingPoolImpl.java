@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -292,12 +293,23 @@ public class SchedulingPoolImpl implements SchedulingPool {
 
 			log.debug("[{}] Task was added to waiting queue: {}", task.getId(), schedule);
 
-			// FIXME - should we also reset Task timestamps ??
-			// FIXME - we should probably set "scheduled" timestamp and clear others
-
 			// Task was planned for propagation, switch state.
-			task.setStatus(TaskStatus.WAITING);
-			taskManager.updateTask(task);
+			if (!task.getStatus().equals(TaskStatus.WAITING)) {
+
+				task.setStatus(TaskStatus.WAITING);
+				task.setSchedule(new Date(System.currentTimeMillis()));
+				// clear previous timestamps
+				task.setSentToEngine(null);
+				task.setStartTime(null);
+				task.setGenStartTime(null);
+				task.setSendStartTime(null);
+				task.setEndTime(null);
+				task.setGenEndTime(null);
+				task.setSendEndTime(null);
+
+				taskManager.updateTask(task);
+
+			}
 
 		}
 
@@ -430,6 +442,11 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			// if service was not in DONE or any kind of ERROR - reschedule now
 			// error/done tasks will be rescheduled later by periodic jobs !!
 			if (!Arrays.asList(TaskStatus.DONE, TaskStatus.ERROR, TaskStatus.GENERROR, TaskStatus.SENDERROR).contains(task.getStatus())) {
+				if (task.getStatus().equals(TaskStatus.WAITING)) {
+					// if were in WAITING, reset timestamp to now
+					task.setSchedule(new Date(System.currentTimeMillis()));
+					taskManager.updateTask(task);
+				}
 				scheduleTask(task, 0);
 			}
 

@@ -156,8 +156,7 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 			this.task = task;
 		}
 
-		@Override
-		public TaskScheduled scheduleTask(Task task) {
+		public TaskScheduled sendToEngine(Task task) {
 			if (task.getId() == 2) {
 				testFailed = true;
 				this.task.cancel(true);
