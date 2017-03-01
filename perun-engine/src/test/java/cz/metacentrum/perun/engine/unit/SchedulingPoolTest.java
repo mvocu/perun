@@ -34,7 +34,7 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 		schedulingPool = new SchedulingPoolImpl(
 				new TaskStoreImpl(), mock(BlockingBoundedMap.class), mock(BlockingBoundedMap.class),
 				mock(JMSQueueManager.class));
-		schedulingPool.addToPool(task1);
+		schedulingPool.addTask(task1);
 	}
 
 	@After
@@ -49,17 +49,17 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 
 		System.out.println(schedulingPool);
 
-		schedulingPool.addToPool(task1); // pool already contains this task
+		schedulingPool.addTask(task1); // pool already contains this task
 		assertEquals("New size should be 1 because the added Task was already in.", 1, schedulingPool.getSize());
 
-		schedulingPool.addToPool(task2);
+		schedulingPool.addTask(task2);
 		assertEquals("New size should be 2.", 2, schedulingPool.getSize());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void doNotAddNotPlannedTasks() throws Exception {
 		task2.setStatus(TaskStatus.GENERATING);
-		schedulingPool.addToPool(task2);
+		schedulingPool.addTask(task2);
 	}
 
 	@Test
@@ -67,7 +67,7 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 		Collection<Task> tasks = schedulingPool.getTasksWithStatus(TaskStatus.PLANNED);
 		assertTrue("Task task1 should be in the collection.", tasks.contains(task1));
 
-		schedulingPool.addToPool(task2);
+		schedulingPool.addTask(task2);
 		tasks = schedulingPool.getTasksWithStatus(TaskStatus.PLANNED);
 		assertTrue("Both Tasks should be in the collection.", tasks.contains(task1) && tasks.contains(task2));
 	}
@@ -77,7 +77,7 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 		Collection<Task> tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATING);
 		assertTrue("There should be no generating Tasks", tasks.isEmpty());
 
-		schedulingPool.addToPool(task2);
+		schedulingPool.addTask(task2);
 		task2.setStatus(TaskStatus.GENERATING);
 		schedulingPool.getGeneratingTasksBlockingMap().blockingPut(task2.getId(), task2);
 		tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATING);
@@ -89,7 +89,7 @@ public class SchedulingPoolTest extends AbstractEngineTest {
 		Collection<Task> tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATED);
 		assertTrue("There should be no generated Tasks", tasks.isEmpty());
 
-		schedulingPool.addToPool(task2);
+		schedulingPool.addTask(task2);
 		task2.setStatus(TaskStatus.GENERATED);
 		schedulingPool.getGeneratedTasksQueue().add(task2);
 		tasks = schedulingPool.getTasksWithStatus(TaskStatus.GENERATED);

@@ -74,13 +74,11 @@ public class ExecService extends PerunBean implements Serializable {
 		ExecService other = (ExecService) obj;
 		if (this.getId() != other.getId())
 			return false;
-		if(this.getExecServiceType() != other.getExecServiceType()) 
-			return false;
 		if(this.isEnabled() != other.isEnabled())
 			return false;
-		if(this.getService() == null ? other.getService() != null : !this.getService().equals(other.getService())) 
+		if(this.getService() == null ? other.getService() != null : !this.getService().equals(other.getService()))
 			return false;
-		if(this.getScript() == null ? other.getScript() != null : !this.getScript().equals(other.getScript())) 
+		if(this.getScript() == null ? other.getScript() != null : !this.getScript().equals(other.getScript()))
 			return false;
 		return true;
 	}
@@ -114,7 +112,6 @@ public class ExecService extends PerunBean implements Serializable {
 
 		String serviceName = null;
 		if(service != null && service.getName() != null) serviceName = service.getName();
-		String exSrvType = null;
 		return str.append(getClass().getSimpleName()).append(":["
 			).append("id='").append(getId()
 			).append("', defaultDelay='").append(getDefaultDelay()
