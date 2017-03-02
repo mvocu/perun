@@ -1,5 +1,7 @@
 package cz.metacentrum.perun.taskslib.model;
 
+import cz.metacentrum.perun.core.api.BeansUtils;
+
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
@@ -83,7 +85,14 @@ public class TaskSchedule implements Delayed {
 
 	@Override
 	public String toString() {
-		return "TaskSchedule [base=" + base + ", delay=" + delay + ", remaining=" + getDelay(TimeUnit.SECONDS) + ", delayCount=" + delayCount + ", task=" + task
-				+ "]";
+		StringBuilder str = new StringBuilder();
+		return str.append(getClass().getSimpleName())
+				.append(":[base='").append(BeansUtils.getDateFormatter().format(base))
+				.append("', delay='").append((delay == 0) ? delay : delay/1000).append("s")
+				.append("', remaining='").append(getDelay(TimeUnit.SECONDS)).append("s")
+				.append("', delayCount='").append(delayCount)
+				.append("', task='").append(task)
+				.append("']").toString();
 	}
+
 }

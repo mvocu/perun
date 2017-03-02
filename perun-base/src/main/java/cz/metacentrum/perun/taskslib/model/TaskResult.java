@@ -17,7 +17,7 @@ import cz.metacentrum.perun.core.api.Service;
 public class TaskResult extends PerunBean implements Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5656828750714418582L;
 
@@ -109,9 +109,13 @@ public class TaskResult extends PerunBean implements Serializable {
 
 	@Override
 	public String toString() {
-		return "TaskResult:[id='" + id + "', taskId='" + taskId + "', destinationId='" + destinationId + "', errorMessage='" + errorMessage + "', "
-				+ "standardMessage='" + standardMessage + "', returnCode='"
-			+ returnCode + "', timestamp='" + BeansUtils.getDateFormatter().format(timestamp) + "', status='" + status + "', service='" + service + "']";
+		StringBuilder str = new StringBuilder();
+		return str.append(getClass().getSimpleName())
+				.append(":[id='").append(id).append("', taskId='").append(taskId).append("', destinationId='").append(destinationId)
+				.append("', status='").append(status).append("', returnCode='").append(returnCode)
+				.append("', timestamp='").append(BeansUtils.getDateFormatter().format(timestamp))
+				.append("', errorMessage='").append(errorMessage).append("', standardMessage='").append(standardMessage)
+				.append("', service='").append(service).append("']").toString();
 	}
 
 	public int getTaskId() {

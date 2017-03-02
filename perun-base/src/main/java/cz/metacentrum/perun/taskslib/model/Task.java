@@ -207,18 +207,25 @@ public class Task implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Task [id=" + id +
-				", delay=" + delay +
-				", recurrence=" + recurrence +
-				", startTime=" + startTime +
-				", sendStartTime=" + sendStartTime +
-				", schedule=" + schedule +
-				", genEndTime=" + genEndTime +
-				", sendEndTime=" + sendEndTime+
-				", service=" + service +
-				", facility=" + facility +
-				", destinations=" + destinations +
-				", status=" + status + "]";
+		StringBuilder str = new StringBuilder();
+		return str.append(getClass().getSimpleName())
+				.append(":[id='").append(id)
+				.append("', status='").append(status)
+				.append("', delay='").append(delay)
+				.append("', recurrence='").append(recurrence)
+				.append("', sourceUpdated='").append(sourceUpdated)
+				.append("', forced='").append(propagationForced)
+				.append("', schedule='").append(schedule)
+				.append("', startTime='").append(startTime)
+				.append("', endTime='").append(endTime)
+				.append("', genStartTime='").append(genStartTime)
+				.append("', genEndTime='").append(genEndTime)
+				.append("', sendStartTime='").append(sendStartTime)
+				.append("', sendEndTime='").append(sendEndTime)
+				.append("', service='").append(service)
+				.append("', facility='").append(facility)
+				.append("', destinations='").append(destinations)
+				.append("']").toString();
 	}
 
 	public boolean isSourceUpdated() {
