@@ -150,10 +150,10 @@ public class PropagationMaintainer extends AbstractRunner {
 			Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 2);
 
 			if (task.isSourceUpdated()) {
-				log.info("[{}] Source data changed for Task. Going to schedule for propagation now.", task.getId());
+				log.info("[{}] Task in {} state will be rescheduled, source data changed.", task.getId(), task.getStatus());
 				schedulingPool.scheduleTask(task, -1);
 			} else if (task.getEndTime() == null || task.getEndTime().before(twoDaysAgo)) {
-				log.info("[{}] Task wasn't propagated for more then 2 days. Going to schedule it for propagation now.", task.getId());
+				log.info("[{}] Task in {} state will be rescheduled, hasn't run for 2 days.", task.getId(), task.getStatus());
 				schedulingPool.scheduleTask(task, -1);
 			} else {
 				log.trace("[{}] Task has finished recently or source data hasn't changed, leaving it for now.", task.getId());
@@ -195,6 +195,7 @@ public class PropagationMaintainer extends AbstractRunner {
 
 			// If DELAY time has passed, we reschedule...
 			int recurrence = task.getRecurrence() + 1;
+			Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 2);
 
 			if (recurrence > task.getService().getRecurrence() && howManyMinutesAgo < 60 * 12 && !task.isSourceUpdated()) {
 
@@ -202,21 +203,32 @@ public class PropagationMaintainer extends AbstractRunner {
 				// FIXME - is time condition really necessary ?
 				log.info("[{}] Task in {} state has no more retries, bailing out.", task.getId(), task.getStatus());
 
-			} else if (howManyMinutesAgo >= recurrence * task.getDelay() || task.isSourceUpdated()) {
-
-				// within recurrence, ended more than (recurrence*delay) ago, or source is updated
-
-				if (!task.isSourceUpdated()) {
-					// increase recurrence counter if data hasn't changed
-					task.setRecurrence(recurrence);
-					// otherwise was set to 0 by EventProcessor
-				}
+			} else if (task.isSourceUpdated()) {
 
 				// schedule if possible and reset source updated flag
-				log.info("[{}] Task in {} state will be rescheduled.", task.getId(), task.getStatus());
+				log.info("[{}] Task in {} state will be rescheduled, source data changed.", task.getId(), task.getStatus());
+				schedulingPool.scheduleTask(task, -1);
+
+			} else if (howManyMinutesAgo >= recurrence * task.getDelay()) {
+
+				// within recurrence, ended more than (recurrence*delay) ago
+				// increase recurrence counter if data hasn't changed
+				task.setRecurrence(recurrence);
+
+				// schedule if possible and reset source updated flag
+				log.info("[{}] Task in {} state will be rescheduled, attempt #"+recurrence+".", task.getId(), task.getStatus());
+				schedulingPool.scheduleTask(task, -1);
+
+			} else if (task.getEndTime().before(twoDaysAgo)) {
+
+				log.info("[{}] Task in {} state will be rescheduled, hasn't run for 2 days.", task.getId(), task.getStatus());
+				// reset recurrence since we must have exceeded it
+				task.setRecurrence(0);
+				// schedule if possible and reset source updated flag
 				schedulingPool.scheduleTask(task, -1);
 
 			}
+
 		}
 	}
 
