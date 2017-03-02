@@ -62,12 +62,6 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 
-	<!-- Periodic jobs definition - they are not started unless perun-dispatcher-scheduler.xml is imported to context -->
-
-	<bean id="propagationMaintainerJob" class="cz.metacentrum.perun.dispatcher.job.PropagationMaintainerJob" />
-
-	<!-- END of quartz jobs definition -->
-
 	<!-- Dispatcher properties per-profile -->
 
 	<!-- import properties -->
@@ -93,7 +87,6 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 					<prop key="perun.principal.name">perunDispatcher</prop>
 					<prop key="perun.principal.extSourceName">INTERNAL</prop>
 					<prop key="perun.principal.extSourceType">cz.metacentrum.perun.core.impl.ExtSourceInternal</prop>
-					<prop key="dispatcher.cron.propagation">45 0/2 * * * ?</prop>
 					<prop key="dispatcher.cron.cleantaskresults">0 0 1 * * ?</prop>
 					<prop key="dispatcher.new_task.delay.time">30000</prop>
 					<prop key="dispatcher.new_task.delay.count">4</prop>
@@ -110,7 +103,6 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 					<prop key="perun.principal.name">perunDispatcher</prop>
 					<prop key="perun.principal.extSourceName">INTERNAL</prop>
 					<prop key="perun.principal.extSourceType">cz.metacentrum.perun.core.impl.ExtSourceInternal</prop>
-					<prop key="dispatcher.cron.propagation">45 0/2 * * * ?</prop>
 					<prop key="dispatcher.cron.cleantaskresults">0 0 1 * * ?</prop>
 					<prop key="dispatcher.new_task.delay.time">30000</prop>
 					<prop key="dispatcher.new_task.delay.count">4</prop>

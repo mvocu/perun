@@ -118,6 +118,7 @@ public class EventProcessor extends AbstractRunner {
 				log.error(e.getMessage(), e);
 			}
 		}
+		log.debug("EventProcessor has stopped.");
 	}
 
 	/**
@@ -151,15 +152,17 @@ public class EventProcessor extends AbstractRunner {
 				// NOTE: this must be atomic enough to not create duplicate
 				// tasks in schedulingPool (are we running in parallel
 				// here?)
+
+				boolean isForced = determineForcedPropagation(event);
+
 				Task task = schedulingPool.getTask(facility, service);
+
 				if (task != null) {
 					// there already is a task in schedulingPool
-					// signal that task needs to regenerate data
+					// signal that task needs to regenerate data and be forced next time
 					task.setDestinations(null);
 					task.setSourceUpdated(true);
-					// FIXME - how we can handle fact, that Task is already planned/processing and forced flag is meant for next processing
-					// FIXME - also we don't want normal event to cancel our forced flag from previous runs.
-					task.setPropagationForced(determineForcedPropagation(event));
+					if (isForced) task.setPropagationForced(true);
 					task.setRecurrence(0);
 					log.debug("[{}] Task is already in pool. Re-setting source updated and forced flags, {}.", task.getId(), task);
 				} else {
@@ -171,7 +174,6 @@ public class EventProcessor extends AbstractRunner {
 					task.setRecurrence(0);
 					task.setSchedule(new Date(System.currentTimeMillis()));
 					task.setSourceUpdated(false);
-					boolean isForced = determineForcedPropagation(event);
 					task.setPropagationForced(isForced);
 					try {
 						schedulingPool.addToPool(task, null);
@@ -179,8 +181,7 @@ public class EventProcessor extends AbstractRunner {
 					} catch (TaskStoreException e) {
 						log.error("[{}] Could not add Task to pool. Task will be lost. {}.", task.getId(), task);
 					}
-					// forced has zero delay (with zero time too), normal has default delay count
-					schedulingPool.scheduleTask(task, (isForced) ? 0 : -1);
+					schedulingPool.scheduleTask(task, -1);
 				}
 			}
 		}

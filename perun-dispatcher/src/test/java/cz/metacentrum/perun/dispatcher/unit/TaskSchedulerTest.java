@@ -137,7 +137,7 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 
 	private class SchedulingPoolRecurrenceSpy extends SchedulingPoolImpl {
 		@Override
-		public void scheduleTask(Task task, int delayCount, boolean resetUpdated) {
+		public void scheduleTask(Task task, int delayCount) {
 			super.scheduleTask(task, delayCount);
 		}
 	}

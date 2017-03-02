@@ -10,6 +10,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
+import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -25,7 +26,6 @@ import cz.metacentrum.perun.dispatcher.exceptions.MessageFormatException;
 import cz.metacentrum.perun.dispatcher.exceptions.PerunHornetQServerException;
 import cz.metacentrum.perun.dispatcher.hornetq.PerunHornetQServer;
 import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
-import cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer;
 
 /**
  * Main class ensuring processing of JMS communication between Dispatcher and Engines.
@@ -33,12 +33,12 @@ import cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer;
  * Also provide method for message parsing.
  *
  * Queues to Engines are represented by DispatcherQueue objects. Queue is used by TaskScheduler.
- * Queue from Engine is represented by SystemQueueReceiver. Received messages result in calls to PropagationMaintainer.
+ * Queue from Engine is represented by SystemQueueReceiver. Received messages result in calls to SchedulingPool.
  *
  * @see cz.metacentrum.perun.dispatcher.jms.DispatcherQueue
  * @see cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler
  * @see cz.metacentrum.perun.dispatcher.jms.SystemQueueReceiver
- * @see cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer
+ * @see cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool
  *
  * @author Michal Karm Babacek
  * @author Michal Voců
@@ -56,7 +56,7 @@ public class SystemQueueProcessor {
 	private SmartMatcher smartMatcher;
 	private TaskExecutor taskExecutor;
 	private SystemQueueReceiver systemQueueReceiver;
-	private PropagationMaintainer propagationMaintainer;
+	private SchedulingPool schedulingPool;
 
 	private Session session = null;
 	private boolean processingMessages = false;
@@ -122,13 +122,13 @@ public class SystemQueueProcessor {
 		this.systemQueueReceiver = systemQueueReceiver;
 	}
 
-	public PropagationMaintainer getPropagationMaintainer() {
-		return propagationMaintainer;
+	public SchedulingPool getSchedulingPool() {
+		return schedulingPool;
 	}
 
 	@Autowired
-	public void setPropagationMaintainer(PropagationMaintainer propagationMaintainer) {
-		this.propagationMaintainer = propagationMaintainer;
+	public void setSchedulingPool(SchedulingPool schedulingPool) {
+		this.schedulingPool = schedulingPool;
 	}
 
 
@@ -300,7 +300,7 @@ public class SystemQueueProcessor {
 					// Yes, so we just reload matching rules...
 					smartMatcher.reloadRulesFromDBForEngine(clientID);
 					// ...and close all tasks that could have been running there
-					propagationMaintainer.closeTasksForEngine(clientID);
+					schedulingPool.closeTasksForEngine(clientID);
 				} else {
 					// No, we have to create the whole JMS queue and load matching rules...
 					createDispatcherQueueForClient(clientID);
@@ -309,7 +309,7 @@ public class SystemQueueProcessor {
 			} else if (clientIDsplitter[0].equalsIgnoreCase("goodbye")) {
 
 				// engine is going down, should mark all tasks as failed
-				propagationMaintainer.closeTasksForEngine(clientID);
+				schedulingPool.closeTasksForEngine(clientID);
 				dispatcherQueuePool.removeDispatcherQueue(clientID);
 
 			} else if (clientIDsplitter[0].equalsIgnoreCase("task")) {
@@ -320,7 +320,7 @@ public class SystemQueueProcessor {
 					throw new MessageFormatException("Engine sent a malformed message, not enough params [" + message + "]");
 				}
 
-				propagationMaintainer.onTaskStatusChange(
+				schedulingPool.onTaskStatusChange(
 						Integer.parseInt(clientIDsplitter[2]),
 						clientIDsplitter[3],
 						clientIDsplitter[4]);
@@ -332,7 +332,7 @@ public class SystemQueueProcessor {
 					throw new MessageFormatException("Engine sent a malformed message, not enough params [" + message + "]");
 				}
 
-				propagationMaintainer.onTaskDestinationComplete(clientID, clientIDsplitter[2]);
+				schedulingPool.onTaskDestinationComplete(clientID, clientIDsplitter[2]);
 
 			} else {
 				throw new MessageFormatException("Engine sent a malformed message, unknown type of message [" + message + "]");

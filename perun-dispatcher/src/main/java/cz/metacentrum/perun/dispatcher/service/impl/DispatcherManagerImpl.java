@@ -5,10 +5,10 @@ import cz.metacentrum.perun.dispatcher.hornetq.PerunHornetQServer;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
 import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
 import cz.metacentrum.perun.dispatcher.jms.SystemQueueProcessor;
-import cz.metacentrum.perun.dispatcher.job.PropagationMaintainerJob;
 import cz.metacentrum.perun.dispatcher.processing.AuditerListener;
 import cz.metacentrum.perun.dispatcher.processing.EventProcessor;
 import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
+import cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler;
 import cz.metacentrum.perun.dispatcher.service.DispatcherManager;
@@ -44,7 +44,7 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	private TaskExecutor taskExecutor;
 	private AuditerListener auditerListener;
 	private Properties dispatcherProperties;
-	private PropagationMaintainerJob propagationMaintainerJob;
+	private PropagationMaintainer propagationMaintainer;
 
 	// allow cleaning of old TaskResults
 	private boolean cleanTaskResultsJobEnabled = true;
@@ -143,10 +143,6 @@ public class DispatcherManagerImpl implements DispatcherManager {
 		this.auditerListener = auditerListener;
 	}
 
-	public PropagationMaintainerJob getPropagationMaintainerJob() {
-		return propagationMaintainerJob;
-	}
-
 	public Properties getDispatcherProperties() {
 		return dispatcherProperties;
 	}
@@ -156,9 +152,13 @@ public class DispatcherManagerImpl implements DispatcherManager {
 		this.dispatcherProperties = dispatcherProperties;
 	}
 
+	public PropagationMaintainer getPropagationMaintainer() {
+		return propagationMaintainer;
+	}
+
 	@Autowired
-	public void setPropagationMaintainerJob(PropagationMaintainerJob propagationMaintainerJob) {
-		this.propagationMaintainerJob = propagationMaintainerJob;
+	public void setPropagationMaintainer(PropagationMaintainer propagationMaintainer) {
+		this.propagationMaintainer = propagationMaintainer;
 	}
 
 	public boolean isCleanTaskResultsJobEnabled() {
@@ -247,6 +247,20 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	}
 
 	@Override
+	public void startPropagationMaintaining() {
+		try {
+			taskExecutor.execute(propagationMaintainer);
+		} catch (Exception ex) {
+			log.error("Unable to start PropagationMaintainer thread.");
+		}
+	}
+
+	@Override
+	public void stopPropagationMaintaining() {
+		propagationMaintainer.stop();
+	}
+
+	@Override
 	public void cleanOldTaskResults() {
 		if (cleanTaskResultsJobEnabled) {
 			for (DispatcherQueue queue : dispatcherQueuePool.getPool()) {
@@ -271,7 +285,6 @@ public class DispatcherManagerImpl implements DispatcherManager {
 
 		// skip start of HornetQ and other dispatcher jobs if dispatcher is disabled
 		if(dispatcherEnabled != null && !Boolean.parseBoolean(dispatcherEnabled)) {
-			propagationMaintainerJob.setEnabled(false);
 			cleanTaskResultsJobEnabled = false;
 			log.debug("Perun-Dispatcher startup disabled by configuration.");
 			return;
@@ -295,6 +308,8 @@ public class DispatcherManagerImpl implements DispatcherManager {
 			startProcessingEvents();
 			// Start Task scheduling
 			startTasksScheduling();
+			// Start rescheduling of done/error or stuck Tasks
+			startPropagationMaintaining();
 
 			log.info("Perun-Dispatcher has started.");
 
@@ -310,12 +325,12 @@ public class DispatcherManagerImpl implements DispatcherManager {
 	@PreDestroy
 	public void destroy() {
 		// stop current scheduler
-		propagationMaintainerJob.setEnabled(false);
 		cleanTaskResultsJobEnabled = false;
 		// stop currently running jobs
 		stopAuditerListener();
 		stopProcessingEvents();
 		stopTaskScheduling();
+		stopPropagationMaintaining();
 		stopProcessingSystemMessages();
 		stopPerunHornetQServer();
 	}

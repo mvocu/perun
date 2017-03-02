@@ -1,9 +1,11 @@
 package cz.metacentrum.perun.dispatcher.scheduling.impl;
 
+import cz.metacentrum.perun.auditparser.AuditParser;
 import cz.metacentrum.perun.controller.service.GeneralServiceManager;
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.core.api.Perun;
+import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.core.api.PerunClient;
 import cz.metacentrum.perun.core.api.PerunPrincipal;
 import cz.metacentrum.perun.core.api.PerunSession;
@@ -19,7 +21,9 @@ import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.model.Task.TaskStatus;
+import cz.metacentrum.perun.taskslib.model.TaskResult;
 import cz.metacentrum.perun.taskslib.model.TaskSchedule;
+import cz.metacentrum.perun.taskslib.service.ResultManager;
 import cz.metacentrum.perun.taskslib.service.TaskManager;
 import cz.metacentrum.perun.taskslib.service.TaskStore;
 import org.slf4j.Logger;
@@ -58,6 +62,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	private Properties dispatcherProperties;
 	private TaskStore taskStore;
 	private TaskManager taskManager;
+	private ResultManager resultManager;
 	private DispatcherQueuePool dispatcherQueuePool;
 	private GeneralServiceManager generalServiceManager;
 	private Perun perun;
@@ -120,6 +125,15 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	@Autowired
 	public void setTaskManager(TaskManager taskManager) {
 		this.taskManager = taskManager;
+	}
+
+	public ResultManager getResultManager() {
+		return resultManager;
+	}
+
+	@Autowired
+	public void setResultManager(ResultManager resultManager) {
+		this.resultManager = resultManager;
 	}
 
 	public DispatcherQueuePool getDispatcherQueuePool() {
@@ -189,14 +203,6 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public void scheduleTask(Task task, int delayCount, boolean resetUpdated) {
-		if (resetUpdated) {
-			task.setSourceUpdated(false);
-		}
-		scheduleTask(task, delayCount);
-	}
-
-	@Override
 	public void scheduleTask(Task task, int delayCount) {
 
 		// init session
@@ -262,14 +268,18 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			}
 		}
 
-		// create new schedule
+		// Task is eligible for running - create new schedule
+
+		task.setSourceUpdated(false);
 
 		long newTaskDelay = 0;
 		if (!task.isPropagationForced()) {
 			// normal tasks are delayed
 			newTaskDelay = Long.parseLong(dispatcherProperties.getProperty("dispatcher.new_task.delay.time"));
 		}
-
+		if (task.isPropagationForced()) {
+			delayCount = 0;
+		}
 		if (delayCount < 0) {
 			delayCount = Integer.parseInt(dispatcherProperties.getProperty("dispatcher.new_task.delay.count"));
 		}
@@ -467,6 +477,108 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		// if queue is removed, set -1 to task as it's done on task creation if queue is null
 		int queueId = (queueForTask != null) ? queueForTask.getClientID() : -1;
 		taskManager.updateTaskEngine(task, queueId);
+	}
+
+	@Override
+	public void closeTasksForEngine(int clientID) {
+
+		List<Task> tasks = getTasksForEngine(clientID);
+		List<TaskStatus> engineStates = new ArrayList<>();
+		engineStates.add(TaskStatus.PLANNED);
+		engineStates.add(TaskStatus.GENERATING);
+		engineStates.add(TaskStatus.GENERATED);
+		engineStates.add(TaskStatus.SENDING);
+
+		// switch all processing tasks to error, remove the engine queue association
+		log.debug("Switching processing tasks on engine {} to ERROR, the engine went down...", clientID);
+		for (Task task : tasks) {
+			if (engineStates.contains(task.getStatus())) {
+				log.debug("[{}] Switching Task to ERROR, the engine it was running on went down.", task.getId());
+				task.setStatus(TaskStatus.ERROR);
+			}
+			try {
+				setQueueForTask(task, null);
+			} catch (InternalErrorException e) {
+				log.error("[{}] Could not remove dispatcher queue for task: {}.", task.getId(), e.getMessage());
+			}
+		}
+
+	}
+
+	@Override
+	public void onTaskStatusChange(int taskId, String status, String milliseconds) {
+
+		Task task = getTask(taskId);
+		if (task == null) {
+			log.error("[{}] Received status update about Task which is not in Dispatcher anymore, will ignore it.", taskId);
+			return;
+		}
+
+		TaskStatus oldStatus = task.getStatus();
+		task.setStatus(TaskStatus.valueOf(status));
+		long ms;
+		try {
+			ms = Long.valueOf(milliseconds);
+		} catch (NumberFormatException e) {
+			log.warn("[{}] Timestamp of change '{}' could not be parsed, current time will be used instead.", task.getId(), milliseconds);
+			ms = System.currentTimeMillis();
+		}
+		Date changeDate = new Date(ms);
+
+		switch (task.getStatus()) {
+			case WAITING:
+			case PLANNED:
+				log.error("[{}] Received status change to {} from Engine, this should not happen.", task.getId(), task.getStatus());
+				return;
+			case GENERATING:
+				task.setStartTime(changeDate);
+				task.setGenStartTime(changeDate);
+				break;
+			case GENERROR:
+				task.setEndTime(changeDate);
+			case GENERATED:
+				task.setGenEndTime(changeDate);
+				break;
+			case SENDING:
+				task.setSendStartTime(changeDate);
+				break;
+			case DONE:
+			case SENDERROR:
+				task.setSendEndTime(changeDate);
+				task.setEndTime(changeDate);
+				break;
+			case ERROR:
+				task.setEndTime(changeDate);
+				break;
+		}
+
+		taskManager.updateTask(task);
+
+		log.debug("[{}] Task status changed from {} to {} as reported by Engine: {}.", new Object[]{task.getId(), oldStatus, task.getStatus(), task});
+
+	}
+
+	@Override
+	public void onTaskDestinationComplete(int clientID, String string) {
+
+		if (string == null || string.isEmpty()) {
+			log.error("Could not parse TaskResult message from Engine " + clientID + ".");
+			return;
+		}
+
+		try {
+			List<PerunBean> listOfBeans = AuditParser.parseLog(string);
+			if (!listOfBeans.isEmpty()) {
+				TaskResult taskResult = (TaskResult) listOfBeans.get(0);
+				log.debug("[{}] Received TaskResult for Task from Engine {}.", taskResult.getTaskId(), clientID);
+				resultManager.insertNewTaskResult(taskResult, clientID);
+			} else {
+				log.error("No TaskResult found in message from Engine {}: {}.", clientID, string);
+			}
+		} catch (Exception e) {
+			log.error("Could not save TaskResult from Engine " + clientID + " {}, {}", string, e.getMessage());
+		}
+
 	}
 
 }

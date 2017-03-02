@@ -12,7 +12,6 @@
 	<task:scheduled-tasks scheduler="perunScheduler">
 		<!-- 30 seconds: 0/30 * * * * ? -->
 		<!--  3 minutes: 0 0/3 * * * ?  -->
-		<task:scheduled ref="propagationMaintainerJob" method="doTheJob" cron="${dispatcher.cron.propagation}" />
 		<task:scheduled ref="dispatcherManager" method="cleanOldTaskResults" cron="${dispatcher.cron.cleantaskresults}" />
 	</task:scheduled-tasks>
 

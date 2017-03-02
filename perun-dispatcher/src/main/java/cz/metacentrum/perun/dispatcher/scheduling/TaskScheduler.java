@@ -160,10 +160,10 @@ public class TaskScheduler extends AbstractRunner {
 				throw new RuntimeException(message, e);
 			}
 			Task task = schedule.getTask();
-			if (task.isSourceUpdated() && schedule.getDelayCount() > 0) {
+			if (task.isSourceUpdated() && schedule.getDelayCount() > 0 && !task.isPropagationForced()) {
 				// source data changed before sending, wait for more changes to come -> reschedule
 				log.info("[{}] Task was not allowed to be sent to Engine now: {}.", task.getId(), task);
-				schedulingPool.scheduleTask(task, schedule.getDelayCount() - 1, true);
+				schedulingPool.scheduleTask(task, schedule.getDelayCount() - 1);
 			} else {
 				// send it to engine
 				TaskScheduled reason = sendToEngine(task);
@@ -192,6 +192,7 @@ public class TaskScheduler extends AbstractRunner {
 				taskManager.updateTask(task);
 			}
 		}
+		log.debug("TaskScheduler has stopped.");
 	}
 
 	/**
@@ -360,10 +361,11 @@ public class TaskScheduler extends AbstractRunner {
 				+ fixStringSeparators(task.getFacility().serializeToString()) + "]|["
 				+ fixStringSeparators(destinations_s.toString()) + "]");
 
-		// modify task status
+		// modify task status and reset forced flag
 
 		task.setSentToEngine(new Date(System.currentTimeMillis()));
 		task.setStatus(Task.TaskStatus.PLANNED);
+		task.setPropagationForced(false);
 		return SUCCESS;
 
 	}
