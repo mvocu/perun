@@ -15,8 +15,8 @@ import cz.metacentrum.perun.core.api.exceptions.IllegalArgumentException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
-import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
-import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProducer;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProducerPool;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.Task;
@@ -54,7 +54,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 
 	private final static Logger log = LoggerFactory.getLogger(SchedulingPoolImpl.class);
 
-	private final Map<Integer, DispatcherQueue> dispatchersByTaskId = new HashMap<>();
+	private final Map<Integer, EngineMessageProducer> dispatchersByTaskId = new HashMap<>();
 	private PerunSession sess;
 
 	private DelayQueue<TaskSchedule> waitingTasksQueue;
@@ -63,7 +63,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	private TaskStore taskStore;
 	private TaskManager taskManager;
 	private ResultManager resultManager;
-	private DispatcherQueuePool dispatcherQueuePool;
+	private EngineMessageProducerPool engineMessageProducerPool;
 	private GeneralServiceManager generalServiceManager;
 	private Perun perun;
 
@@ -71,11 +71,11 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	public SchedulingPoolImpl(Properties dispatcherProperties, TaskStore taskStore,
-	                          TaskManager taskManager, DispatcherQueuePool dispatcherQueuePool) {
+	                          TaskManager taskManager, EngineMessageProducerPool engineMessageProducerPool) {
 		this.dispatcherProperties = dispatcherProperties;
 		this.taskStore = taskStore;
 		this.taskManager = taskManager;
-		this.dispatcherQueuePool = dispatcherQueuePool;
+		this.engineMessageProducerPool = engineMessageProducerPool;
 	}
 
 
@@ -136,13 +136,13 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		this.resultManager = resultManager;
 	}
 
-	public DispatcherQueuePool getDispatcherQueuePool() {
-		return dispatcherQueuePool;
+	public EngineMessageProducerPool getEngineMessageProducerPool() {
+		return engineMessageProducerPool;
 	}
 
 	@Autowired
-	public void setDispatcherQueuePool(DispatcherQueuePool dispatcherQueuePool) {
-		this.dispatcherQueuePool = dispatcherQueuePool;
+	public void setEngineMessageProducerPool(EngineMessageProducerPool engineMessageProducerPool) {
+		this.engineMessageProducerPool = engineMessageProducerPool;
 	}
 
 	public GeneralServiceManager getGeneralServiceManager() {
@@ -288,6 +288,24 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		schedule.setBase(System.currentTimeMillis());
 		schedule.setDelayCount(delayCount);
 
+		// Task was newly planned for propagation, switch state.
+		if (!task.getStatus().equals(TaskStatus.WAITING)) {
+
+			task.setStatus(TaskStatus.WAITING);
+			task.setSchedule(new Date(System.currentTimeMillis()));
+			// clear previous timestamps
+			task.setSentToEngine(null);
+			task.setStartTime(null);
+			task.setGenStartTime(null);
+			task.setSendStartTime(null);
+			task.setEndTime(null);
+			task.setGenEndTime(null);
+			task.setSendEndTime(null);
+
+			taskManager.updateTask(task);
+
+		}
+
 		boolean added = false;
 
 		if (schedule.getTask().isPropagationForced()) {
@@ -297,30 +315,9 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		}
 
 		if (!added) {
-			// Task was not added, so it probably already is in queue, do not update status or timestamps
-			log.error("[{}] Task could not be added to waiting queue: {}", task.getId(), schedule);
+			log.error("[{}] Task could not be added to waiting queue. Shouldn't ever happen. Look to javadoc of DelayQueue. {}", task.getId(), schedule);
 		} else {
-
 			log.debug("[{}] Task was added to waiting queue: {}", task.getId(), schedule);
-
-			// Task was planned for propagation, switch state.
-			if (!task.getStatus().equals(TaskStatus.WAITING)) {
-
-				task.setStatus(TaskStatus.WAITING);
-				task.setSchedule(new Date(System.currentTimeMillis()));
-				// clear previous timestamps
-				task.setSentToEngine(null);
-				task.setStartTime(null);
-				task.setGenStartTime(null);
-				task.setSendStartTime(null);
-				task.setEndTime(null);
-				task.setGenEndTime(null);
-				task.setSendEndTime(null);
-
-				taskManager.updateTask(task);
-
-			}
-
 		}
 
 	}
@@ -329,15 +326,15 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	 * Adds Task and associated dispatcherQueue into scheduling pools internal maps and also to the database.
 	 *
 	 * @param task            Task which will be added and persisted.
-	 * @param dispatcherQueue dispatcherQueue associated with the Task which will be added and persisted.
+	 * @param engineMessageProducer dispatcherQueue associated with the Task which will be added and persisted.
 	 * @return Number of Tasks in the pool.
 	 * @throws InternalErrorException Thrown if the Task could not be persisted.
 	 * @throws TaskStoreException
 	 */
 	@Override
-	public int addToPool(Task task, DispatcherQueue dispatcherQueue) throws InternalErrorException, TaskStoreException {
+	public int addToPool(Task task, EngineMessageProducer engineMessageProducer) throws InternalErrorException, TaskStoreException {
 
-		int engineId = (dispatcherQueue == null) ? -1 : dispatcherQueue.getClientID();
+		int engineId = (engineMessageProducer == null) ? -1 : engineMessageProducer.getClientID();
 		if (task.getId() == 0) {
 			if (getTask(task.getFacility(), task.getService()) == null) {
 				try {
@@ -365,7 +362,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			}
 		}
 		addTask(task);
-		dispatchersByTaskId.put(task.getId(), dispatcherQueue);
+		dispatchersByTaskId.put(task.getId(), engineMessageProducer);
 		log.debug("[{}] Task added to the pool: {}", task.getId(), task);
 		return getSize();
 	}
@@ -376,12 +373,12 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public DispatcherQueue getQueueForTask(Task task) throws InternalErrorException {
+	public EngineMessageProducer getEngineMessageProducerForTask(Task task) throws InternalErrorException {
 		if (task == null) {
 			log.error("Supplied Task is null.");
 			throw new IllegalArgumentException("Task cannot be null");
 		}
-		DispatcherQueue entry = dispatchersByTaskId.get(task.getId());
+		EngineMessageProducer entry = dispatchersByTaskId.get(task.getId());
 		if (entry == null) {
 			throw new InternalErrorException("No Task with ID " + task.getId());
 		}
@@ -392,7 +389,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	@Override
 	public List<Task> getTasksForEngine(int clientID) {
 		List<Task> result = new ArrayList<Task>();
-		for (Map.Entry<Integer, DispatcherQueue> entry : dispatchersByTaskId.entrySet()) {
+		for (Map.Entry<Integer, EngineMessageProducer> entry : dispatchersByTaskId.entrySet()) {
 			if (entry.getValue() != null && clientID == entry.getValue().getClientID()) {
 				result.add(getTask(entry.getKey()));
 			}
@@ -441,7 +438,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 
 		for (Pair<Task, Integer> pair : taskManager.listAllTasksAndClients()) {
 			Task task = pair.getLeft();
-			DispatcherQueue queue = dispatcherQueuePool.getDispatcherQueueByClient(pair.getRight());
+			EngineMessageProducer queue = engineMessageProducerPool.getProducerByClient(pair.getRight());
 			try {
 				// just add DB Task to in-memory structure
 				addToPool(task, queue);
@@ -467,15 +464,15 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
-	public void setQueueForTask(Task task, DispatcherQueue queueForTask) throws InternalErrorException {
+	public void setEngineMessageProducerForTask(Task task, EngineMessageProducer messageProducer) throws InternalErrorException {
 		Task found = getTask(task.getId());
 		if (found == null) {
 			throw new InternalErrorException("no task by id " + task.getId());
 		} else {
-			dispatchersByTaskId.put(task.getId(), queueForTask);
+			dispatchersByTaskId.put(task.getId(), messageProducer);
 		}
 		// if queue is removed, set -1 to task as it's done on task creation if queue is null
-		int queueId = (queueForTask != null) ? queueForTask.getClientID() : -1;
+		int queueId = (messageProducer != null) ? messageProducer.getClientID() : -1;
 		taskManager.updateTaskEngine(task, queueId);
 	}
 
@@ -497,7 +494,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 				task.setStatus(TaskStatus.ERROR);
 			}
 			try {
-				setQueueForTask(task, null);
+				setEngineMessageProducerForTask(task, null);
 			} catch (InternalErrorException e) {
 				log.error("[{}] Could not remove dispatcher queue for task: {}.", task.getId(), e.getMessage());
 			}

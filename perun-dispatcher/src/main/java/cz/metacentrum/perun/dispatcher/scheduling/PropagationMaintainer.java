@@ -197,19 +197,13 @@ public class PropagationMaintainer extends AbstractRunner {
 			int recurrence = task.getRecurrence() + 1;
 			Date twoDaysAgo = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 2);
 
-			if (recurrence > task.getService().getRecurrence() && howManyMinutesAgo < 60 * 12 && !task.isSourceUpdated()) {
-
-				// exceeded own recurrence, ended in less than 12 hours ago and source was not updated
-				// FIXME - is time condition really necessary ?
-				log.info("[{}] Task in {} state has no more retries, bailing out.", task.getId(), task.getStatus());
-
-			} else if (task.isSourceUpdated()) {
+			if (task.isSourceUpdated()) {
 
 				// schedule if possible and reset source updated flag
 				log.info("[{}] Task in {} state will be rescheduled, source data changed.", task.getId(), task.getStatus());
 				schedulingPool.scheduleTask(task, -1);
 
-			} else if (howManyMinutesAgo >= recurrence * task.getDelay()) {
+			} else if (howManyMinutesAgo >= recurrence * task.getDelay() && recurrence <= task.getService().getRecurrence()) {
 
 				// within recurrence, ended more than (recurrence*delay) ago
 				// increase recurrence counter if data hasn't changed

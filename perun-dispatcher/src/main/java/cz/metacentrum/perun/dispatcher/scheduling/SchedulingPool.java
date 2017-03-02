@@ -1,7 +1,7 @@
 package cz.metacentrum.perun.dispatcher.scheduling;
 
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
-import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProducer;
 import cz.metacentrum.perun.taskslib.exceptions.TaskStoreException;
 import cz.metacentrum.perun.taskslib.model.Task;
 import cz.metacentrum.perun.taskslib.service.TaskStore;
@@ -33,12 +33,12 @@ public interface SchedulingPool extends TaskStore {
 	 * Add Task associated with some engine (or null) to DB and internal scheduling pool.
 	 *
 	 * @param task Task to be added
-	 * @param dispatcherQueue Queue for some Engine or null
+	 * @param engineMessageProducer Message queue producer of some Engine or null
 	 * @return Current size of pool after adding
 	 * @throws InternalErrorException When implementation fails.
 	 * @throws TaskStoreException When Task can't be added.
 	 */
-	int addToPool(Task task, DispatcherQueue dispatcherQueue) throws InternalErrorException, TaskStoreException;
+	int addToPool(Task task, EngineMessageProducer engineMessageProducer) throws InternalErrorException, TaskStoreException;
 
 	/**
 	 * Adds supplied Task into DelayQueue and reset its source updated flag to false if Task is eligible for running.
@@ -77,9 +77,9 @@ public interface SchedulingPool extends TaskStore {
 	 */
 	String getReport();
 
-	DispatcherQueue getQueueForTask(Task task) throws InternalErrorException;
+	EngineMessageProducer getEngineMessageProducerForTask(Task task) throws InternalErrorException;
 
-	void setQueueForTask(Task task, DispatcherQueue queueForTask) throws InternalErrorException;
+	void setEngineMessageProducerForTask(Task task, EngineMessageProducer queueForTask) throws InternalErrorException;
 
 	List<Task> getTasksForEngine(int clientID);
 

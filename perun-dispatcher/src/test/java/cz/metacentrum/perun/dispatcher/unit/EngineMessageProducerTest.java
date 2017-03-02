@@ -8,7 +8,7 @@ import org.junit.Test;
  * @author Michal Voců
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
-public class DispatcherQueueTest extends AbstractDispatcherTest {
+public class EngineMessageProducerTest extends AbstractDispatcherTest {
 
 	@Test
 	public void sendEventTest() {

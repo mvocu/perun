@@ -12,19 +12,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 
 /**
- * Instance of JMS queue for sending messages to engine.
- * For each engine own queue is created, and stored in DispatcherQueuePool.
+ * Instance of Engine message queue producer for sending messages to Engine.
+ * For each Engine own producer (message queue) is created, and stored in EngineMessageProducerPool.
  *
- * @see cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool
+ * @see cz.metacentrum.perun.dispatcher.jms.EngineMessageProducerPool
  *
  * @author Michal Karm Babacek
  * @author Michal Voců
  * @author David Šarman
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
-public class DispatcherQueue {
+public class EngineMessageProducer {
 
-	private final static Logger log = LoggerFactory.getLogger(DispatcherQueue.class);
+	private final static Logger log = LoggerFactory.getLogger(EngineMessageProducer.class);
 
 	private Queue queue;
 	private Session session;
@@ -33,12 +33,12 @@ public class DispatcherQueue {
 	private String queueName;
 
 	// this one is to allow for mock objects which extend this class
-	public DispatcherQueue(int clientID, String queueName) {
+	public EngineMessageProducer(int clientID, String queueName) {
 		this.clientID = clientID;
 		this.queueName = queueName;
 	}
 
-	public DispatcherQueue(int clientID, String queueName, Session session) {
+	public EngineMessageProducer(int clientID, String queueName, Session session) {
 		this.clientID = clientID;
 		this.queueName = queueName;
 		this.session = session;

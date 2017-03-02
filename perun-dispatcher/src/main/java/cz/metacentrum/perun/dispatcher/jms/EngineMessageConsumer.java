@@ -18,38 +18,38 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Received messages are then parsed by SystemQueueProcessor.
  * If parsing fails, it tries to restart whole JMS processing.
  *
- * @see cz.metacentrum.perun.dispatcher.jms.SystemQueueProcessor
+ * @see EngineMessageProcessor
  *
  * @author Michal Karm Babacek
  * @author Michal Voců
  * @author David Šarman
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
-@org.springframework.stereotype.Service(value = "systemQueueReceiver")
-public class SystemQueueReceiver extends AbstractRunner {
+@org.springframework.stereotype.Service(value = "engineMessageConsumer")
+public class EngineMessageConsumer extends AbstractRunner {
 
-	private final static Logger log = LoggerFactory.getLogger(SystemQueueReceiver.class);
+	private final static Logger log = LoggerFactory.getLogger(EngineMessageConsumer.class);
 
 	private final static int timeout = 5000; // ms
 
-	private SystemQueueProcessor systemQueueProcessor;
+	private EngineMessageProcessor engineMessageProcessor;
 	private MessageConsumer messageConsumer = null;
 	private Session session = null;
 	private String queueName = null;
 
-	public SystemQueueReceiver() {
+	public EngineMessageConsumer() {
 	}
 
 	// ----- setters -------------------------------------
 
 
-	public SystemQueueProcessor getSystemQueueProcessor() {
-		return systemQueueProcessor;
+	public EngineMessageProcessor getEngineMessageProcessor() {
+		return engineMessageProcessor;
 	}
 
 	@Autowired
-	public void setSystemQueueProcessor(SystemQueueProcessor systemQueueProcessor) {
-		this.systemQueueProcessor = systemQueueProcessor;
+	public void setEngineMessageProcessor(EngineMessageProcessor engineMessageProcessor) {
+		this.engineMessageProcessor = engineMessageProcessor;
 	}
 
 
@@ -68,9 +68,9 @@ public class SystemQueueReceiver extends AbstractRunner {
 	}
 
 	/**
-	 * Create JMS message consumer for a queue and pass message content to SystemQueueProcessor.
+	 * Create JMS message consumer for a queue and pass message content to EngineMessageProcessor.
 	 *
-	 * @see cz.metacentrum.perun.dispatcher.jms.SystemQueueProcessor
+	 * @see EngineMessageProcessor
 	 */
 	@Override
 	public void run() {
@@ -104,7 +104,7 @@ public class SystemQueueReceiver extends AbstractRunner {
 						log.debug("System message received [" + messageReceived.getText() + "]");
 					}
 					try {
-						systemQueueProcessor.processDispatcherQueueAndMatchingRule(messageReceived.getText());
+						engineMessageProcessor.processDispatcherQueueAndMatchingRule(messageReceived.getText());
 					} catch (MessageFormatException ex) {
 						// engine sent wrongly formatted messages
 						// shouldn't kill whole messaging process
@@ -119,8 +119,8 @@ public class SystemQueueReceiver extends AbstractRunner {
 			} catch (JMSException e) {
 				// try to restart JMS messaging
 				log.error(e.toString(), e);
-				systemQueueProcessor.stopProcessingSystemMessages();
-				systemQueueProcessor.startProcessingSystemMessages();
+				engineMessageProcessor.stopProcessingSystemMessages();
+				engineMessageProcessor.startProcessingSystemMessages();
 				try {
 					Thread.sleep(10000);
 				} catch (InterruptedException ex) {

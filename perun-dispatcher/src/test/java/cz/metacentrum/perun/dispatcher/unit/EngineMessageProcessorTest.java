@@ -4,17 +4,17 @@ import cz.metacentrum.perun.dispatcher.AbstractDispatcherTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.metacentrum.perun.dispatcher.jms.SystemQueueProcessor;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProcessor;
 
 /**
  *
  * @author Michal Voců
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
-public class SystemQueueProcessorTest extends AbstractDispatcherTest {
+public class EngineMessageProcessorTest extends AbstractDispatcherTest {
 
 	@Autowired
-	private SystemQueueProcessor systemQueueProcessor;
+	private EngineMessageProcessor engineMessageProcessor;
 
 	@Test
 	public void processDispatcherQueueAndMatchingRuleTest() {

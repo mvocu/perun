@@ -2,7 +2,7 @@ package cz.metacentrum.perun.dispatcher.unit;
 
 import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.dispatcher.AbstractDispatcherTest;
-import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProducer;
 import cz.metacentrum.perun.dispatcher.model.Event;
 import cz.metacentrum.perun.dispatcher.processing.EventQueue;
 import cz.metacentrum.perun.dispatcher.processing.EventProcessor;
@@ -34,8 +34,8 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 	public void eventProcessorTest() {
 		System.out.println("EventProcessor.eventProcessorTest()");
 
-		DispatcherQueue dispatcherQueue = new DispatcherQueueMock(1, "testQueue");
-		eventProcessor.getDispatcherQueuePool().addDispatcherQueue(dispatcherQueue);
+		EngineMessageProducer engineMessageProducer = new EngineMessageProducerMock(1, "testQueue");
+		eventProcessor.getEngineMessageProducerPool().addProducer(engineMessageProducer);
 		eventProcessor.setEventQueue(new EventQueueMock());
 		SchedulingPoolMock pool = new SchedulingPoolMock(2);
 		eventProcessor.setSchedulingPool(pool);
@@ -86,9 +86,9 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 
 	}
 
-	private class DispatcherQueueMock extends DispatcherQueue {
+	private class EngineMessageProducerMock extends EngineMessageProducer {
 
-		public DispatcherQueueMock(int clientID, String queueName) {
+		public EngineMessageProducerMock(int clientID, String queueName) {
 			super(clientID, queueName);
 		}
 
@@ -104,7 +104,7 @@ public class EventProcessorTest extends AbstractDispatcherTest {
 		}
 
 		@Override
-		public int addToPool(Task task, DispatcherQueue dispatcherQueue) {
+		public int addToPool(Task task, EngineMessageProducer engineMessageProducer) {
 			tasks.add(task);
 			adds += 1;
 			if (adds == expectedAdds) {

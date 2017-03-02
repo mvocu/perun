@@ -32,12 +32,12 @@ import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
  * It start/stop processing of messages, create queues and load processing rules for Engines.
  * Also provide method for message parsing.
  *
- * Queues to Engines are represented by DispatcherQueue objects. Queue is used by TaskScheduler.
- * Queue from Engine is represented by SystemQueueReceiver. Received messages result in calls to SchedulingPool.
+ * Queues to Engines are represented by EngineMessageProducer objects. Queue is used by TaskScheduler.
+ * Queue from Engine is represented by EngineMessageConsumer. Received messages result in calls to SchedulingPool.
  *
- * @see cz.metacentrum.perun.dispatcher.jms.DispatcherQueue
+ * @see cz.metacentrum.perun.dispatcher.jms.EngineMessageProducer
+ * @see cz.metacentrum.perun.dispatcher.jms.EngineMessageConsumer
  * @see cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler
- * @see cz.metacentrum.perun.dispatcher.jms.SystemQueueReceiver
  * @see cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool
  *
  * @author Michal Karm Babacek
@@ -45,17 +45,17 @@ import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
  * @author David Šarman
  * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
-@org.springframework.stereotype.Service(value = "systemQueueProcessor")
-public class SystemQueueProcessor {
+@org.springframework.stereotype.Service(value = "engineMessageProcessor")
+public class EngineMessageProcessor {
 
-	private final static Logger log = LoggerFactory.getLogger(SystemQueueProcessor.class);
+	private final static Logger log = LoggerFactory.getLogger(EngineMessageProcessor.class);
 
 	private Properties dispatcherProperties;
-	private DispatcherQueuePool dispatcherQueuePool;
+	private EngineMessageProducerPool engineMessageProducerPool;
 	private PerunHornetQServer perunHornetQServer;
 	private SmartMatcher smartMatcher;
 	private TaskExecutor taskExecutor;
-	private SystemQueueReceiver systemQueueReceiver;
+	private EngineMessageConsumer engineMessageConsumer;
 	private SchedulingPool schedulingPool;
 
 	private Session session = null;
@@ -77,13 +77,13 @@ public class SystemQueueProcessor {
 		this.dispatcherProperties = dispatcherProperties;
 	}
 
-	public DispatcherQueuePool getDispatcherQueuePool() {
-		return dispatcherQueuePool;
+	public EngineMessageProducerPool getEngineMessageProducerPool() {
+		return engineMessageProducerPool;
 	}
 
 	@Autowired
-	public void setDispatcherQueuePool(DispatcherQueuePool dispatcherQueuePool) {
-		this.dispatcherQueuePool = dispatcherQueuePool;
+	public void setEngineMessageProducerPool(EngineMessageProducerPool engineMessageProducerPool) {
+		this.engineMessageProducerPool = engineMessageProducerPool;
 	}
 
 	public PerunHornetQServer getPerunHornetQServer() {
@@ -113,13 +113,13 @@ public class SystemQueueProcessor {
 		this.taskExecutor = taskExecutor;
 	}
 
-	public SystemQueueReceiver getSystemQueueReceiver() {
-		return systemQueueReceiver;
+	public EngineMessageConsumer getEngineMessageConsumer() {
+		return engineMessageConsumer;
 	}
 
 	@Autowired
-	public void setSystemQueueReceiver(SystemQueueReceiver systemQueueReceiver) {
-		this.systemQueueReceiver = systemQueueReceiver;
+	public void setEngineMessageConsumer(EngineMessageConsumer engineMessageConsumer) {
+		this.engineMessageConsumer = engineMessageConsumer;
 	}
 
 	public SchedulingPool getSchedulingPool() {
@@ -181,11 +181,11 @@ public class SystemQueueProcessor {
 			connection.start();
 			if (processingMessages) {
 				// make sure processing is stopped before new start when called as "restart"
-				systemQueueReceiver.stop();
+				engineMessageConsumer.stop();
 			}
-			systemQueueReceiver.setUp("systemQueue", session);
+			engineMessageConsumer.setUp("systemQueue", session);
 			log.debug("Receiving messages started...");
-			taskExecutor.execute(systemQueueReceiver);
+			taskExecutor.execute(engineMessageConsumer);
 			log.debug("JMS Initialization done.");
 			processingMessages = true;
 
@@ -205,8 +205,8 @@ public class SystemQueueProcessor {
 	 * Stop processing of JMS messages between dispatcher and engines and close the connection.
 	 */
 	public void stopProcessingSystemMessages() {
-		if (processingMessages && systemQueueReceiver != null) {
-			systemQueueReceiver.stop();
+		if (processingMessages && engineMessageConsumer != null) {
+			engineMessageConsumer.stop();
 			try {
 				connection.stop();
 				connection.close();
@@ -262,7 +262,7 @@ public class SystemQueueProcessor {
 	 * where x is an Integer that represents Engine's ID in the Perun
 	 * object is serialized TaskResult object sent from Engine
 	 *
-	 * @see cz.metacentrum.perun.dispatcher.jms.SystemQueueReceiver
+	 * @see EngineMessageConsumer
 	 *
 	 * @param message Message to be parsed a processed
 	 * @throws PerunHornetQServerException When HornetQ server is not running
@@ -295,8 +295,8 @@ public class SystemQueueProcessor {
 			if (clientIDsplitter[0].equalsIgnoreCase("register")) {
 
 				// Do we have this queue already?
-				DispatcherQueue dispatcherQueue = dispatcherQueuePool.getDispatcherQueueByClient(clientID);
-				if (dispatcherQueue != null) {
+				EngineMessageProducer engineMessageProducer = engineMessageProducerPool.getProducerByClient(clientID);
+				if (engineMessageProducer != null) {
 					// Yes, so we just reload matching rules...
 					smartMatcher.reloadRulesFromDBForEngine(clientID);
 					// ...and close all tasks that could have been running there
@@ -310,7 +310,7 @@ public class SystemQueueProcessor {
 
 				// engine is going down, should mark all tasks as failed
 				schedulingPool.closeTasksForEngine(clientID);
-				dispatcherQueuePool.removeDispatcherQueue(clientID);
+				engineMessageProducerPool.removeProducer(clientID);
 
 			} else if (clientIDsplitter[0].equalsIgnoreCase("task")) {
 
@@ -374,11 +374,11 @@ public class SystemQueueProcessor {
 			log.error("Can't create JMS {}: {}", queueName, e);
 		}
 
-		DispatcherQueue dispatcherQueue = new DispatcherQueue(clientID, queueName, session);
+		EngineMessageProducer engineMessageProducer = new EngineMessageProducer(clientID, queueName, session);
 		// Rules
 		smartMatcher.reloadRulesFromDBForEngine(clientID);
 		// Add to the queue
-		dispatcherQueuePool.addDispatcherQueue(dispatcherQueue);
+		engineMessageProducerPool.addProducer(engineMessageProducer);
 	}
 
 }

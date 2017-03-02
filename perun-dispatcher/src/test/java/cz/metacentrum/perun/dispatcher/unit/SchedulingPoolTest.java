@@ -17,7 +17,7 @@ import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.util.Assert;
 
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
-import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProducer;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.taskslib.model.ExecService;
 import cz.metacentrum.perun.taskslib.model.Task;
@@ -34,7 +34,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 
 	@Autowired
 	private SchedulingPool schedulingPool;
-	private DispatcherQueue dispatcherQueue;
+	private EngineMessageProducer engineMessageProducer;
 	private List<Pair<ExecService, Facility>> testPairs = new ArrayList<Pair<ExecService, Facility>>();
 	private List<Destination> destinations = new ArrayList<Destination>() {{
 		add(new Destination(1, "par_dest1", "host", "PARALLEL"));
@@ -56,8 +56,8 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 
 		task1.setStatus(TaskStatus.WAITING);
 		task1.setSchedule(new Date(System.currentTimeMillis()));
-		dispatcherQueue = new DispatcherQueue(1, "test-queue");
-		schedulingPool.addToPool(task1, dispatcherQueue);
+		engineMessageProducer = new EngineMessageProducer(1, "test-queue");
+		schedulingPool.addToPool(task1, engineMessageProducer);
 	}
 
 	@After
@@ -71,7 +71,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 		System.out.println("SchedulingPool.addTask()");
 
 		Assert.isTrue(schedulingPool.getSize() == 1, "original size is 1");
-		schedulingPool.addToPool(task1, dispatcherQueue);
+		schedulingPool.addToPool(task1, engineMessageProducer);
 		Assert.isTrue(schedulingPool.getSize() == 1, "new size is 1"); // pool already contains this task
 		task2 = new Task();
 		task2.setId(2);
@@ -79,7 +79,7 @@ public class SchedulingPoolTest extends AbstractDispatcherTest {
 		task2.setFacility(facility1);
 		task2.setDestinations(destinations);
 		task2.setSchedule(new Date(System.currentTimeMillis()));
-		schedulingPool.addToPool(task2, dispatcherQueue);
+		schedulingPool.addToPool(task2, engineMessageProducer);
 		Assert.isTrue(schedulingPool.getSize() == 2, "new size is 2");
 	}
 

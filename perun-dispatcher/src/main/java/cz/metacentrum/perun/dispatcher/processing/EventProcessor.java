@@ -6,7 +6,7 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.dispatcher.exceptions.InvalidEventMessageException;
-import cz.metacentrum.perun.dispatcher.jms.DispatcherQueuePool;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProducerPool;
 import cz.metacentrum.perun.dispatcher.model.Event;
 import cz.metacentrum.perun.dispatcher.scheduling.SchedulingPool;
 import cz.metacentrum.perun.taskslib.dao.ServiceDenialDao;
@@ -47,7 +47,7 @@ public class EventProcessor extends AbstractRunner {
 	private final static Logger log = LoggerFactory.getLogger(EventProcessor.class);
 
 	private EventQueue eventQueue;
-	private DispatcherQueuePool dispatcherQueuePool;
+	private EngineMessageProducerPool engineMessageProducerPool;
 	private EventServiceResolver eventServiceResolver;
 	private ServiceDenialDao serviceDenialDao;
 	private SchedulingPool schedulingPool;
@@ -63,13 +63,13 @@ public class EventProcessor extends AbstractRunner {
 		this.eventQueue = eventQueue;
 	}
 
-	public DispatcherQueuePool getDispatcherQueuePool() {
-		return dispatcherQueuePool;
+	public EngineMessageProducerPool getEngineMessageProducerPool() {
+		return engineMessageProducerPool;
 	}
 
 	@Autowired
-	public void setDispatcherQueuePool(DispatcherQueuePool dispatcherQueuePool) {
-		this.dispatcherQueuePool = dispatcherQueuePool;
+	public void setEngineMessageProducerPool(EngineMessageProducerPool engineMessageProducerPool) {
+		this.engineMessageProducerPool = engineMessageProducerPool;
 	}
 
 	public EventServiceResolver getEventServiceResolver() {
@@ -112,7 +112,7 @@ public class EventProcessor extends AbstractRunner {
 				Event event = eventQueue.poll();
 				if (event != null) {
 					createTaskFromEvent(event);
-					log.debug("Remaining events in a Queue = {}, Engines = {}", eventQueue.size(), dispatcherQueuePool.poolSize());
+					log.debug("Remaining events in a Queue = {}, Engines = {}", eventQueue.size(), engineMessageProducerPool.poolSize());
 				}
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
@@ -172,6 +172,7 @@ public class EventProcessor extends AbstractRunner {
 					task.setService(service);
 					task.setStatus(TaskStatus.WAITING);
 					task.setRecurrence(0);
+					task.setDelay(service.getDelay());
 					task.setSchedule(new Date(System.currentTimeMillis()));
 					task.setSourceUpdated(false);
 					task.setPropagationForced(isForced);

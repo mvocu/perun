@@ -13,13 +13,13 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.metacentrum.perun.dispatcher.dao.RulesDao;
-import cz.metacentrum.perun.dispatcher.jms.DispatcherQueue;
+import cz.metacentrum.perun.dispatcher.jms.EngineMessageProducer;
 import cz.metacentrum.perun.dispatcher.model.Event;
 import cz.metacentrum.perun.dispatcher.model.MatchingRule;
 import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
 
 /**
- * 
+ *
  * @author Michal Karm Babacek
  */
 @org.springframework.stereotype.Service(value = "smartMatcher")
@@ -33,8 +33,8 @@ public class SmartMatcherImpl implements SmartMatcher {
 	private ConcurrentMap<Integer, MatchingRule> matchingRules = new ConcurrentHashMap<Integer, MatchingRule>();
 
 	@Override
-	public boolean doesItMatch(Event event, DispatcherQueue dispatcherQueue) {
-		MatchingRule matchingRule = matchingRules.get(dispatcherQueue.getClientID());
+	public boolean doesItMatch(Event event, EngineMessageProducer engineMessageProducer) {
+		MatchingRule matchingRule = matchingRules.get(engineMessageProducer.getClientID());
 		if (matchingRule == null) {
 			log.debug("MATCHER rules({}): Doesn't match. No such rule.", matchingRules.size());
 			return true;
