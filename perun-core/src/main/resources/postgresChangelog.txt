@@ -40,6 +40,7 @@ alter table tasks drop constraint task_u;
 alter table tasks add constraint task_u unique (service_id, facility_id);
 drop index idx_fk_task_exsrv;
 create index idx_fk_task_srv on tasks(service_id);
+alter table tasks drop column exec_service_id;
 drop index idx_fk_srvdep_exsrv;
 drop index idx_fk_srvdep_depexsrv;
 alter table service_dependencies drop constraint srvdep_exsrv_fk;
