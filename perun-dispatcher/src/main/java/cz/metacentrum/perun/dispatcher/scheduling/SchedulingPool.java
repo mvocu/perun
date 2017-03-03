@@ -11,16 +11,16 @@ import java.util.List;
 /**
  * In-memory pool of all Tasks. On application start, all Tasks are reloaded from DB.
  *
- * New Tasks are added by EventProcessor, existing Tasks are updated. Change in Task state can
- * be also caused by PropagationMaintainer (closing propagation cycle).
+ * New Tasks are added by EventProcessor, existing Tasks are updated.
  *
- * Tasks can be then
- * pushed to waitingTasksQueue
+ * Tasks can be then pushed to waitingTasksQueue by EventProcessor (new Task), TaskScheduler or PropagationMaintainer.
  *
- * Allows association of Tasks with Engines (DispatcherQueue).
+ * Allows association of Tasks with Engines (EngineMessageProducer queues).
  *
  * @see cz.metacentrum.perun.dispatcher.processing.EventProcessor
+ * @see cz.metacentrum.perun.dispatcher.scheduling.TaskScheduler
  * @see cz.metacentrum.perun.dispatcher.scheduling.PropagationMaintainer
+ * @see cz.metacentrum.perun.taskslib.model.Task
  *
  * @author Michal Voců
  * @author Michal Babacek
@@ -43,7 +43,7 @@ public interface SchedulingPool extends TaskStore {
 	/**
 	 * Adds supplied Task into DelayQueue and reset its source updated flag to false if Task is eligible for running.
 	 *
-	 * Forced Tasks will have delay set to 0, other will use system property: "dispatcher.new_task.delay.time"
+	 * Forced Tasks will have delay set to 0, other will use system property: "dispatcher.task.delay.time"
 	 * Also forced Tasks will have delayCount set to 0.
 	 *
 	 * Always retrieve Service/Facility from DB to cross-check actual data.
@@ -77,10 +77,30 @@ public interface SchedulingPool extends TaskStore {
 	 */
 	String getReport();
 
+	/**
+	 * Return EngineMessageProducer queue associated with a Task
+	 *
+	 * @param task Task to get EngineMessageProducer for
+	 * @return EngineMessageProducer queue or throws exception
+	 * @throws InternalErrorException When Task has no EngineMessageProducer associated
+	 */
 	EngineMessageProducer getEngineMessageProducerForTask(Task task) throws InternalErrorException;
 
+	/**
+	 * Set EngineMessageProducer queue for a Task.
+	 *
+	 * @param task Task to set EngineMessageProducer queue
+	 * @param queueForTask EngineMessageProducer queue to set
+	 * @throws InternalErrorException When Task doesn't exists in a pool
+	 */
 	void setEngineMessageProducerForTask(Task task, EngineMessageProducer queueForTask) throws InternalErrorException;
 
+	/**
+	 * Get all Tasks associated with Engine by its ID
+	 *
+	 * @param clientID ID of Engine
+	 * @return Tasks associated with Engine by its ID
+	 */
 	List<Task> getTasksForEngine(int clientID);
 
 	/**

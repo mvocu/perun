@@ -9,7 +9,6 @@ import javax.jms.TextMessage;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 
 /**
  * Instance of Engine message queue producer for sending messages to Engine.
@@ -64,11 +63,9 @@ public class EngineMessageProducer {
 
 	/**
 	 * Send JMS message to the Engine associated with this queue.
-	 * This method does not block. It is going to be executed asynchronously.
 	 *
 	 * @param text Message content
 	 */
-	@Async
 	public void sendMessage(String text) {
 
 		try {

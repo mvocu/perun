@@ -88,8 +88,8 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 					<prop key="perun.principal.extSourceName">INTERNAL</prop>
 					<prop key="perun.principal.extSourceType">cz.metacentrum.perun.core.impl.ExtSourceInternal</prop>
 					<prop key="dispatcher.cron.cleantaskresults">0 0 1 * * ?</prop>
-					<prop key="dispatcher.new_task.delay.time">30000</prop>
-					<prop key="dispatcher.new_task.delay.count">4</prop>
+					<prop key="dispatcher.task.delay.time">30000</prop>
+					<prop key="dispatcher.task.delay.count">4</prop>
 					<prop key="dispatcher.datadir">/tmp/perun-dispatcher-data</prop>
 				</props>
 			</property>
@@ -104,8 +104,8 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 					<prop key="perun.principal.extSourceName">INTERNAL</prop>
 					<prop key="perun.principal.extSourceType">cz.metacentrum.perun.core.impl.ExtSourceInternal</prop>
 					<prop key="dispatcher.cron.cleantaskresults">0 0 1 * * ?</prop>
-					<prop key="dispatcher.new_task.delay.time">30000</prop>
-					<prop key="dispatcher.new_task.delay.count">4</prop>
+					<prop key="dispatcher.task.delay.time">30000</prop>
+					<prop key="dispatcher.task.delay.count">4</prop>
 					<prop key="dispatcher.datadir">/tmp/perun-dispatcher-data</prop>
 				</props>
 			</property>

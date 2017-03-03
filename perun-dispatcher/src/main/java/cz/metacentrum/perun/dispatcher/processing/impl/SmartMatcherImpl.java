@@ -19,18 +19,33 @@ import cz.metacentrum.perun.dispatcher.model.MatchingRule;
 import cz.metacentrum.perun.dispatcher.processing.SmartMatcher;
 
 /**
+ * Implementation of SmartMatcher.
+ *
+ * @see cz.metacentrum.perun.dispatcher.processing.SmartMatcher
  *
  * @author Michal Karm Babacek
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 @org.springframework.stereotype.Service(value = "smartMatcher")
 public class SmartMatcherImpl implements SmartMatcher {
 
-	private final static Logger log = LoggerFactory
-			.getLogger(SmartMatcherImpl.class);
+	private final static Logger log = LoggerFactory.getLogger(SmartMatcherImpl.class);
 
-	@Autowired
 	private RulesDao rulesDao;
 	private ConcurrentMap<Integer, MatchingRule> matchingRules = new ConcurrentHashMap<Integer, MatchingRule>();
+
+	// ----- setters -------------------------------------
+
+	public RulesDao getRulesDao() {
+		return rulesDao;
+	}
+
+	@Autowired
+	public void setRulesDao(RulesDao rulesDao) {
+		this.rulesDao = rulesDao;
+	}
+
+	// ----- methods -------------------------------------
 
 	@Override
 	public boolean doesItMatch(Event event, EngineMessageProducer engineMessageProducer) {

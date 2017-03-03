@@ -116,8 +116,8 @@ public class TaskSchedulerTest extends AbstractDispatcherTest {
 
 	private Task[] simpleSetup(Long timeLimit, SchedulingPool schedulingPool) {
 		Properties properties = new Properties();
-		properties.setProperty("dispatcher.new_task.delay.time", timeLimit.toString());
-		properties.setProperty("dispatcher.new_task.delay.count", "1");
+		properties.setProperty("dispatcher.task.delay.time", timeLimit.toString());
+		properties.setProperty("dispatcher.task.delay.count", "1");
 		((SchedulingPoolImpl)schedulingPool).setDispatcherProperties(properties);
 		Task testTask1 = new Task();
 		testTask1.setService(service1);

@@ -17,6 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementation of TaskStore as in-memory pool.
+ *
+ * @see cz.metacentrum.perun.taskslib.service.TaskStore
+ *
+ * @author David Šarman
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
+ */
 public class TaskStoreImpl implements TaskStore {
 
 	private final static Logger log = LoggerFactory.getLogger(TaskStoreImpl.class);
@@ -112,4 +120,5 @@ public class TaskStoreImpl implements TaskStore {
 		tasksById.clear();
 		tasksByFacilityAndService.clear();
 	}
+
 }

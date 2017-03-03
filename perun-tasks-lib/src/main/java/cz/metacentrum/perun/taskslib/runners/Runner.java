@@ -1,7 +1,7 @@
 package cz.metacentrum.perun.taskslib.runners;
 
 /**
- * Interface for all Runners (periodic threads used in dispatcher).
+ * Interface for all Runners (periodic threads used in dispatcher/engine).
  * It handles "stop" flag, so thread should know, when to stop and can be
  * stopped from outside.
  *

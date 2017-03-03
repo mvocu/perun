@@ -9,18 +9,24 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.ServiceNotExistsException;
 import cz.metacentrum.perun.dispatcher.model.ProcessingRule;
-import cz.metacentrum.perun.taskslib.model.ExecService;
 
 /**
- * ProcessingRuleDao
+ * DAO layer for loading ProcessingRules.
  *
  * @author Michal Karm Babacek
- *
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 public interface ProcessingRuleDao {
 
-	public Map<ProcessingRule, List<Service>> getRules(
-			PerunSession perunSession) throws ServiceNotExistsException,
-			InternalErrorException, PrivilegeException;
+	/**
+	 * Load map of ProcessingRule to list of affected Services.
+	 *
+	 * @param perunSession
+	 * @return
+	 * @throws ServiceNotExistsException
+	 * @throws InternalErrorException
+	 * @throws PrivilegeException
+	 */
+	public Map<ProcessingRule, List<Service>> getRules(PerunSession perunSession) throws ServiceNotExistsException, InternalErrorException, PrivilegeException;
 
 }

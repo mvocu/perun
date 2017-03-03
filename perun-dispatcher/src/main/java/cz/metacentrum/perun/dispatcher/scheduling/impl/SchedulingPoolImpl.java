@@ -54,7 +54,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 
 	private final static Logger log = LoggerFactory.getLogger(SchedulingPoolImpl.class);
 
-	private final Map<Integer, EngineMessageProducer> dispatchersByTaskId = new HashMap<>();
+	private final Map<Integer, EngineMessageProducer> enginesByTaskId = new HashMap<>();
 	private PerunSession sess;
 
 	private DelayQueue<TaskSchedule> waitingTasksQueue;
@@ -275,13 +275,13 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		long newTaskDelay = 0;
 		if (!task.isPropagationForced()) {
 			// normal tasks are delayed
-			newTaskDelay = Long.parseLong(dispatcherProperties.getProperty("dispatcher.new_task.delay.time"));
+			newTaskDelay = Long.parseLong(dispatcherProperties.getProperty("dispatcher.task.delay.time"));
 		}
 		if (task.isPropagationForced()) {
 			delayCount = 0;
 		}
 		if (delayCount < 0) {
-			delayCount = Integer.parseInt(dispatcherProperties.getProperty("dispatcher.new_task.delay.count"));
+			delayCount = Integer.parseInt(dispatcherProperties.getProperty("dispatcher.task.delay.count"));
 		}
 
 		TaskSchedule schedule = new TaskSchedule(newTaskDelay, task);
@@ -362,7 +362,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			}
 		}
 		addTask(task);
-		dispatchersByTaskId.put(task.getId(), engineMessageProducer);
+		enginesByTaskId.put(task.getId(), engineMessageProducer);
 		log.debug("[{}] Task added to the pool: {}", task.getId(), task);
 		return getSize();
 	}
@@ -378,7 +378,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 			log.error("Supplied Task is null.");
 			throw new IllegalArgumentException("Task cannot be null");
 		}
-		EngineMessageProducer entry = dispatchersByTaskId.get(task.getId());
+		EngineMessageProducer entry = enginesByTaskId.get(task.getId());
 		if (entry == null) {
 			throw new InternalErrorException("No Task with ID " + task.getId());
 		}
@@ -389,7 +389,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	@Override
 	public List<Task> getTasksForEngine(int clientID) {
 		List<Task> result = new ArrayList<Task>();
-		for (Map.Entry<Integer, EngineMessageProducer> entry : dispatchersByTaskId.entrySet()) {
+		for (Map.Entry<Integer, EngineMessageProducer> entry : enginesByTaskId.entrySet()) {
 			if (entry.getValue() != null && clientID == entry.getValue().getClientID()) {
 				result.add(getTask(entry.getKey()));
 			}
@@ -424,7 +424,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	@Override
 	public void clear() {
 		taskStore.clear();
-		dispatchersByTaskId.clear();
+		enginesByTaskId.clear();
 		waitingTasksQueue.clear();
 		waitingForcedTasksQueue.clear();
 	}
@@ -469,7 +469,7 @@ public class SchedulingPoolImpl implements SchedulingPool {
 		if (found == null) {
 			throw new InternalErrorException("no task by id " + task.getId());
 		} else {
-			dispatchersByTaskId.put(task.getId(), messageProducer);
+			enginesByTaskId.put(task.getId(), messageProducer);
 		}
 		// if queue is removed, set -1 to task as it's done on task creation if queue is null
 		int queueId = (messageProducer != null) ? messageProducer.getClientID() : -1;

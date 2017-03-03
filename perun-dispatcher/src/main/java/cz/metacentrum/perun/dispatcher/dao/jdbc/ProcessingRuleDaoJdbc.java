@@ -47,11 +47,11 @@ public class ProcessingRuleDaoJdbc extends JdbcDaoSupport implements ProcessingR
 
 	@Override
 	public Map<ProcessingRule, List<Service>> getRules(PerunSession perunSession) throws ServiceNotExistsException,InternalErrorException, PrivilegeException {
-		Map<ProcessingRule, List<Service>> rulesExecServices = new HashMap<ProcessingRule, List<Service>>();
+		Map<ProcessingRule, List<Service>> rulesServices = new HashMap<ProcessingRule, List<Service>>();
 		for (ProcessingRule processingRule : listProcessingRules()) {
-			rulesExecServices.put(processingRule,getServices(perunSession, processingRule));
+			rulesServices.put(processingRule,getServices(perunSession, processingRule));
 		}
-		return rulesExecServices;
+		return rulesServices;
 	}
 
 	private List<ProcessingRule> listProcessingRules() {

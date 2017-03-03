@@ -23,11 +23,29 @@ public class PerunHornetQServer {
 
 	private final static Logger log = LoggerFactory.getLogger(PerunHornetQServer.class);
 
-	@Autowired private Properties dispatcherProperties;
+	private Properties dispatcherProperties;
 	private FileConfiguration configuration = null;
 	private HornetQServer server = null;
 	private JMSServerManager jmsServerManager = null;
 	private boolean serverRunning = false;
+
+
+	// ----- setters -------------------------------------
+
+
+	public Properties getDispatcherProperties() {
+		return dispatcherProperties;
+	}
+
+
+	@Autowired
+	public void setDispatcherProperties(Properties dispatcherProperties) {
+		this.dispatcherProperties = dispatcherProperties;
+	}
+
+
+	// ----- methods -------------------------------------
+
 
 	/**
 	 * Start and configure HornetQ server with default JMS queue (systemQueue).
@@ -76,19 +94,22 @@ public class PerunHornetQServer {
 		}
 	}
 
+	/**
+	 * Gets JMS server manager
+	 *
+	 * @return JMS server manager
+	 */
 	public JMSServerManager getJMSServerManager() {
 		return jmsServerManager;
 	}
 
+	/**
+	 * TRUE if HornetQ server was correctly started.
+	 *
+	 * @return TRUE HornetQ is running / FALSE otherwise
+	 */
 	public boolean isServerRunning() {
 		return serverRunning;
 	}
 
-	public void setDispatcherProperties(Properties propertiesBean) {
-		this.dispatcherProperties = propertiesBean;
-	}
-
-	public Properties getDispatcherProperties() {
-		return dispatcherProperties;
-	}
 }
