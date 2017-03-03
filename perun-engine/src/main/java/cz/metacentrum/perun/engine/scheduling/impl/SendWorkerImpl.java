@@ -16,58 +16,81 @@ import java.util.Date;
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.ERROR;
 import static cz.metacentrum.perun.taskslib.model.SendTask.SendTaskStatus.SENT;
 
+/**
+ * Implementation of SendWorker, which is used for starting SEND scripts.
+ *
+ * @author David Šarman
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
+ */
+public class SendWorkerImpl extends AbstractWorker<SendTask> implements SendWorker {
 
-public class SendWorkerImpl extends AbstractWorker implements SendWorker {
 	private final static Logger log = LoggerFactory.getLogger(SendWorkerImpl.class);
 
 	private SendTask sendTask;
 
 	public SendWorkerImpl(SendTask sendTask, File directory) {
+		if (sendTask == null) throw new IllegalArgumentException("SendTask to execute can't be null.");
 		this.sendTask = sendTask;
 		setDirectory(directory);
 	}
 
 	@Override
 	public SendTask call() throws TaskExecutionException {
+
 		Task task = sendTask.getTask();
 		Service service = task.getService();
-		ProcessBuilder pb = new ProcessBuilder(service.getScript(), task.getFacility().getName(),
-				sendTask.getDestination().getDestination(), sendTask.getDestination().getType());
+
+		ProcessBuilder pb = new ProcessBuilder(
+				service.getScript(),
+				task.getFacility().getName(),
+				sendTask.getDestination().getDestination(),
+				sendTask.getDestination().getType()
+		);
 
 		try {
+
+			// start the script and wait for results
 			super.execute(pb);
 
+			// set results
 			sendTask.setStdout(super.getStdout());
 			sendTask.setStderr(super.getStderr());
 			sendTask.setReturnCode(super.getReturnCode());
 			sendTask.setEndTime(new Date(System.currentTimeMillis()));
 
 			if (getReturnCode() != 0) {
-				log.error("SEND task failed. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
-						new Object[]{getReturnCode(), getStdout(), getStderr(), sendTask.getTask().getId()});
+
+				log.error("[{}] SEND worker failed for Task. Ret code {}, STDOUT: {}, STDERR: {}",
+						new Object[]{task.getId(), getReturnCode(), getStdout(), getStderr()});
+
 				sendTask.setStatus(ERROR);
 				throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), getReturnCode(),
 						getStdout(), getStderr());
+
 			} else {
+
+				log.info("[{}] SEND worker finished for Task. Ret code {}, STDOUT: {}, STDERR: {}",
+						new Object[]{sendTask.getTask().getId(), getReturnCode(), getStdout(), getStderr()});
+
 				sendTask.setStatus(SENT);
-				log.info("SEND task finished. Ret code {}, STDOUT: {}, STDERR: {}, Task ID: {}",
-						new Object[]{getReturnCode(), getStdout(), getStderr(), sendTask.getTask().getId()});
 				return sendTask;
+
 			}
 
 		} catch (IOException e) {
-			String errorMsg = "IOException when sending SendTask " + sendTask;
-			log.warn(errorMsg, e);
+			log.error("[{}] SEND worker failed for Task. IOException: {}.",  task.getId(), e);
 			sendTask.setStatus(ERROR);
 			throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), 2, "", e.getMessage());
 		} catch (InterruptedException e) {
-			log.warn("SendTasks {} execution interrupted.", sendTask, e);
+			log.warn("[{}] SEND worker failed for Task. Execution was interrupted {}.", task.getId(), e);
 			sendTask.setStatus(ERROR);
 			throw new TaskExecutionException(new Pair<>(task.getId(), sendTask.getDestination()), 1, "", e.getMessage());
 		}
+
 	}
 
 	public SendTask getSendTask() {
 		return sendTask;
 	}
+
 }

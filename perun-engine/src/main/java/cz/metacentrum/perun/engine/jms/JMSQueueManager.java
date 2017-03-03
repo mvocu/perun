@@ -27,6 +27,7 @@ import java.util.Properties;
  * Class used to send messages through JMS to Dispatcher and also to initiate/close the needed connection.
  *
  * @author Michal Karm Babacek
+ * @author Pavel Zlámal <zlamal@cesnet.cz>
  */
 @org.springframework.stereotype.Service(value = "jmsQueueManager")
 public class JMSQueueManager {
@@ -48,6 +49,10 @@ public class JMSQueueManager {
 	private boolean needToConnect = true;
 	private int waitTime = 0;
 
+	/**
+	 *
+	 *
+	 */
 	public void initiateConnection() {
 		while (needToConnect) {
 
@@ -132,6 +137,7 @@ public class JMSQueueManager {
 	}
 
 	public void start() {
+
 		taskExecutorMessageProcess.execute(new Runnable() {
 			public void run() {
 				while (!systemInitiated || receivingMessages) {

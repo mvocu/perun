@@ -53,7 +53,8 @@ public class EngineStarter {
 		} catch (HeadlessException e) {
 			// Doesn't matter... (We can't show splash screen on a server :-))
 		} catch (Exception e) {
-			log.error("Error: {}" , e);
+			System.out.println("Can't start Perun-Engine: " + e);
+			log.error("Can't start Perun-Engine: {}" , e);
 		}
 	}
 

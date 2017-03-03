@@ -1,8 +1,9 @@
 package cz.metacentrum.perun.engine.service;
 
 /**
- * This is the interface used to start all the threads and processes necessary for Engine.
- * 
+ * Interface of EngineManager used to start all the threads and processes necessary for Engine
+ * to propagate data from Perun to end services.
+ *
  * @author Michal Karm Babacek
  * @author Michal Voců
  * @author Pavel Zlámal <zlamal@cesnet.cz>

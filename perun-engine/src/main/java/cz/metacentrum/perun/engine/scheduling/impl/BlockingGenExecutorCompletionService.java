@@ -33,7 +33,7 @@ public class BlockingGenExecutorCompletionService implements BlockingCompletionS
 	@Override
 	public Future<Task> blockingSubmit(EngineWorker<Task> taskWorker) throws InterruptedException {
 		GenWorker genWorker = (GenWorker) taskWorker;
-		executingTasks.blockingPut(genWorker.getId(), genWorker.getTask());
+		executingTasks.blockingPut(genWorker.getTaskId(), genWorker.getTask());
 		return completionService.submit(genWorker);
 	}
 
