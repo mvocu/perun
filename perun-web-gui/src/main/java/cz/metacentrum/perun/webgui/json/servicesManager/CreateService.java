@@ -134,13 +134,16 @@ public class CreateService {
 	private JSONObject prepareJSONObject() {
 
 		// whole JSON query
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("name", new JSONString(serviceName));
+		jsonObject.put("description", new JSONString(description));
+		jsonObject.put("recurrence", new JSONNumber(recurrence));
+		jsonObject.put("script", new JSONString(script));
+		jsonObject.put("delay", new JSONNumber(delay));
+		jsonObject.put("enabled", JSONBoolean.getInstance(enabled));
+
 		JSONObject jsonQuery = new JSONObject();
-		jsonQuery.put("name", new JSONString(serviceName));
-		jsonQuery.put("description", new JSONString(description));
-		jsonQuery.put("recurrence", new JSONNumber(recurrence));
-		jsonQuery.put("script", new JSONString(script));
-		jsonQuery.put("delay", new JSONNumber(delay));
-		jsonQuery.put("enabled", JSONBoolean.getInstance(enabled));
+		jsonQuery.put("service", jsonObject);
 		return jsonQuery;
 	}
 
