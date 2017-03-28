@@ -105,7 +105,7 @@ public class FacilityStatusTabItem implements TabItem, TabItemWithUrl {
 			// on row click
 			public void update(int index, final ServiceState object, String value) {
 				// show results if any present
-				if (object.getSendTask() != null) {
+				if (object.getTask() != null) {
 					session.getTabManager().addTab(new TaskResultsTabItem(object.getTask()));
 				}
 			}
