@@ -190,6 +190,11 @@ public class SchedulingPoolImpl implements SchedulingPool {
 	}
 
 	@Override
+	public List<Task> getSchedulableTasks() {
+		return taskManager.listAllSchedulableTasks();
+	}
+
+	@Override
 	public void scheduleTask(Task task, int delayCount) {
 
 		// init session

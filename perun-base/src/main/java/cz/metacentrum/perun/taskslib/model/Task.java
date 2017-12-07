@@ -39,6 +39,7 @@ public class Task implements Serializable {
 	private TaskStatus status;
 	private boolean sourceUpdated;
 	private boolean propagationForced;
+	private String scheduleExpr;
 
 	@Override
 	public int hashCode() {
@@ -323,6 +324,7 @@ public class Task implements Serializable {
 				.append("', service='").append(service)
 				.append("', facility='").append(facility)
 				.append("', destinations='").append(destinations)
+				.append("', scheduleExpr='").append(scheduleExpr)
 				.append("']").toString();
 	}
 
@@ -340,5 +342,13 @@ public class Task implements Serializable {
 
 	public void setPropagationForced(boolean propagationForced) {
 		this.propagationForced = propagationForced;
+	}
+
+	public String getScheduleExpr() {
+		return scheduleExpr;
+	}
+
+	public void setScheduleExpr(String scheduleExpr) {
+		this.scheduleExpr = scheduleExpr;
 	}
 }

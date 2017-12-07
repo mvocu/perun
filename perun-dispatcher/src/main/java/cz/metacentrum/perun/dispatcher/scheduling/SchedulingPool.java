@@ -67,6 +67,14 @@ public interface SchedulingPool extends TaskStore {
 	void reloadTasks();
 
 	/**
+	 * Remove given Task from pool
+	 * 
+	 * @param task Task to be removed
+	 * @throws TaskStoreException When Task can not be removed
+	 */
+	Task removeTask(Task task) throws TaskStoreException;
+
+	/**
 	 * Clear all in-memory state of Tasks. Called during reloading of Tasks from DB.
 	 */
 	void clear();
@@ -103,6 +111,13 @@ public interface SchedulingPool extends TaskStore {
 	 * @return Tasks associated with Engine by its ID
 	 */
 	List<Task> getTasksForEngine(int clientID);
+
+	/**
+	 * Get all Tasks which have specified schedule expression 
+	 * 
+	 * @return List of tasks with non-null schedule expression
+	 */
+	List<Task> getSchedulableTasks();
 
 	/**
 	 * Switch all processing Tasks to ERROR if engine was restarted.
