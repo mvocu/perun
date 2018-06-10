@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:style="http://www.eclipse.org/papyrus/infra/gmfdiag/style">
+  <notation:Diagram xmi:id="_mPiRkFUDEeiUhPCE8hgd1Q" type="PapyrusUMLActivityDiagram" name="Activity Diagram" measurementUnit="Pixel">
+    <children xsi:type="notation:Shape" xmi:id="_mPiRkVUDEeiUhPCE8hgd1Q" type="Activity_Shape">
+      <children xsi:type="notation:DecorationNode" xmi:id="_mPiRklUDEeiUhPCE8hgd1Q" type="Activity_NameLabel"/>
+      <children xsi:type="notation:DecorationNode" xmi:id="_mPiRk1UDEeiUhPCE8hgd1Q" type="Activity_KeywordLabel"/>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mPiRlFUDEeiUhPCE8hgd1Q" type="Activity_ParameterCompartment">
+        <styles xsi:type="notation:SortingStyle" xmi:id="_mPiRlVUDEeiUhPCE8hgd1Q"/>
+        <styles xsi:type="notation:FilteringStyle" xmi:id="_mPiRllUDEeiUhPCE8hgd1Q"/>
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mPiRl1UDEeiUhPCE8hgd1Q"/>
+      </children>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mPiRmFUDEeiUhPCE8hgd1Q" type="Activity_PreconditionCompartment">
+        <styles xsi:type="notation:SortingStyle" xmi:id="_mPiRmVUDEeiUhPCE8hgd1Q"/>
+        <styles xsi:type="notation:FilteringStyle" xmi:id="_mPiRmlUDEeiUhPCE8hgd1Q"/>
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mPiRm1UDEeiUhPCE8hgd1Q"/>
+      </children>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mPiRnFUDEeiUhPCE8hgd1Q" type="Activity_PostconditionCompartment">
+        <styles xsi:type="notation:SortingStyle" xmi:id="_mPiRnVUDEeiUhPCE8hgd1Q"/>
+        <styles xsi:type="notation:FilteringStyle" xmi:id="_mPiRnlUDEeiUhPCE8hgd1Q"/>
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mPiRn1UDEeiUhPCE8hgd1Q"/>
+      </children>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mPiRoFUDEeiUhPCE8hgd1Q" type="Activity_ActivityNodeCompartment">
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mPiRoVUDEeiUhPCE8hgd1Q"/>
+      </children>
+      <element href="model.uml#_mHoSwFUDEeiUhPCE8hgd1Q"/>
+      <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mPiRolUDEeiUhPCE8hgd1Q"/>
+    </children>
+    <styles xsi:type="notation:StringValueStyle" xmi:id="_mPiRo1UDEeiUhPCE8hgd1Q" name="diagram_compatibility_version" stringValue="1.3.0"/>
+    <styles xsi:type="notation:DiagramStyle" xmi:id="_mPiRpFUDEeiUhPCE8hgd1Q"/>
+    <styles xsi:type="style:PapyrusDiagramStyle" xmi:id="_mPiRpVUDEeiUhPCE8hgd1Q" diagramKindId="org.eclipse.papyrus.uml.diagram.activity">
+      <owner href="model.uml#_l70EUFUDEeiUhPCE8hgd1Q"/>
+    </styles>
+    <element href="model.uml#_mHoSwFUDEeiUhPCE8hgd1Q"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_mR1XoFUDEeiUhPCE8hgd1Q" type="PapyrusUMLClassDiagram" name="Class Diagram" measurementUnit="Pixel">
+    <styles xsi:type="notation:StringValueStyle" xmi:id="_mR1XoVUDEeiUhPCE8hgd1Q" name="diagram_compatibility_version" stringValue="1.3.0"/>
+    <styles xsi:type="notation:DiagramStyle" xmi:id="_mR1XolUDEeiUhPCE8hgd1Q"/>
+    <styles xsi:type="style:PapyrusDiagramStyle" xmi:id="_mR1Xo1UDEeiUhPCE8hgd1Q" diagramKindId="org.eclipse.papyrus.uml.diagram.class">
+      <owner href="model.uml#_l70EUFUDEeiUhPCE8hgd1Q"/>
+    </styles>
+    <element href="model.uml#_l70EUFUDEeiUhPCE8hgd1Q"/>
+  </notation:Diagram>
+  <notation:Diagram xmi:id="_mW1zcFUDEeiUhPCE8hgd1Q" type="PapyrusUMLInteractionOverviewDiagram" name="Interaction Overview Diagram" measurementUnit="Pixel">
+    <children xsi:type="notation:Shape" xmi:id="_mW1zcVUDEeiUhPCE8hgd1Q" type="Activity_Shape">
+      <children xsi:type="notation:DecorationNode" xmi:id="_mW1zclUDEeiUhPCE8hgd1Q" type="Activity_NameLabel"/>
+      <children xsi:type="notation:DecorationNode" xmi:id="_mW1zc1UDEeiUhPCE8hgd1Q" type="Activity_KeywordLabel"/>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mW1zdFUDEeiUhPCE8hgd1Q" type="Activity_ParameterCompartment">
+        <styles xsi:type="notation:SortingStyle" xmi:id="_mW2agFUDEeiUhPCE8hgd1Q"/>
+        <styles xsi:type="notation:FilteringStyle" xmi:id="_mW2agVUDEeiUhPCE8hgd1Q"/>
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mW2aglUDEeiUhPCE8hgd1Q"/>
+      </children>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mW2ag1UDEeiUhPCE8hgd1Q" type="Activity_PreconditionCompartment">
+        <styles xsi:type="notation:SortingStyle" xmi:id="_mW2ahFUDEeiUhPCE8hgd1Q"/>
+        <styles xsi:type="notation:FilteringStyle" xmi:id="_mW2ahVUDEeiUhPCE8hgd1Q"/>
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mW2ahlUDEeiUhPCE8hgd1Q"/>
+      </children>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mW2ah1UDEeiUhPCE8hgd1Q" type="Activity_PostconditionCompartment">
+        <styles xsi:type="notation:SortingStyle" xmi:id="_mW2aiFUDEeiUhPCE8hgd1Q"/>
+        <styles xsi:type="notation:FilteringStyle" xmi:id="_mW2aiVUDEeiUhPCE8hgd1Q"/>
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mW2ailUDEeiUhPCE8hgd1Q"/>
+      </children>
+      <children xsi:type="notation:BasicCompartment" xmi:id="_mW2ai1UDEeiUhPCE8hgd1Q" type="Activity_ActivityNodeCompartment">
+        <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mW2ajFUDEeiUhPCE8hgd1Q"/>
+      </children>
+      <element href="model.uml#_mR7eQFUDEeiUhPCE8hgd1Q"/>
+      <layoutConstraint xsi:type="notation:Bounds" xmi:id="_mW2ajVUDEeiUhPCE8hgd1Q"/>
+    </children>
+    <styles xsi:type="notation:StringValueStyle" xmi:id="_mW2ajlUDEeiUhPCE8hgd1Q" name="diagram_compatibility_version" stringValue="1.3.0"/>
+    <styles xsi:type="notation:DiagramStyle" xmi:id="_mW2aj1UDEeiUhPCE8hgd1Q"/>
+    <styles xsi:type="style:PapyrusDiagramStyle" xmi:id="_mW2akFUDEeiUhPCE8hgd1Q" diagramKindId="org.eclipse.papyrus.uml.diagram.interactionOverview">
+      <owner href="model.uml#_l70EUFUDEeiUhPCE8hgd1Q"/>
+    </styles>
+    <element href="model.uml#_mR7eQFUDEeiUhPCE8hgd1Q"/>
+  </notation:Diagram>
+</xmi:XMI>
