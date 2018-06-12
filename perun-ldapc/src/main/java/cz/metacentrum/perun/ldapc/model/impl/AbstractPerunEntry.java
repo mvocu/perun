@@ -1,10 +1,15 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
 
+import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.ldapc.beans.LdapProperties;
+import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.model.PerunEntry;
 
 public abstract class AbstractPerunEntry implements PerunEntry {
@@ -135,4 +140,6 @@ public abstract class AbstractPerunEntry implements PerunEntry {
 			.toString();
 	}
 
+	protected void mapToContext(PerunBean bean, DirContextOperations context, List<PerunAttribute> attrs)  {
+	}
 }

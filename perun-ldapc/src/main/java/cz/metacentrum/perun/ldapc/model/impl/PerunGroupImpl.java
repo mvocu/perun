@@ -25,6 +25,7 @@ import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Member;
 import cz.metacentrum.perun.core.api.VosManager;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
+import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.model.PerunGroup;
 import cz.metacentrum.perun.ldapc.model.PerunUser;
 import cz.metacentrum.perun.ldapc.model.PerunVO;
@@ -163,9 +164,4 @@ public class PerunGroupImpl extends AbstractPerunEntry implements PerunGroup {
 		}
 	}
 	
-	private void mapToContext(DirContextOperations context, Map<String, String> values)  {
-		for(Entry<String, String> value: values.entrySet()) {
-			context.setAttributeValue(value.getKey(), value.getValue());
-		}
-	}
 }
