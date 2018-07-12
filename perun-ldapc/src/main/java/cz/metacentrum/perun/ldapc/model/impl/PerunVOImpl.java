@@ -1,102 +1,107 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.ModificationItem;
+import java.util.Arrays;
+
+import javax.naming.Name;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ldap.NameNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.DirContextOperations;
+import org.springframework.ldap.support.LdapNameBuilder;
 
+import cz.metacentrum.perun.core.api.Member;
 import cz.metacentrum.perun.core.api.Vo;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
+import cz.metacentrum.perun.ldapc.model.PerunAttribute;
+import cz.metacentrum.perun.ldapc.model.PerunUser;
 import cz.metacentrum.perun.ldapc.model.PerunVO;
-import cz.metacentrum.perun.ldapc.model.impl.AbstractPerunEntry.PerunAttributeNames;
 
-public class PerunVOImpl extends AbstractPerunEntry implements PerunVO {
+public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 
 	private final static Logger log = LoggerFactory.getLogger(PerunVOImpl.class);
+
+	@Autowired
+	private PerunUser user;
 	
-	public void createVo(Vo vo) throws InternalErrorException {
-		// Create a set of attributes for vo
-		Attributes voAttributes = new BasicAttributes();
-
-		// Create the objectclass to add
-		Attribute voObjClasses = new BasicAttribute(PerunAttributeNames.ldapAttrObjectClass);
-		voObjClasses.add(PerunAttributeNames.objectClassTop);
-		voObjClasses.add(PerunAttributeNames.objectClassOrganization);
-		voObjClasses.add(PerunAttributeNames.objectClassPerunVO);
-
-		// Add attributes
-		voAttributes.put(voObjClasses);
-		voAttributes.put(PerunAttributeNames.ldapAttrOrganization, vo.getShortName());
-		voAttributes.put(PerunAttributeNames.ldapAttrDescription, vo.getName());
-		voAttributes.put(PerunAttributeNames.ldapAttrPerunVoId, String.valueOf(vo.getId()));
-
-		// Create the entires
-		try {
-			ldapTemplate.bind(getVoDNByVoId(String.valueOf(vo.getId())), null, voAttributes);
-			log.debug("New entry created in LDAP: Vo {}.", vo);
-		} catch (NameNotFoundException e) {
-			throw new InternalErrorException(e);
-		}
+	private Iterable<PerunAttribute<Vo>> defaultVOAttributes = Arrays.asList(
+			new PerunAttributeDesc<>(
+					PerunAttributeNames.ldapAttrOrganization, 
+					PerunAttribute.REQUIRED, 
+					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getShortName()
+					),
+			new PerunAttributeDesc<>(
+					PerunAttributeNames.ldapAttrDescription, 
+					PerunAttribute.REQUIRED, 
+					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getName()
+					),
+			new PerunAttributeDesc<>(
+					PerunAttributeNames.ldapAttrPerunVoId, 
+					PerunAttribute.REQUIRED, 
+					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getId()
+					)
+			);
+	
+	public void addVo(Vo vo) throws InternalErrorException {
+		addEntry(vo);
 	}
 
 	public void deleteVo(Vo vo) throws InternalErrorException {
-		try {
-			ldapTemplate.unbind(getVoDNByVoId(String.valueOf(vo.getId())));
-			log.debug("Entry deleted from LDAP: Vo {}.", vo);
-		} catch (NameNotFoundException e) {
-			throw new InternalErrorException(e);
-		}
-	}
-
-	public void updateVo(Vo vo, ModificationItem[] modificationItems) {
-		ldapTemplate.modifyAttributes(getVoDNByVoId(String.valueOf(vo.getId())), modificationItems);
-		log.debug("Entry modified in LDAP: Vo {}.", vo);
-	}
-
-	public void updateVo(int voId, ModificationItem[] modificationItems) {
-		ldapTemplate.modifyAttributes(getVoDNByVoId(String.valueOf(voId)), modificationItems);
-		log.debug("Entry modified in LDAP: Vo {}.", voId);
+		deleteEntry(vo);
 	}
 
 	public String getVoShortName(int voId) throws InternalErrorException {
-		Object o = ldapTemplate.lookup(getVoDNByVoId(String.valueOf(voId)), new VoShortNameContextMapper());
-		String[] voShortNameInformation = (String []) o;
+		DirContextOperations voEntry = findById(String.valueOf(voId));
+		String[] voShortNameInformation = voEntry.getStringAttributes(PerunAttributeNames.ldapAttrOrganization);
 		String voShortName = null;
-		if(voShortNameInformation == null || voShortNameInformation[0] == null) throw new InternalErrorException("There is no shortName in ldap for vo with id=" + voId);
-		if(voShortNameInformation.length != 1) throw new InternalErrorException("There is not exactly one short name of vo with id=" +  voId + " in ldap. Count of shortnames is " + voShortNameInformation.length);
+		if(voShortNameInformation == null || voShortNameInformation[0] == null) 
+			throw new InternalErrorException("There is no shortName in ldap for vo with id=" + voId);
+		if(voShortNameInformation.length != 1) 
+			throw new InternalErrorException("There is not exactly one short name of vo with id=" +  voId + " in ldap. Count of shortnames is " + voShortNameInformation.length);
 		voShortName = voShortNameInformation[0];
 		return voShortName;
 	}
 
-	/**
-	 * Get Vo DN using VoId.
-	 *
-	 * @param voId vo id
-	 * @return DN in String
-	 */
-	protected String getVoDNByVoId(String voId) {
-		return new StringBuffer()
-			.append(PerunAttributeNames.ldapAttrPerunVoId + "=")
-			.append(voId)
-			.toString();
+	@Override
+	public void addMemberToVO(int voId, Member member) {
+		DirContextOperations voEntry = findById(String.valueOf(voId));
+		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
+		voEntry.addAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		ldapTemplate.update(voEntry);
+		DirContextOperations userEntry = findByDN(memberDN);
+		userEntry.addAttributeValue(PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
+		ldapTemplate.update(userEntry);
 	}
 
-	/**
-	 * Get Vo DN using Vo shortName (o).
-	 *
-	 * @param voShortName the value of attribute 'o' in ldap
-	 * @return DN in String
-	 */
-	protected String getVoDNByShortName(String voShortName) {
-		return new StringBuffer()
-			.append(PerunAttributeNames.ldapAttrOrganization + "=")
-			.append(voShortName)
-			.toString();
+	@Override
+	public void removeMemberFromVO(int voId, Member member) {
+		DirContextOperations voEntry = findById(String.valueOf(voId));
+		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
+		voEntry.removeAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		ldapTemplate.update(voEntry);
+		DirContextOperations userEntry = findByDN(memberDN);
+		userEntry.removeAttributeValue(PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
+		ldapTemplate.update(userEntry);
+	}
+
+	@Override
+	protected Name buildDN(Vo bean) {
+		return getEntryDN(String.valueOf(bean.getId()));
+	}
+
+	@Override
+	protected void mapToContext(Vo bean, DirContextOperations context) throws InternalErrorException {
+		context.setAttributeValues("objectclass", Arrays.asList(
+				PerunAttributeNames.objectClassPerunVO,
+				PerunAttributeNames.objectClassOrganization).toArray());
+		mapToContext(bean, context, defaultVOAttributes);
+	}
+
+	@Override
+	public Name getEntryDN(String ...voId) {
+		return LdapNameBuilder.newInstance(getBaseDN())
+				.add(PerunAttributeNames.ldapAttrPerunVoId, voId[0])
+				.build();
 	}
 
 }

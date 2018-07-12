@@ -8,7 +8,7 @@ import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Member;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 
-public interface PerunGroup extends PerunEntry {
+public interface PerunGroup extends PerunEntry<Group> {
 
 	/**
 	 * Add group to LDAP.
@@ -28,14 +28,6 @@ public interface PerunGroup extends PerunEntry {
 	public void removeGroup(Group group) throws InternalErrorException;
 
 	/**
-	 * Update group in LDAP
-	 *
-	 * @param group new state of group in perun
-	 * @param modificationItems attributes of groups which need to be modified
-	 */
-	public void updateGroup(Group group, ModificationItem[] modificationItems);
-
-	/**
 	 * The same behavior like method 'addGroup'.
 	 * Only call method 'addGroup' with group
 	 *
@@ -46,15 +38,6 @@ public interface PerunGroup extends PerunEntry {
 	 */
 	public void addGroupAsSubGroup(Group group, Group parentGroup) throws InternalErrorException;
 
-	/**
-	 * Return true if group attribute with ldapAttributeName in ldap exists - it is set for group.
-	 *
-	 * @param group group in perun
-	 * @param ldapAttributeName name of group ldap attribute
-	 * @return true if attribute in ldap exists, false if not
-	 * @throws InternalErrorException if ldapAttributeName is null
-	 */
-	public boolean groupAttributeExist(Group group, String ldapAttributeName) throws InternalErrorException;
 
 	//-----------------------------MEMBER METHODS---------------------------------
 	/**
@@ -96,6 +79,7 @@ public interface PerunGroup extends PerunEntry {
 	 * @param voId vo Id
 	 * @return list of uniqueMember values
 	 */
+	@Deprecated
 	public List<String> getAllUniqueMembersInGroup(int groupId, int voId);
 
 }

@@ -1,18 +1,21 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
 
-import java.util.List;
+import javax.naming.Name;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.NameNotFoundException;
+import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
 
 import cz.metacentrum.perun.core.api.PerunBean;
+import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.beans.LdapProperties;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.model.PerunEntry;
 
-public abstract class AbstractPerunEntry implements PerunEntry {
+public abstract class AbstractPerunEntry<T extends PerunBean> implements PerunEntry<T> {
 
 	protected interface PerunAttributeNames {
 
@@ -94,52 +97,87 @@ public abstract class AbstractPerunEntry implements PerunEntry {
 	@Autowired
 	protected LdapProperties ldapProperties;
 
-	/**
-	 * Get Group DN using VoId and GroupId.
-	 *
-	 * @param voId vo id
-	 * @param groupId group id
-	 * @return DN in String
+	
+	/* (non-Javadoc)
+	 * @see cz.metacentrum.perun.ldapc.model.impl.PerunEntry#addEntry(cz.metacentrum.perun.core.api.PerunBean)
 	 */
-	protected String getGroupDN(String voId, String groupId) {
-		return new StringBuffer()
-			.append(PerunAttributeNames.ldapAttrPerunGroupId + "=")
-			.append(groupId)
-			.append("," + PerunAttributeNames.ldapAttrPerunVoId + "=")
-			.append(voId)
-			.toString();
+	@Override
+	public void addEntry(T bean) throws InternalErrorException {
+		DirContextAdapter context = new DirContextAdapter(buildDN(bean));
+		mapToContext(bean, context);
+		ldapTemplate.bind(context);
+	}
+	
+	/* (non-Javadoc)
+	 * @see cz.metacentrum.perun.ldapc.model.impl.PerunEntry#modifyEntry(cz.metacentrum.perun.core.api.PerunBean)
+	 */
+	@Override
+	public void modifyEntry(T bean) throws InternalErrorException {
+	
+	}
+	
+	/* (non-Javadoc)
+	 * @see cz.metacentrum.perun.ldapc.model.impl.PerunEntry#deleteEntry(cz.metacentrum.perun.core.api.PerunBean)
+	 */
+	@Override
+	public void deleteEntry(T bean) throws InternalErrorException {
+		try {
+			ldapTemplate.unbind(buildDN(bean));
+		} catch (NameNotFoundException e) {
+			throw new InternalErrorException(e);
+		}
+	}
+	
+
+	@Override
+	public DirContextOperations findByDN(Name dn) {
+		return ldapTemplate.lookupContext(dn);
 	}
 
-	/**
-	 * Get Resource DN using VoId, FacilityId and ResourceId.
-	 *
-	 * @param voId vo id
-	 * @param resourceId group id
-	 * @return DN in String
-	 */
-	protected String getResourceDN(String voId, String resourceId) {
-		return new StringBuffer()
-			.append(PerunAttributeNames.ldapAttrPerunResourceId + "=")
-			.append(resourceId)
-			.append("," + PerunAttributeNames.ldapAttrPerunVoId + "=")
-			.append(voId)
-			.toString();
+
+	@Override
+	public DirContextOperations findById(String ...id) {
+		return ldapTemplate.lookupContext(getEntryDN(id));
 	}
 
-	/**
-	 * Get User DN using user id.
-	 *
-	 * @param userId user id
-	 * @return DN in String
-	 */
-	protected String getUserDN(String userId) {
-		return new StringBuffer()
-			.append(PerunAttributeNames.ldapAttrPerunUserId + "=")
-			.append(userId)
-			.append("," + PerunAttributeNames.organizationalUnitPeople)
-			.toString();
+	abstract public Name getEntryDN(String ...id);
+	
+	@Override
+	public Boolean entryAttributeExists(T bean, String ldapAttributeName) { 
+		DirContextOperations entry = findByDN(buildDN(bean));
+		String value = entry.getStringAttribute(ldapAttributeName);
+		return (value != null);
 	}
 
-	protected void mapToContext(PerunBean bean, DirContextOperations context, List<PerunAttribute> attrs)  {
+	@Override
+	public Boolean entryExists(T bean) {
+		try {
+			DirContextOperations entry = findByDN(buildDN(bean));
+		} catch (NameNotFoundException e) {
+			return false;
+		}
+		return true; 
 	}
+	
+	protected String getBaseDN() {
+		return ldapProperties.getLdapBase();
+	}
+	
+	abstract protected Name buildDN(T bean);
+	
+	abstract protected void mapToContext(T bean, DirContextOperations context) throws InternalErrorException;
+	
+	protected void mapToContext(T bean, DirContextOperations context, Iterable<PerunAttribute<T>> attrs) throws InternalErrorException {
+		for(PerunAttribute<T> attr: attrs) {
+			if(attr.isRequired() || attr.hasValue(bean)) {
+				if(attr.isMultiValued()) {
+					context.setAttributeValues(attr.getName(), attr.getValues(bean));
+				} else {
+					context.setAttributeValue(attr.getName(), attr.getValue(bean));
+				}
+			}
+		}
+	}
+
+
 }
