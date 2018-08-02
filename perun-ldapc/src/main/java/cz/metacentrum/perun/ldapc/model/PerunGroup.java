@@ -70,7 +70,7 @@ public interface PerunGroup extends PerunEntry<Group> {
 	 * @param group the group
 	 * @return true if attribute 'memberOf' exists for this group, false if not
 	 */
-	public boolean isAlreadyMember(Member member, Group group);
+	public boolean isMember(Member member, Group group);
 
 	/**
 	 * Get all 'uniqueMember' values of group in LDAP.

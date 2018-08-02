@@ -40,7 +40,7 @@ import javax.naming.directory.*;
 import javax.naming.directory.Attribute;
 
 @org.springframework.stereotype.Service(value = "eventProcessor")
-public class EventProcessorImpl implements EventProcessor, Runnable {
+public class EventProcessorImpl implements Runnable {
 
 	//Autowired variables
 	@Autowired

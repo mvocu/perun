@@ -102,6 +102,8 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name groupDN = buildDN(group);
 		DirContextOperations groupEntry = findByDN(groupDN);
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
+		if(isMember(groupEntry, memberDN)) return;
+		
 		groupEntry.addAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
 		ldapTemplate.update(groupEntry);
 		
@@ -122,6 +124,8 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name groupDN = buildDN(group);
 		DirContextOperations groupEntry = findByDN(groupDN);
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
+		if(!isMember(groupEntry, memberDN)) return;
+		
 		groupEntry.removeAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
 		ldapTemplate.update(groupEntry);
 
@@ -136,19 +140,10 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		ldapTemplate.update(userEntry);
 	}
 
-	public boolean isAlreadyMember(Member member, Group group) {
+	public boolean isMember(Member member, Group group) {
 		DirContextOperations groupEntry = findByDN(buildDN(group));
 		Name userDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		String[] memberOfInformation = groupEntry.getStringAttributes(PerunAttributeNames.ldapAttrUniqueMember);
-		if(memberOfInformation != null) {
-			for(String s: memberOfInformation) {
-				Name memberDN = LdapNameBuilder.newInstance(s).build();
-				if(memberDN.compareTo(userDN) == 0)
-					// TODO should probably cross-check the user.memberOf attribute
-					return true;
-			}
-		}
-		return false;
+		return isMember(groupEntry, userDN);
 	}
 
 
@@ -194,4 +189,16 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 				.build();
 	}
 
+	private boolean isMember(DirContextOperations groupEntry, Name userDN) {
+		String[] memberOfInformation = groupEntry.getStringAttributes(PerunAttributeNames.ldapAttrUniqueMember);
+		if(memberOfInformation != null) {
+			for(String s: memberOfInformation) {
+				Name memberDN = LdapNameBuilder.newInstance(s).build();
+				if(memberDN.compareTo(userDN) == 0)
+					// TODO should probably cross-check the user.memberOf attribute
+					return true;
+			}
+		}
+		return false;
+	}
 }
