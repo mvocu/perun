@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.metacentrum.perun.ldapc.processor.EventProcessor;
+import cz.metacentrum.perun.ldapc.processor.EventDispatcher;
 import cz.metacentrum.perun.ldapc.service.LdapcManager;
 import cz.metacentrum.perun.rpclib.api.RpcCaller;
 
@@ -15,11 +15,11 @@ public class LdapcManagerImpl implements LdapcManager {
 
 	private Thread eventProcessorThread;
 	@Autowired
-	private EventProcessor eventProcessor;
+	private EventDispatcher eventDispatcher;
 	private RpcCaller rpcCaller;
 
 	public void startProcessingEvents() {
-		eventProcessorThread = new Thread(eventProcessor);
+		eventProcessorThread = new Thread(eventDispatcher);
 		eventProcessorThread.start();
 
 		log.debug("Event processor thread started.");
