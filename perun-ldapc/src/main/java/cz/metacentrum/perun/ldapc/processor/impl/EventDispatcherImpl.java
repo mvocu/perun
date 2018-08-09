@@ -2,6 +2,8 @@ package cz.metacentrum.perun.ldapc.processor.impl;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -11,9 +13,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.metacentrum.perun.auditparser.AuditParser;
+import cz.metacentrum.perun.core.api.Attribute;
+import cz.metacentrum.perun.core.api.AttributeDefinition;
 import cz.metacentrum.perun.core.api.AuditMessage;
+import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Group;
+import cz.metacentrum.perun.core.api.Member;
 import cz.metacentrum.perun.core.api.Pair;
 import cz.metacentrum.perun.core.api.PerunBean;
+import cz.metacentrum.perun.core.api.Resource;
+import cz.metacentrum.perun.core.api.User;
+import cz.metacentrum.perun.core.api.UserExtSource;
+import cz.metacentrum.perun.core.api.Vo;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.impl.AuditerConsumer;
 import cz.metacentrum.perun.ldapc.beans.LdapProperties;
@@ -22,6 +33,7 @@ import cz.metacentrum.perun.ldapc.processor.EventProcessor;
 import cz.metacentrum.perun.ldapc.service.LdapcManager;
 import cz.metacentrum.perun.rpclib.Rpc;
 
+@org.springframework.stereotype.Service(value = "eventDispatcher")
 public class EventDispatcherImpl implements EventDispatcher, Runnable {
 
 	private final static Logger log = LoggerFactory.getLogger(EventDispatcherImpl.class);
@@ -39,12 +51,144 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 
 	private class MessageBeansImpl implements MessageBeans {
 
-		@Override
-		public void addBean(PerunBean p) {
-			
-		}
+		int beanCount = 0;
+		int presentBeans = 0;
 		
+		private Group group, parentGroup;
+		private Member member;
+		private Vo vo;
+		private User user, specificUser;
+		private Attribute attribute;
+		private AttributeDefinition attributeDef;
+		private UserExtSource userExtSource;
+		private Resource resource;
+		private Facility facility;
+
+		@Override
+		public void addBean(PerunBean perunBean) throws InternalErrorException {
+			if(perunBean instanceof Group) {
+				if(this.group == null) this.group = (Group) perunBean;
+				else this.parentGroup = (Group) perunBean;
+				presentBeans |= GROUP_F;
+			} else if(perunBean instanceof Member) {
+				if(this.member == null) this.member = (Member) perunBean;
+				else throw new InternalErrorException("More than one member come to method parseMessages!");
+				presentBeans |= MEMBER_F;
+			} else if(perunBean instanceof Vo) {
+				if(this.vo == null) this.vo = (Vo) perunBean;
+				else throw new InternalErrorException("More than one vo come to method parserMessages!");
+				presentBeans |= VO_F;
+			} else if(perunBean instanceof User) {
+				User u = (User) perunBean;
+				if(u.isServiceUser() || u.isSponsoredUser()) {
+					if(this.specificUser == null) this.specificUser = u;
+					else throw new InternalErrorException("More than one specificUser come to method parseMessages!");
+				} else {
+					if(this.user == null) this.user = u;
+					else throw new InternalErrorException("More than one user come to method parseMessages!");
+				}
+				presentBeans |= USER_F;
+			} else if(perunBean instanceof AttributeDefinition && perunBean instanceof cz.metacentrum.perun.core.api.Attribute) {
+				if(this.attribute == null) this.attribute = (cz.metacentrum.perun.core.api.Attribute) perunBean;
+				else throw new InternalErrorException("More than one attribute come to method parseMessages!");
+				presentBeans |= ATTRIBUTE_F;
+			} else if(perunBean instanceof AttributeDefinition ) {
+				if(this.attributeDef == null) this.attributeDef = (AttributeDefinition) perunBean;
+				else throw new InternalErrorException("More than one attribute come to method parseMessages!");
+				presentBeans |= ATTRIBUTEDEF_F;
+			} else if(perunBean instanceof UserExtSource) {
+				if(this.userExtSource == null) this.userExtSource = (UserExtSource) perunBean;
+				else throw new InternalErrorException("More than one userExtSource come to method parseMessages!");
+				presentBeans |= USEREXTSOURCE_F;
+			} else if(perunBean instanceof Resource) {
+				if(this.resource == null) this.resource = (Resource) perunBean;
+				else throw new InternalErrorException("More than one Resource come to method parseMessages!");
+				presentBeans |= RESOURCE_F;
+			} else if(perunBean instanceof Facility) {
+				if(this.facility == null) this.facility = (Facility) perunBean;
+				else throw new InternalErrorException("More than one Facility come to method parseMessages!");
+				presentBeans |= FACILITY_F;
+			}
+			beanCount++;
+		}
+
+		@Override
+		public int getPresentBeansMask() {
+			return presentBeans;
+		}
+
+		@Override
+		public int getBeansCount() {
+			return beanCount;
+		}
+
+		@Override
+		public Collection<Integer> getPresentBeansFlags() {
+			Collection<Integer> result = new ArrayList<Integer>(10);
+			int remain = presentBeans;
+			for(int mask = 1; remain > 0; mask = mask << 1, remain = remain >> 1) {
+				if((remain & 1) == 1) result.add(mask);
+			}
+			return result;
+		}
+
+		@Override
+		public Group getGroup() {
+			return group;
+		}
+
+		@Override
+		public Group getParentGroup() {
+			return parentGroup;
+		}
+
+		@Override
+		public Member getMember() {
+			return member;
+		}
+
+		@Override
+		public Vo getVo() {
+			return vo;
+		}
+
+		@Override
+		public User getUser() {
+			return user;
+		}
+
+		@Override
+		public User getSpecificUser() {
+			return specificUser;
+		}
+
+		@Override
+		public Attribute getAttribute() {
+			return attribute;
+		}
+
+		@Override
+		public AttributeDefinition getAttributeDef() {
+			return attributeDef;
+		}
+
+		@Override
+		public UserExtSource getUserExtSource() {
+			return userExtSource;
+		}
+
+		@Override
+		public Resource getResource() {
+			return resource;
+		}
+
+		@Override
+		public Facility getFacility() {
+			return facility;
+		}
+
 	}
+	
 	
 	@Override
 	public void run() {

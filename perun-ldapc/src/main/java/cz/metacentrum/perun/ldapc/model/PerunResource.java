@@ -22,4 +22,5 @@ public interface PerunResource extends PerunEntry<Resource> {
 	 */
 	public void addResource(Resource resource, String entityID) throws InternalErrorException;
 
+	public void updateResource(Resource resource) throws InternalErrorException; 
 }

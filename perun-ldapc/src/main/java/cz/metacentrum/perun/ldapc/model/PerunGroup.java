@@ -27,6 +27,8 @@ public interface PerunGroup extends PerunEntry<Group> {
 	 */
 	public void removeGroup(Group group) throws InternalErrorException;
 
+	public void updateGroup(Group group) throws InternalErrorException;
+	
 	/**
 	 * The same behavior like method 'addGroup'.
 	 * Only call method 'addGroup' with group

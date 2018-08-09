@@ -25,7 +25,8 @@ public interface PerunVO extends PerunEntry<Vo> {
 	 */
 	public void deleteVo(Vo vo) throws InternalErrorException;
 
-
+	public void updateVo(Vo vo) throws InternalErrorException; 
+	
 	/**
 	 * Find Vo in LDAP and return shortName of this Vo.
 	 *

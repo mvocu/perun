@@ -27,7 +27,8 @@ public interface PerunUser extends PerunEntry<User> {
 	 */
 	public void deleteUser(User user) throws InternalErrorException;
 
-
+	public void updateUser(User user) throws InternalErrorException;
+	
 	/**
 	 * Return true if user attribute 'password' in ldap already exists.
 	 *

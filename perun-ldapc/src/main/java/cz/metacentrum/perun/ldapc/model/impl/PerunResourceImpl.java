@@ -22,27 +22,27 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 
 	private Iterable<PerunAttribute<Resource>> defaultResourceAttributes = Arrays.asList(
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrCommonName, 
+					PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getName()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunResourceId, 
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunResourceId, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getId()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunFacilityId, 
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunFacilityId, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getFacilityId()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunVoId, 
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getVoId()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrDescription, 
+					PerunAttribute.PerunAttributeNames.ldapAttrDescription, 
 					PerunAttribute.OPTIONAL, 
 					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getDescription()
 					)
@@ -53,7 +53,7 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 		mapToContext(resource, context);
 		// get info about entityID attribute if exists
 		if(entityID != null) 
-			context.setAttributeValue(PerunAttributeNames.ldapAttrEntityID, entityID);
+			context.setAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrEntityID, entityID);
 		try {
 			ldapTemplate.bind(context);
 		} catch (NameNotFoundException e) {
@@ -67,10 +67,17 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 
 
 	@Override
+	public void updateResource(Resource resource) throws InternalErrorException {
+		modifyEntry(resource, defaultResourceAttributes, 
+				PerunAttribute.PerunAttributeNames.ldapAttrCommonName,
+				PerunAttribute.PerunAttributeNames.ldapAttrDescription);
+	}
+
+	@Override
 	public Name getEntryDN(String... id) {
 		return LdapNameBuilder.newInstance(getBaseDN())
-				.add(PerunAttributeNames.ldapAttrPerunVoId, id[0])
-				.add(PerunAttributeNames.ldapAttrPerunResourceId, id[1])
+				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, id[0])
+				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunResourceId, id[1])
 				.build();
 	}
 
@@ -81,7 +88,7 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 
 	@Override
 	protected void mapToContext(Resource bean, DirContextOperations context) throws InternalErrorException {
-		context.setAttributeValue("objectclass", PerunAttributeNames.objectClassPerunResource);
+		context.setAttributeValue("objectclass", PerunAttribute.PerunAttributeNames.objectClassPerunResource);
 		mapToContext(bean, context, defaultResourceAttributes);
 	}
 

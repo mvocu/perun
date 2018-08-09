@@ -26,17 +26,17 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	
 	private Iterable<PerunAttribute<Vo>> defaultVOAttributes = Arrays.asList(
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrOrganization, 
+					PerunAttribute.PerunAttributeNames.ldapAttrOrganization, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getShortName()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrDescription, 
+					PerunAttribute.PerunAttributeNames.ldapAttrDescription, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getName()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunVoId, 
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getId()
 					)
@@ -50,9 +50,14 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 		deleteEntry(vo);
 	}
 
+	@Override
+	public void updateVo(Vo vo) throws InternalErrorException {
+		modifyEntry(vo, defaultVOAttributes, PerunAttribute.PerunAttributeNames.ldapAttrDescription);
+	}
+
 	public String getVoShortName(int voId) throws InternalErrorException {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
-		String[] voShortNameInformation = voEntry.getStringAttributes(PerunAttributeNames.ldapAttrOrganization);
+		String[] voShortNameInformation = voEntry.getStringAttributes(PerunAttribute.PerunAttributeNames.ldapAttrOrganization);
 		String voShortName = null;
 		if(voShortNameInformation == null || voShortNameInformation[0] == null) 
 			throw new InternalErrorException("There is no shortName in ldap for vo with id=" + voId);
@@ -66,10 +71,10 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	public void addMemberToVO(int voId, Member member) {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		voEntry.addAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		voEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
 		ldapTemplate.update(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.addAttributeValue(PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
+		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
 		ldapTemplate.update(userEntry);
 	}
 
@@ -77,10 +82,10 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	public void removeMemberFromVO(int voId, Member member) {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		voEntry.removeAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		voEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
 		ldapTemplate.update(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.removeAttributeValue(PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
+		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
 		ldapTemplate.update(userEntry);
 	}
 
@@ -92,15 +97,15 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	@Override
 	protected void mapToContext(Vo bean, DirContextOperations context) throws InternalErrorException {
 		context.setAttributeValues("objectclass", Arrays.asList(
-				PerunAttributeNames.objectClassPerunVO,
-				PerunAttributeNames.objectClassOrganization).toArray());
+				PerunAttribute.PerunAttributeNames.objectClassPerunVO,
+				PerunAttribute.PerunAttributeNames.objectClassOrganization).toArray());
 		mapToContext(bean, context, defaultVOAttributes);
 	}
 
 	@Override
 	public Name getEntryDN(String ...voId) {
 		return LdapNameBuilder.newInstance(getBaseDN())
-				.add(PerunAttributeNames.ldapAttrPerunVoId, voId[0])
+				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, voId[0])
 				.build();
 	}
 

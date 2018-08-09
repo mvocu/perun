@@ -11,7 +11,7 @@ public interface PerunEntry<T extends PerunBean> {
 
 	void addEntry(T bean) throws InternalErrorException;
 
-	void modifyEntry(T bean) throws InternalErrorException;
+	void modifyEntry(T bean, Iterable<PerunAttribute<T>> attrs, String... attrNames) throws InternalErrorException;
 
 	void deleteEntry(T bean) throws InternalErrorException;
 

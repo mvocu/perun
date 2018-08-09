@@ -20,22 +20,22 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 
 	private Iterable<PerunAttribute<User>> defaultUserAttributes = Arrays.asList(
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrEntryStatus, 
+					PerunAttribute.PerunAttributeNames.ldapAttrEntryStatus, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<User>)user -> "active"
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrSurname, 
+					PerunAttribute.PerunAttributeNames.ldapAttrSurname, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.getLastName()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrGivenName, 
+					PerunAttribute.PerunAttributeNames.ldapAttrGivenName, 
 					PerunAttribute.OPTIONAL, 
 					(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.getFirstName()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrCommonName, 
+					PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<User>)user -> {
 						String firstName = user.getFirstName();
@@ -49,17 +49,17 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 					}
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunUserId, 
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunUserId, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.getId()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrIsServiceUser, 
+					PerunAttribute.PerunAttributeNames.ldapAttrIsServiceUser, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.isServiceUser() ? "1" : "0"
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrIsSponsoredUser, 
+					PerunAttribute.PerunAttributeNames.ldapAttrIsSponsoredUser, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.isSponsoredUser() ? "1" : "0"
 					)
@@ -73,8 +73,16 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 		deleteEntry(user);
 	}
 
+	@Override
+	public void updateUser(User user) throws InternalErrorException {
+		modifyEntry(user, defaultUserAttributes,
+				PerunAttribute.PerunAttributeNames.ldapAttrSurname,
+				PerunAttribute.PerunAttributeNames.ldapAttrCommonName,
+				PerunAttribute.PerunAttributeNames.ldapAttrGivenName);
+	}
+
 	public boolean userPasswordExists(User user) {
-		return entryAttributeExists(user, PerunAttributeNames.ldapAttrUserPassword);
+		return entryAttributeExists(user, PerunAttribute.PerunAttributeNames.ldapAttrUserPassword);
 	}
 
 	@Override
@@ -84,13 +92,13 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 
 	@Override
 	protected void mapToContext(User bean, DirContextOperations context) throws InternalErrorException {
-		context.setAttributeValues(PerunAttributeNames.ldapAttrObjectClass,
-				Arrays.asList(PerunAttributeNames.objectClassPerson,
-						PerunAttributeNames.objectClassOrganizationalPerson,
-						PerunAttributeNames.objectClassInetOrgPerson,
-						PerunAttributeNames.objectClassPerunUser,
-						PerunAttributeNames.objectClassTenOperEntry,
-						PerunAttributeNames.objectClassInetUser).toArray());
+		context.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrObjectClass,
+				Arrays.asList(PerunAttribute.PerunAttributeNames.objectClassPerson,
+						PerunAttribute.PerunAttributeNames.objectClassOrganizationalPerson,
+						PerunAttribute.PerunAttributeNames.objectClassInetOrgPerson,
+						PerunAttribute.PerunAttributeNames.objectClassPerunUser,
+						PerunAttribute.PerunAttributeNames.objectClassTenOperEntry,
+						PerunAttribute.PerunAttributeNames.objectClassInetUser).toArray());
 		mapToContext(bean, context, defaultUserAttributes);
 	}
 
@@ -103,8 +111,8 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 	@Override
 	public Name getEntryDN(String ...userId) {
 		return LdapNameBuilder.newInstance(getBaseDN())
-				.add(PerunAttributeNames.organizationalUnitPeople)
-				.add(PerunAttributeNames.ldapAttrPerunUserId, userId[0])
+				.add(PerunAttribute.PerunAttributeNames.organizationalUnitPeople)
+				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunUserId, userId[0])
 				.build();
 	}
 

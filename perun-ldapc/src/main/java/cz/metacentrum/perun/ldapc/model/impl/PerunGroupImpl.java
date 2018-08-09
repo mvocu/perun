@@ -36,38 +36,38 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 
 	private Iterable<PerunAttribute<Group>> defaultGroupAttributes = Arrays.asList(
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrCommonName, 
+					PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
 					PerunAttribute.REQUIRED, 
 					(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getName()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunGroupId, 
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunGroupId, 
 					PerunAttribute.REQUIRED,
 					(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getId()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunUniqueGroupName,
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunUniqueGroupName,
 					PerunAttributeDesc.REQUIRED,
 					(PerunAttributeDesc.SingleValueExtractor<Group>)group -> vo.getVoShortName(group.getVoId()) + ":" + group.getName()
 					),					
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunVoId,
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId,
 					PerunAttributeDesc.REQUIRED,
 					(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getVoId()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrDescription,
+					PerunAttribute.PerunAttributeNames.ldapAttrDescription,
 					PerunAttributeDesc.OPTIONAL,
 					(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getDescription()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunParentGroup,
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroup,
 					PerunAttributeDesc.OPTIONAL,
 					(PerunAttributeDesc.SingleValueExtractor<Group>)group -> this.getEntryDN(String.valueOf(group.getParentGroupId()))
 					// PerunAttributeNames.ldapAttrPerunGroupId + "=" + group.getParentGroupId().toString() + "," + PerunAttributeNames.ldapAttrPerunVoId + "=" + group.getVoId() + "," + ldapProperties.getLdapBase()
 					),
 			new PerunAttributeDesc<>(
-					PerunAttributeNames.ldapAttrPerunParentGroupId,
+					PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroupId,
 					PerunAttributeDesc.OPTIONAL,
 					(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getParentGroupId().toString()
 					)
@@ -86,15 +86,23 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 	public void removeGroup(Group group) throws InternalErrorException {
 		Name groupDN = buildDN(group);
 		DirContextOperations groupEntry = findByDN(groupDN);
-		String[] uniqueMembers = groupEntry.getStringAttributes(PerunAttributeNames.ldapAttrUniqueMember);
+		String[] uniqueMembers = groupEntry.getStringAttributes(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember);
 		if(uniqueMembers != null)
 			for(String memberDN: uniqueMembers) {
 				DirContextOperations memberEntry = user.findByDN(LdapNameBuilder.newInstance(memberDN).build());
-				memberEntry.removeAttributeValue(PerunAttributeNames.ldapAttrMemberOf, groupDN);
+				memberEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
 				ldapTemplate.update(memberEntry);
 			}
 		
 		deleteEntry(group);
+	}
+
+	@Override
+	public void updateGroup(Group group) throws InternalErrorException {
+		modifyEntry(group, defaultGroupAttributes,
+				PerunAttribute.PerunAttributeNames.ldapAttrCommonName,
+				PerunAttribute.PerunAttributeNames.ldapAttrPerunUniqueGroupName,
+				PerunAttribute.PerunAttributeNames.ldapAttrDescription);
 	}
 
 	public void addMemberToGroup(Member member, Group group) throws InternalErrorException {
@@ -104,7 +112,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
 		if(isMember(groupEntry, memberDN)) return;
 		
-		groupEntry.addAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		groupEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
 		ldapTemplate.update(groupEntry);
 		
 		//Add member to vo if this group is membersGroup
@@ -115,7 +123,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		//Add group info to member
 		// user->add('memberOf' => groupDN)
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.addAttributeValue(PerunAttributeNames.ldapAttrMemberOf, groupDN);
+		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
 		ldapTemplate.update(userEntry);
 	}
 
@@ -126,7 +134,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
 		if(!isMember(groupEntry, memberDN)) return;
 		
-		groupEntry.removeAttributeValue(PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		groupEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
 		ldapTemplate.update(groupEntry);
 
 		//Remove member from vo if this group is membersGroup
@@ -136,7 +144,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		}
 		//Remove group info from member
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.removeAttributeValue(PerunAttributeNames.ldapAttrMemberOf, groupDN);
+		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
 		ldapTemplate.update(userEntry);
 	}
 
@@ -152,7 +160,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Pattern userIdPattern = Pattern.compile("[0-9]+");
 		List<String> uniqueMembers = new ArrayList<String>();
 		DirContextOperations groupEntry = findById(String.valueOf(groupId), String.valueOf(voId));
-		String[] uniqueGroupInformation = groupEntry.getStringAttributes(PerunAttributeNames.ldapAttrUniqueMember);
+		String[] uniqueGroupInformation = groupEntry.getStringAttributes(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember);
 		if(uniqueGroupInformation != null) {
 			for(String s: uniqueGroupInformation) {
 				Matcher userIdMatcher = userIdPattern.matcher(s);
@@ -165,7 +173,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 
 	@Override
 	protected void mapToContext(Group group, DirContextOperations context) throws InternalErrorException {
-		context.setAttributeValue("objectclass", PerunAttributeNames.objectClassPerunGroup);
+		context.setAttributeValue("objectclass", PerunAttribute.PerunAttributeNames.objectClassPerunGroup);
 		mapToContext(group, context, defaultGroupAttributes);
 	}
 
@@ -184,13 +192,13 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 	@Override
 	public Name getEntryDN(String ...id) {
 		return LdapNameBuilder.newInstance(getBaseDN())
-				.add(PerunAttributeNames.ldapAttrPerunVoId, id[0])
-				.add(PerunAttributeNames.ldapAttrPerunGroupId, id[1])
+				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, id[0])
+				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunGroupId, id[1])
 				.build();
 	}
 
 	private boolean isMember(DirContextOperations groupEntry, Name userDN) {
-		String[] memberOfInformation = groupEntry.getStringAttributes(PerunAttributeNames.ldapAttrUniqueMember);
+		String[] memberOfInformation = groupEntry.getStringAttributes(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember);
 		if(memberOfInformation != null) {
 			for(String s: memberOfInformation) {
 				Name memberDN = LdapNameBuilder.newInstance(s).build();
