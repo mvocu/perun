@@ -33,8 +33,29 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					<property name="beansCondition">
 						<list>
 							<value>cz.metacentrum.perun.core.api.Resource</value>
+						</list>
+					</property>
+					<property name="pattern" value=" deleted.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.Group</value>
+						</list>
+					</property>
+					<property name="pattern" value=" deleted.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.Vo</value>
+						</list>
+					</property>
+					<property name="pattern" value=" deleted.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.User</value>
 						</list>
 					</property>
@@ -51,8 +72,29 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					<property name="beansCondition">
 						<list>
 							<value>cz.metacentrum.perun.core.api.Resource</value>
+						</list>
+					</property>
+					<property name="pattern" value=" created.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.Group</value>
+						</list>
+					</property>
+					<property name="pattern" value=" created.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.Vo</value>
+						</list>
+					</property>
+					<property name="pattern" value=" created.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.User</value>
 						</list>
 					</property>
@@ -69,8 +111,29 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					<property name="beansCondition">
 						<list>
 							<value>cz.metacentrum.perun.core.api.Resource</value>
+						</list>
+					</property>
+					<property name="pattern" value=" updated.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.Group</value>
+						</list>
+					</property>
+					<property name="pattern" value=" updated.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.Vo</value>
+						</list>
+					</property>
+					<property name="pattern" value=" updated.$" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.User</value>
 						</list>
 					</property>

@@ -13,7 +13,6 @@ import cz.metacentrum.perun.ldapc.model.PerunUser;
 import cz.metacentrum.perun.ldapc.model.PerunVO;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.DispatchEventCondition;
-import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
 import cz.metacentrum.perun.ldapc.service.LdapcManager;
 import cz.metacentrum.perun.ldapc.processor.EventProcessor;
 

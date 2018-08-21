@@ -1,5 +1,13 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import com.mysql.fabric.xmlrpc.base.Array;
+
+import cz.metacentrum.perun.core.api.Attribute;
 import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
@@ -14,6 +22,14 @@ public class PerunAttributeDesc<T extends PerunBean> implements PerunAttribute<T
 		public Object[] getValues(T bean) throws InternalErrorException;
 	}
 	
+	public interface AttributeSingleValueExtractor {
+		public Object getValue(Attribute attr) throws InternalErrorException;
+	}
+	
+	public interface AttributeMultipleValuesExtractor {
+		public Object[] getValues(Attribute attr) throws InternalErrorException;
+	}
+
 	public PerunAttributeDesc(String name, Boolean required, SingleValueExtractor<T> extractor) {
 		super();
 		this.name = name;
@@ -30,6 +46,22 @@ public class PerunAttributeDesc<T extends PerunBean> implements PerunAttribute<T
 		this.multipleValuesExtractor = extractor;
 	}
 	
+	public PerunAttributeDesc(String name, Boolean required, AttributeSingleValueExtractor extractor) {
+		super();
+		this.name = name;
+		this.required = required;
+		this.multivalued = false;
+		this.attrSingleValueExtractor = extractor;
+	}
+
+	public PerunAttributeDesc(String name, Boolean required, AttributeMultipleValuesExtractor extractor) {
+		super();
+		this.name = name;
+		this.required = required;
+		this.multivalued = true;
+		this.attrMultipleValuesExtractor = extractor;
+	}
+
 	@Override
 	public boolean isRequired() {
 		return getRequired();
@@ -53,12 +85,33 @@ public class PerunAttributeDesc<T extends PerunBean> implements PerunAttribute<T
 
 	@Override
 	public Object getValue(T bean) throws InternalErrorException {
-		return singleValueExtractor.getValue(bean);
+		return singleValueExtractor != null ? singleValueExtractor.getValue(bean) : null;
 	}
 
 	@Override
 	public Object[] getValues(T bean) throws InternalErrorException {
-		return multipleValuesExtractor.getValues(bean);
+		return multipleValuesExtractor != null ? multipleValuesExtractor.getValues(bean) : null;
+	}
+
+	@Override
+	public boolean hasValue(Attribute attr) throws InternalErrorException {
+		Object value = attr.getValue();
+		return value != null && !String.valueOf(value).isEmpty();
+	}
+
+	@Override
+	public Object getValue(Attribute attr) throws InternalErrorException {
+		return attr.getValue();
+	}
+
+	@Override
+	public Object[] getValues(Attribute attr) throws InternalErrorException {
+		Object value = attr.getValue();
+		if(value instanceof ArrayList<?>) {
+			return ((ArrayList)value).toArray();
+		} else {
+			return null;
+		}
 	}
 
 	public void setName(String name) {
@@ -91,5 +144,7 @@ public class PerunAttributeDesc<T extends PerunBean> implements PerunAttribute<T
 	private Boolean multivalued;
 	private SingleValueExtractor<T> singleValueExtractor;
 	private MultipleValuesExtractor<T> multipleValuesExtractor;
+	private AttributeSingleValueExtractor attrSingleValueExtractor;
+	private AttributeMultipleValuesExtractor attrMultipleValuesExtractor;
 	
 }

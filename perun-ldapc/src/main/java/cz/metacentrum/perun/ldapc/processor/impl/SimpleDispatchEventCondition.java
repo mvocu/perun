@@ -4,7 +4,7 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.DispatchEventCondition;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
 
-public abstract class AbstractDispatchEventCondition implements DispatchEventCondition {
+public class SimpleDispatchEventCondition implements DispatchEventCondition {
 
 	private int requiredBeans = 0;
 	

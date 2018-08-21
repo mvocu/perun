@@ -2,10 +2,12 @@ package cz.metacentrum.perun.ldapc.model.impl;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.naming.Name;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -18,14 +20,32 @@ import cz.metacentrum.perun.ldapc.beans.LdapProperties;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.model.PerunEntry;
 
-public abstract class AbstractPerunEntry<T extends PerunBean> implements PerunEntry<T> {
+public abstract class AbstractPerunEntry<T extends PerunBean> implements InitializingBean, PerunEntry<T> {
 
 	@Autowired
 	protected LdapTemplate ldapTemplate;
 	@Autowired
 	protected LdapProperties ldapProperties;
 
+	private List<PerunAttribute<T>> attributeDescriptions;
+	private List<String> updatableAttributeNames; 
 	
+	public void afterPropertiesSet() {
+		if(attributeDescriptions == null)
+			attributeDescriptions = getDefaultAttributeDescriptions();
+		else
+			attributeDescriptions.addAll(getDefaultAttributeDescriptions());
+		if(updatableAttributeNames == null)
+			updatableAttributeNames = getDefaultUpdatableAttributes();
+		else
+			updatableAttributeNames.addAll(getDefaultUpdatableAttributes());
+			
+	}
+
+	abstract protected List<String> getDefaultUpdatableAttributes();
+
+	abstract protected List<PerunAttribute<T>> getDefaultAttributeDescriptions();
+
 	/* (non-Javadoc)
 	 * @see cz.metacentrum.perun.ldapc.model.impl.PerunEntry#addEntry(cz.metacentrum.perun.core.api.PerunBean)
 	 */
@@ -36,16 +56,30 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements PerunEn
 		ldapTemplate.bind(context);
 	}
 	
+	@Override
+	public void modifyEntry(T bean) throws InternalErrorException {
+		modifyEntry(bean, attributeDescriptions, updatableAttributeNames);
+	}
+
+	@Override
+	public void modifyEntry(T bean, String... attrNames) throws InternalErrorException {
+		modifyEntry(bean, attributeDescriptions, Arrays.asList(attrNames));
+	}
+
 	/* (non-Javadoc)
 	 * @see cz.metacentrum.perun.ldapc.model.impl.PerunEntry#modifyEntry(cz.metacentrum.perun.core.api.PerunBean)
 	 */
 	@Override
 	public void modifyEntry(T bean, Iterable<PerunAttribute<T>> attrs, String...attrNames) throws InternalErrorException {
-		DirContextAdapter contextAdapter = new DirContextAdapter(buildDN(bean));
-		mapToContext(bean, contextAdapter, getAttributeDefs(attrs, attrNames));
-		ldapTemplate.modifyAttributes(contextAdapter);
+		modifyEntry(bean, attrs, Arrays.asList(attrNames));
 	}
 	
+	protected void modifyEntry(T bean, Iterable<PerunAttribute<T>> attrs, List<String> attrNames) throws InternalErrorException {
+		DirContextAdapter contextAdapter = new DirContextAdapter(buildDN(bean));
+		mapToContext(bean, contextAdapter, findAttributeDescriptions(attrs, attrNames));
+		ldapTemplate.modifyAttributes(contextAdapter);
+	}
+
 	/* (non-Javadoc)
 	 * @see cz.metacentrum.perun.ldapc.model.impl.PerunEntry#deleteEntry(cz.metacentrum.perun.core.api.PerunBean)
 	 */
@@ -89,6 +123,26 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements PerunEn
 		return true; 
 	}
 	
+	@Override
+	public List<PerunAttribute<T>> getAttributeDescriptions() {
+		return attributeDescriptions;
+	}
+
+	@Override
+	public void setAttributeDescriptions(List<PerunAttribute<T>> attributeDescriptions) {
+		this.attributeDescriptions = attributeDescriptions;
+	}
+
+	@Override
+	public List<String> getUpdatableAttributeNames() {
+		return updatableAttributeNames;
+	}
+
+	@Override
+	public void setUpdatableAttributeNames(List<String> updatableAttributeNames) {
+		this.updatableAttributeNames = updatableAttributeNames;
+	}
+
 	protected String getBaseDN() {
 		return ldapProperties.getLdapBase();
 	}
@@ -109,7 +163,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements PerunEn
 		}
 	}
 
-	protected Iterable<PerunAttribute<T>> getAttributeDefs(Iterable<PerunAttribute<T>> attrs, String[] attrNames) {
+	protected Iterable<PerunAttribute<T>> findAttributeDescriptions(Iterable<PerunAttribute<T>> attrs, Iterable<String> attrNames) {
 		List<PerunAttribute<T>> result = new ArrayList<PerunAttribute<T>>();
 		for(PerunAttribute<T> attrDesc : attrs) {
 			for(String attrName : attrNames) {

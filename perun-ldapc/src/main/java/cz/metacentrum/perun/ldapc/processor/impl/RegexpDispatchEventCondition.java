@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Required;
 
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
 
-public class RegexpDispatchEventCondition extends AbstractDispatchEventCondition {
+public class RegexpDispatchEventCondition extends SimpleDispatchEventCondition {
 
 	private Pattern pattern;
 

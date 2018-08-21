@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.ldapc.model;
 
+import cz.metacentrum.perun.core.api.Attribute;
 import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 
@@ -98,4 +99,9 @@ public interface PerunAttribute<T extends PerunBean> {
 
 	public Object[] getValues(T bean) throws InternalErrorException;
 
+	public boolean hasValue(Attribute attr) throws InternalErrorException;
+
+	public Object getValue(Attribute attr) throws InternalErrorException;
+
+	public Object[] getValues(Attribute attr) throws InternalErrorException;
 }

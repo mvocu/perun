@@ -1,6 +1,7 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.naming.Name;
 
@@ -20,34 +21,45 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 
 	private final static Logger log = LoggerFactory.getLogger(PerunResourceImpl.class);
 
-	private Iterable<PerunAttribute<Resource>> defaultResourceAttributes = Arrays.asList(
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
-					PerunAttribute.REQUIRED, 
-					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getName()
-					),
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrPerunResourceId, 
-					PerunAttribute.REQUIRED, 
-					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getId()
-					),
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrPerunFacilityId, 
-					PerunAttribute.REQUIRED, 
-					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getFacilityId()
-					),
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
-					PerunAttribute.REQUIRED, 
-					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getVoId()
-					),
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrDescription, 
-					PerunAttribute.OPTIONAL, 
-					(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getDescription()
-					)
-			);
 		
+	@Override
+	protected List<String> getDefaultUpdatableAttributes() {
+		return Arrays.asList(
+				PerunAttribute.PerunAttributeNames.ldapAttrCommonName,
+				PerunAttribute.PerunAttributeNames.ldapAttrDescription);
+	}
+
+	@Override
+	protected List<PerunAttribute<Resource>> getDefaultAttributeDescriptions() {
+		return Arrays.asList(
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
+						PerunAttribute.REQUIRED, 
+						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getName()
+						),
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrPerunResourceId, 
+						PerunAttribute.REQUIRED, 
+						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getId()
+						),
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrPerunFacilityId, 
+						PerunAttribute.REQUIRED, 
+						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getFacilityId()
+						),
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
+						PerunAttribute.REQUIRED, 
+						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getVoId()
+						),
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrDescription, 
+						PerunAttribute.OPTIONAL, 
+						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getDescription()
+						)
+				);
+	}
+
 	public void addResource(Resource resource, String entityID) throws InternalErrorException {
 		DirContextAdapter context = new DirContextAdapter(buildDN(resource));
 		mapToContext(resource, context);
@@ -68,9 +80,8 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 
 	@Override
 	public void updateResource(Resource resource) throws InternalErrorException {
-		modifyEntry(resource, defaultResourceAttributes, 
-				PerunAttribute.PerunAttributeNames.ldapAttrCommonName,
-				PerunAttribute.PerunAttributeNames.ldapAttrDescription);
+		modifyEntry(resource); 
+
 	}
 
 	@Override
@@ -89,8 +100,7 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 	@Override
 	protected void mapToContext(Resource bean, DirContextOperations context) throws InternalErrorException {
 		context.setAttributeValue("objectclass", PerunAttribute.PerunAttributeNames.objectClassPerunResource);
-		mapToContext(bean, context, defaultResourceAttributes);
+		mapToContext(bean, context, getAttributeDescriptions());
 	}
 
-	
 }

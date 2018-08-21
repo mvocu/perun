@@ -1,6 +1,7 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.naming.Name;
 
@@ -24,24 +25,32 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	@Autowired
 	private PerunUser user;
 	
-	private Iterable<PerunAttribute<Vo>> defaultVOAttributes = Arrays.asList(
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrOrganization, 
-					PerunAttribute.REQUIRED, 
-					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getShortName()
-					),
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrDescription, 
-					PerunAttribute.REQUIRED, 
-					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getName()
-					),
-			new PerunAttributeDesc<>(
-					PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
-					PerunAttribute.REQUIRED, 
-					(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getId()
-					)
-			);
-	
+	@Override
+	protected List<String> getDefaultUpdatableAttributes() {
+		return Arrays.asList(PerunAttribute.PerunAttributeNames.ldapAttrDescription);
+	}
+
+	@Override
+	protected List<PerunAttribute<Vo>> getDefaultAttributeDescriptions() {
+		return Arrays.asList(
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrOrganization, 
+						PerunAttribute.REQUIRED, 
+						(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getShortName()
+						),
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrDescription, 
+						PerunAttribute.REQUIRED, 
+						(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getName()
+						),
+				new PerunAttributeDesc<>(
+						PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
+						PerunAttribute.REQUIRED, 
+						(PerunAttributeDesc.SingleValueExtractor<Vo>)vo -> vo.getId()
+						)
+				);
+	}
+
 	public void addVo(Vo vo) throws InternalErrorException {
 		addEntry(vo);
 	}
@@ -52,7 +61,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 
 	@Override
 	public void updateVo(Vo vo) throws InternalErrorException {
-		modifyEntry(vo, defaultVOAttributes, PerunAttribute.PerunAttributeNames.ldapAttrDescription);
+		modifyEntry(vo);
 	}
 
 	public String getVoShortName(int voId) throws InternalErrorException {
@@ -99,7 +108,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 		context.setAttributeValues("objectclass", Arrays.asList(
 				PerunAttribute.PerunAttributeNames.objectClassPerunVO,
 				PerunAttribute.PerunAttributeNames.objectClassOrganization).toArray());
-		mapToContext(bean, context, defaultVOAttributes);
+		mapToContext(bean, context, getAttributeDescriptions());
 	}
 
 	@Override
