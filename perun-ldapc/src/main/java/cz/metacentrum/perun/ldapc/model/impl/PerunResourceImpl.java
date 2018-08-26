@@ -35,27 +35,27 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getName()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getName()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunResourceId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getId()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getId()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunFacilityId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getFacilityId()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getFacilityId()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getVoId()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getVoId()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrDescription, 
 						PerunAttribute.OPTIONAL, 
-						(PerunAttributeDesc.SingleValueExtractor<Resource>)resource -> resource.getDescription()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getDescription()
 						)
 				);
 	}

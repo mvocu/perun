@@ -1,5 +1,10 @@
 package cz.metacentrum.perun.ldapc.processor.impl;
 
+import static org.junit.Assert.assertNull;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -269,6 +274,20 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 			EventProcessor processor = subscription.getRight();
 			
 			if(condition.isApplicable(beans, msg)) {
+				String handlerName = condition.getHandlerMethodName();
+				if(handlerName != null) {
+					try {
+						Method handler = processor.getClass().getMethod(handlerName, msg.getClass(), beans.getClass());
+						if(handler != null) {
+							handler.invoke(processor, msg, beans);
+						} else {
+							processor.processEvent(msg, beans);
+						}
+					} catch (InvocationTargetException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
+						processor.processEvent(msg, beans);
+					}
+					
+				}
 				processor.processEvent(msg, beans);
 			}
 		}

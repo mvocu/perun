@@ -143,6 +143,202 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		</property>
 	</bean>
 	
+	<bean id="userAttributeEventProcessor" class="cz.metacentrum.perun.ldapc.processor.impl.UserAttributeEventProcessor">
+		<property name="dispatchConditions">
+			<list>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
+							<value>cz.metacentrum.perun.core.api.User</value>
+							<value>cz.metacentrum.perun.core.api.Attribute</value>
+						</list>
+					</property>
+					<property name="pattern" value=" set for User:\\[(.*)\\]" />
+					<property name="handlerMethodName" value="processAttributeSet" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
+							<value>cz.metacentrum.perun.core.api.User</value>
+							<value>cz.metacentrum.perun.core.api.AttributeDefinition</value>
+						</list>
+					</property>
+					<property name="pattern" value=" removed for User:\\[(.*)\\]" />
+					<property name="handlerMethodName" value="processAttributeRemoved" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
+							<value>cz.metacentrum.perun.core.api.User</value>
+						</list>
+					</property>
+					<property name="pattern" value="All attributes removed for User:\\[(.*)\\]" />
+					<property name="handlerMethodName" value="processAllAttributesRemoved" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="perunUser" class="cz.metacentrum.perun.ldapc.model.impl.PerunUserImpl">
+		<property name="attributeDescriptions">
+			<!--  this list will be added to built-in defaultAttributeDescriptions -->
+			<list>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="preferredMail" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="name" value="preferredMail" />
+							<property name="namespace" value="urn:perun:user:attribute-def:def" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="mail" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="name" value="preferredMail" />
+							<property name="namespace" value="urn:perun:user:attribute-def:def" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="o" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="name" value="organization" />
+							<property name="namespace" value="urn:perun:user:attribute-def:def" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="telephoneNumber" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="name" value="phone" />
+							<property name="namespace" value="urn:perun:user:attribute-def:def" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="userCertificateSubject" />
+					<property name="required" value="false" />
+					<property name="multipleValuesExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
+							<property name="name" value="preferredMail" />
+							<property name="namespace" value="urn:perun:user:attribute-def:def" />
+							<property name="valueTransformer">
+								<bean class="cz.metacentrum.perun.ldapc.bean.RegexpValueTransformer">
+									<property name="replaceList">
+										<list>
+											<bean class="cz.metacentrum.perun.ldapc.beans.RegexpValueTransformer.RegexpSubst">
+												<property name="find" value="^[0-9]+[:]" />
+												<property name="replace" value="" />
+											</bean>	
+										</list>
+									</property>
+								</bean>
+							</property>
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="schacHomeOrganizations" />
+					<property name="required" value="false" />
+					<property name="multipleValuesExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
+							<property name="name" value="schacHomeOrganizations" />
+							<property name="namespace" value="urn:perun:user:attribute-def:virt" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="eduPersonScopedAffiliations" />
+					<property name="required" value="false" />
+					<property name="multipleValuesExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
+							<property name="name" value="eduPersonScopedAffiliations" />
+							<property name="namespace" value="urn:perun:user:attribute-def:virt" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="groupNames" />
+					<property name="required" value="false" />
+					<property name="multipleValuesExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
+							<property name="name" value="groupNames" />
+							<property name="namespace" value="urn:perun:user:attribute-def:virt" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="schacHomeOrganizations" />
+					<property name="required" value="false" />
+					<property name="multipleValuesExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
+							<property name="name" value="schacHomeOrganizations" />
+							<property name="namespace" value="urn:perun:user:attribute-def:virt" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="institutionsCountries" />
+					<property name="required" value="false" />
+					<property name="multipleValuesExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
+							<property name="name" value="institutionsCountries" />
+							<property name="namespace" value="urn:perun:user:attribute-def:virt" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="libraryIDs" />
+					<property name="required" value="false" />
+					<property name="multipleValuesExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
+							<property name="name" value="libraryIDs" />
+							<property name="namespace" value="urn:perun:user:attribute-def:def" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="uidNumber;x-ns-" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="nameRegexp" value="urn:perun:user:attribute-def:def:uid-namespace:" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="login;x-ns-" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="nameRegexp" value="urn:perun:user:attribute-def:def:login-namespace:" />
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="userPassword" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="nameRegexp" value="urn:perun:user:attribute-def:def:login-namespace:${ldap.loginNamespace}" />
+							<property name="valueTransformer">
+								<bean class="cz.metacentrum.perun.ldapc.beans.PasswordValueTransformer" />
+							</property>
+						</bean>
+					</property> 
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
     <bean id="ldapProperties" class="cz.metacentrum.perun.ldapc.beans.LdapProperties">
         <constructor-arg name="ldapConsumerName" index="0" value="${ldap.consumerName}" />
         <constructor-arg name="ldapBase" index="1" value="${ldap.base}" />

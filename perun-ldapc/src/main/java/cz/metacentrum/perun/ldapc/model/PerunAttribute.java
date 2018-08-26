@@ -1,6 +1,7 @@
 package cz.metacentrum.perun.ldapc.model;
 
 import cz.metacentrum.perun.core.api.Attribute;
+import cz.metacentrum.perun.core.api.AttributeDefinition;
 import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 
@@ -81,6 +82,14 @@ public interface PerunAttribute<T extends PerunBean> {
 	
 	}
 
+	interface SingleValueExtractor<T> {
+		public Object getValue(T bean, Attribute... attributes) throws InternalErrorException;
+	}
+
+	interface MultipleValuesExtractor<T> {
+		public Object[] getValues(T bean, Attribute... attributes) throws InternalErrorException;
+	}
+
 	public static final boolean REQUIRED = true;
 	public static final boolean OPTIONAL = false;
 
@@ -92,16 +101,24 @@ public interface PerunAttribute<T extends PerunBean> {
 	public boolean isMultiValued();
 
 	public String getName();
+	
+	public String getName(AttributeDefinition attr);
+	
+	public String getBaseName();
 
-	public boolean hasValue(T bean) throws InternalErrorException;
+	public boolean hasValue(T bean, Attribute... attributes) throws InternalErrorException;
 
-	public Object getValue(T bean) throws InternalErrorException;
+	public Object getValue(T bean, Attribute... attributes) throws InternalErrorException;
 
-	public Object[] getValues(T bean) throws InternalErrorException;
+	public Object[] getValues(T bean, Attribute... attributes) throws InternalErrorException;
 
-	public boolean hasValue(Attribute attr) throws InternalErrorException;
+	SingleValueExtractor<T> getSingleValueExtractor();
 
-	public Object getValue(Attribute attr) throws InternalErrorException;
+	void setSingleValueExtractor(SingleValueExtractor<T> valueExtractor);
 
-	public Object[] getValues(Attribute attr) throws InternalErrorException;
+	MultipleValuesExtractor<T> getMultipleValuesExtractor();
+
+	void setMultipleValuesExtractor(MultipleValuesExtractor<T> valueExtractor);
+
+	public boolean requiresAttributeBean();
 }

@@ -33,22 +33,22 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrEntryStatus, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> "active"
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> "active"
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrSurname, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.getLastName()
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> user.getLastName()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrGivenName, 
 						PerunAttribute.OPTIONAL, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.getFirstName()
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> user.getFirstName()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> {
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> {
 							String firstName = user.getFirstName();
 							String lastName = user.getLastName();
 							String commonName = "";
@@ -62,22 +62,22 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunUserId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.getId()
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> user.getId()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrIsServiceUser, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.isServiceUser() ? "1" : "0"
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> user.isServiceUser() ? "1" : "0"
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrIsSponsoredUser, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.isSponsoredUser() ? "1" : "0"
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> user.isSponsoredUser() ? "1" : "0"
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPreferredMail, 
 						PerunAttribute.OPTIONAL, 
-						(PerunAttributeDesc.SingleValueExtractor<User>)user -> user.isSponsoredUser() ? "1" : "0"
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> user.isSponsoredUser() ? "1" : "0"
 						)
 				);
 	}

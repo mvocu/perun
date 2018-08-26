@@ -7,6 +7,7 @@ import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
 public class SimpleDispatchEventCondition implements DispatchEventCondition {
 
 	private int requiredBeans = 0;
+	private String handlerMethodName = null;
 	
 	@Override
 	public void setBeansCondition(int presentBeansMask) {
@@ -25,6 +26,16 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 		for(String name: names) {
 			addFlagForBeanName(name);
 		}
+	}
+
+	@Override
+	public void setHandlerMethodName(String name) {
+		this.handlerMethodName = name;
+	}
+
+	@Override
+	public String getHandlerMethodName() {
+		return handlerMethodName;
 	}
 
 	@Override

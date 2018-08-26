@@ -1,5 +1,7 @@
 package cz.metacentrum.perun.ldapc.processor;
 
-public interface AttributeProcessor {
+import java.util.Map;
+
+public interface AttributeProcessor extends EventProcessor {
 
 }

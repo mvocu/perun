@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import javax.naming.Name;
 import javax.naming.directory.ModificationItem;
+import javax.swing.text.html.HTML.Attribute;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,38 +50,38 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrCommonName, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getName()
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getName()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunGroupId, 
 						PerunAttribute.REQUIRED,
-						(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getId()
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getId()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunUniqueGroupName,
 						PerunAttributeDesc.REQUIRED,
-						(PerunAttributeDesc.SingleValueExtractor<Group>)group -> vo.getVoShortName(group.getVoId()) + ":" + group.getName()
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> vo.getVoShortName(group.getVoId()) + ":" + group.getName()
 						),					
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId,
 						PerunAttributeDesc.REQUIRED,
-						(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getVoId()
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getVoId()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrDescription,
 						PerunAttributeDesc.OPTIONAL,
-						(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getDescription()
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getDescription()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroup,
 						PerunAttributeDesc.OPTIONAL,
-						(PerunAttributeDesc.SingleValueExtractor<Group>)group -> this.getEntryDN(String.valueOf(group.getParentGroupId()))
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> this.getEntryDN(String.valueOf(group.getParentGroupId()))
 						// PerunAttributeNames.ldapAttrPerunGroupId + "=" + group.getParentGroupId().toString() + "," + PerunAttributeNames.ldapAttrPerunVoId + "=" + group.getVoId() + "," + ldapProperties.getLdapBase()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroupId,
 						PerunAttributeDesc.OPTIONAL,
-						(PerunAttributeDesc.SingleValueExtractor<Group>)group -> group.getParentGroupId().toString()
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getParentGroupId().toString()
 						)
 				);
 
