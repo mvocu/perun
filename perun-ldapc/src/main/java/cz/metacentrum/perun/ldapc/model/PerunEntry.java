@@ -112,7 +112,13 @@ public interface PerunEntry<T extends PerunBean> {
 	 */
 	Boolean entryAttributeExists(T bean, String ldapAttributeName);
 
-
+	/**
+	 * Remove all attributes that were set using the Attribute bean.
+	 * 
+	 * @param bean
+	 */
+	void removeAllAttributes(T bean);
+	
 	/**
 	 * 
 	 * @return

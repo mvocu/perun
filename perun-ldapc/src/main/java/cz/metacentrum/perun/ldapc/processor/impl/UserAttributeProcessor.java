@@ -76,5 +76,6 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 		if(beans.getUser() == null) {
 			return;
 		}
+		
 	}
 }

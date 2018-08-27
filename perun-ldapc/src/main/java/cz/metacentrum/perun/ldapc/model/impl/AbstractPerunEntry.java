@@ -3,9 +3,11 @@ package cz.metacentrum.perun.ldapc.model.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.naming.Name;
+import javax.naming.NamingEnumeration;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +131,25 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 		DirContextOperations entry = findByDN(buildDN(bean));
 		String value = entry.getStringAttribute(ldapAttributeName);
 		return (value != null);
+	}
+
+	@Override
+	public void removeAllAttributes(T bean) {
+		DirContextOperations entry = findByDN(buildDN(bean));
+		/* we have to find all existing entry attributes to resolve all the present options in names */
+		NamingEnumeration<String> attrNames = entry.getAttributes().getIDs();
+		while(attrNames.hasMoreElements()) {
+			String attrName = attrNames.nextElement();
+			Iterable<PerunAttribute<T>> attrDefs = findAttributeDescriptions(getAttributeDescriptions(), Arrays.asList(attrName));
+			for(PerunAttribute<T> attrDef: attrDefs) {
+				if(attrDef.requiresAttributeBean() && !attrDef.isRequired()) {
+					entry.setAttributeValues(attrName, null);
+				}
+			}
+		}
+		if(entry.getModificationItems().length > 0) {
+			ldapTemplate.modifyAttributes(entry);
+		}
 	}
 
 	@Override
