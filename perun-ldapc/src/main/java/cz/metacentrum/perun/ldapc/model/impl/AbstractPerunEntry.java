@@ -246,19 +246,29 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	
 	protected Iterable<PerunAttribute<T>> findAttributeDescriptions(Iterable<PerunAttribute<T>> attrs, Iterable<String> attrNames) {
 		List<PerunAttribute<T>> result = new ArrayList<PerunAttribute<T>>();
-		/* 
-		 * attribute name given may be just prefix for the actual attribute name, e.g. for login;x-ns- 
-		 * where the last part is given by the actual attribute name parameter; 
-		 * we use the baseName for comparison
-		 */
 		for(PerunAttribute<T> attrDesc : attrs) {
+			String descName = attrDesc.getName();
 			for(String attrName : attrNames) {
-				if(attrDesc.getBaseName().equals(attrName)) result.add(attrDesc); 
+				if(descName.contains(";")) {
+					// tagged names are taken as prefixes
+					if(attrName.startsWith(descName)) result.add(attrDesc);
+				} else {
+					// names without options are compared as a whole 
+					if(descName.equals(attrName)) result.add(attrDesc); 
+				}
 			}
 		}
 		return result;
 	}
 
+	/**
+	 * Find attribute description for given Perun AttributeDefinition, ie. find which attribute describes
+	 * how to extract value from this AttributeDefinition.
+	 * 
+	 * @param attrs
+	 * @param attr
+	 * @return
+	 */
 	protected PerunAttribute<T> findAttributeDescription(List<PerunAttribute<T>> attrs, AttributeDefinition attr) {
 		PerunAttribute<T> result = null;
 		for (PerunAttribute<T> attrDef : attrs) {
@@ -274,9 +284,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 					extractor = (AttributeValueExtractor)ext;
 				}
 			}
-			if(extractor != null && 
-					attr.getBaseFriendlyName().equals(extractor.getName()) &&
-					attr.getNamespace().equals(extractor.getNamespace())) {
+			if(extractor != null && extractor.appliesToAttribute(attr)) {
 				result = attrDef;
 				break;
 			}

@@ -183,7 +183,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		<property name="attributeDescriptions">
 			<!--  this list will be added to built-in defaultAttributeDescriptions -->
 			<list>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="preferredMail" />
 					<property name="required" value="false" />
 					<property name="singleValueExtractor">
@@ -193,7 +193,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="mail" />
 					<property name="required" value="false" />
 					<property name="singleValueExtractor">
@@ -203,7 +203,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="o" />
 					<property name="required" value="false" />
 					<property name="singleValueExtractor">
@@ -213,7 +213,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="telephoneNumber" />
 					<property name="required" value="false" />
 					<property name="singleValueExtractor">
@@ -223,7 +223,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="userCertificateSubject" />
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
@@ -245,7 +245,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="schacHomeOrganizations" />
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
@@ -255,7 +255,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="eduPersonScopedAffiliations" />
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
@@ -265,7 +265,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="groupNames" />
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
@@ -275,7 +275,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="schacHomeOrganizations" />
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
@@ -285,7 +285,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="institutionsCountries" />
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
@@ -295,7 +295,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="libraryIDs" />
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
@@ -305,7 +305,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="uidNumber;x-ns-" />
 					<property name="required" value="false" />
 					<property name="singleValueExtractor">
@@ -314,7 +314,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="login;x-ns-" />
 					<property name="required" value="false" />
 					<property name="singleValueExtractor">
@@ -323,7 +323,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 						</bean>
 					</property> 
 				</bean>
-				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+				<bean class="cz.metacentrum.perun.ldapc.beans.PerunUserAttributeDesc">
 					<property name="name" value="userPassword" />
 					<property name="required" value="false" />
 					<property name="singleValueExtractor">
@@ -356,4 +356,6 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
         <constructor-arg ref="contextSource" />
     </bean>
 
+	<import resource="file:${perun.conf.custom}/perun-ldapc-attributes.xml" />
+	
 </beans>

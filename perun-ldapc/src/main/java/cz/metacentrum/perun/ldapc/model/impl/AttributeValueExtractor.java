@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cz.metacentrum.perun.core.api.Attribute;
+import cz.metacentrum.perun.core.api.AttributeDefinition;
 import cz.metacentrum.perun.ldapc.model.AttributeValueTransformer;
 
 public abstract class AttributeValueExtractor {
@@ -49,7 +50,7 @@ public abstract class AttributeValueExtractor {
 		this.valueTransformer = valueTransformer;
 	}
 
-	protected boolean appliesToAttribute(Attribute attr) {
+	public boolean appliesToAttribute(AttributeDefinition attr) {
 		if(nameRegexp != null && !nameRegexp.isEmpty()) {
 			Matcher matcher = Pattern.compile(nameRegexp).matcher(attr.getName());
 			return matcher.find();

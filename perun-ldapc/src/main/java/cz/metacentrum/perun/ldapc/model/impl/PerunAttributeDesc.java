@@ -49,13 +49,12 @@ public class PerunAttributeDesc<T extends PerunBean> implements PerunAttribute<T
 
 	@Override
 	public String getName() {
-		return getBaseName();
+		return name;
 	}
 
 	@Override
 	public String getName(AttributeDefinition attr) {
 		// TODO: check if the attribute name parameter is not empty
-		String name = getBaseName();
 		if(name.contains(";") && attr != null) {
 			String param = attr.getFriendlyNameParameter();
 			return name + param;
@@ -65,6 +64,9 @@ public class PerunAttributeDesc<T extends PerunBean> implements PerunAttribute<T
 
 	@Override
 	public String getBaseName() {
+		if(name.contains(";")) {
+			return name.substring(0, name.indexOf(";"));
+		};
 		return name;
 	}
 
