@@ -75,13 +75,13 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroup,
 						PerunAttributeDesc.OPTIONAL,
-						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> this.getEntryDN(String.valueOf(group.getParentGroupId()))
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getParentGroupId() == null ? null : this.getEntryDN(String.valueOf(group.getParentGroupId()))
 						// PerunAttributeNames.ldapAttrPerunGroupId + "=" + group.getParentGroupId().toString() + "," + PerunAttributeNames.ldapAttrPerunVoId + "=" + group.getVoId() + "," + ldapProperties.getLdapBase()
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroupId,
 						PerunAttributeDesc.OPTIONAL,
-						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getParentGroupId().toString()
+						(PerunAttribute.SingleValueExtractor<Group>)(group, attrs) -> group.getParentGroupId() == null ? null : group.getParentGroupId().toString()
 						)
 				);
 

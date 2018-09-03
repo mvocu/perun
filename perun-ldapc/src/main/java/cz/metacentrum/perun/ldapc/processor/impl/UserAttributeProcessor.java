@@ -3,10 +3,13 @@ package cz.metacentrum.perun.ldapc.processor.impl;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.mail.Message;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.metacentrum.perun.core.api.ExtSourcesManager;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.model.PerunUser;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
@@ -18,37 +21,20 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 	@Autowired
 	protected PerunUser perunUser;
 	
-	private Pattern userSetPattern = Pattern.compile(" set for User:\\[(.*)\\]");
-	private Pattern userRemovePattern = Pattern.compile(" removed for User:\\[(.*)\\]");
-	private Pattern userAllAttrsRemovedPattern = Pattern.compile("All attributes removed for User:\\[(.*)\\]");
+	private static Pattern userSetPattern = Pattern.compile(" set for User:\\[(.*)\\]");
+	private static Pattern userRemovePattern = Pattern.compile(" removed for User:\\[(.*)\\]");
+	private static Pattern userAllAttrsRemovedPattern = Pattern.compile("All attributes removed for User:\\[(.*)\\]");
 
 	//UserExtSources patterns
 	private Pattern addUserExtSourcePattern = Pattern.compile("UserExtSource:\\[(.*)\\] added to User:\\[(.*)\\]");
 	private Pattern removeUserExtSourcePattern = Pattern.compile("UserExtSource:\\[(.*)\\] removed from User:\\[(.*)\\]");
 	
 	
-	@Override
-	public void processEvent(String msg, MessageBeans beans) {
-		Matcher matcher = userSetPattern.matcher(msg);
-		int mask = MessageBeans.ATTRIBUTE_F | MessageBeans.USER_F;
-		if(matcher.find() && (beans.getPresentBeansMask() & mask) == mask) {
-			processAttributeSet(msg, beans);
-			return;
-		}
-		matcher = userRemovePattern.matcher(msg);
-		mask = MessageBeans.ATTRIBUTEDEF_F | MessageBeans.USER_F;
-		if(matcher.find() && (beans.getPresentBeansMask() & mask) == mask ) {
-			processAttributeRemoved(msg, beans);
-			return;
-		}
-		matcher = userAllAttrsRemovedPattern.matcher(msg);
-		if(matcher.find() && (beans.getPresentBeansMask() & mask) == mask) {
-			processAllAttributesRemoved(msg, beans);
-			return;
-		}
-		// OK - we do not know how to handle this one
+	public UserAttributeProcessor() {
+		super(MessageBeans.USER_F, userSetPattern, userRemovePattern, userAllAttrsRemovedPattern);
 	}
-
+	
+	
 	public void processAttributeSet(String msg, MessageBeans beans) {
 		// ensure we have the correct beans available
 		if(beans.getAttribute() == null || beans.getUser() == null) {
@@ -76,6 +62,33 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 		if(beans.getUser() == null) {
 			return;
 		}
-		
+		perunUser.removeAllAttributes(beans.getUser());
+	}	
+
+	public void processExtSourceSet(String msg, MessageBeans beans) {
+		// ensure we have the correct beans available
+		if(beans.getUser() == null || beans.getUserExtSource() == null) {
+			return;
+		}
+		try {
+			if(beans.getUserExtSource().getExtSource().getType().equals(ExtSourcesManager.EXTSOURCE_IDP)) {
+				perunUser.addPrincipal(beans.getUser(), beans.getUserExtSource().getLogin());
+			}
+		} catch (InternalErrorException e) {
+		}
 	}
+
+	public void processExtSourceRemoved(String msg, MessageBeans beans) {
+		// ensure we have the correct beans available
+		if(beans.getUser() == null || beans.getUserExtSource() == null) {
+			return;
+		}
+		try {
+			if(beans.getUserExtSource().getExtSource().getType().equals(ExtSourcesManager.EXTSOURCE_IDP)) {
+				perunUser.removePrincipal(beans.getUser(), beans.getUserExtSource().getLogin());
+			}
+		} catch (InternalErrorException e) {
+		}
+	}
+
 }

@@ -37,4 +37,10 @@ public interface PerunUser extends PerunEntry<User> {
 	 */
 	public boolean userPasswordExists(User user);
 
+
+	public void addPrincipal(User user, String login) throws InternalErrorException;
+
+
+	public void removePrincipal(User user, String login) throws InternalErrorException;
+
 }

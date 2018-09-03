@@ -7,21 +7,26 @@ import javax.naming.Name;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.support.LdapNameBuilder;
 
+import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Resource;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
+import cz.metacentrum.perun.ldapc.model.PerunGroup;
 import cz.metacentrum.perun.ldapc.model.PerunResource;
 
 public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements PerunResource {
 
 	private final static Logger log = LoggerFactory.getLogger(PerunResourceImpl.class);
 
-		
+	@Autowired
+	private PerunGroup perunGroup;
+	
 	@Override
 	protected List<String> getDefaultUpdatableAttributes() {
 		return Arrays.asList(
@@ -82,6 +87,26 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 	public void updateResource(Resource resource) throws InternalErrorException {
 		modifyEntry(resource); 
 
+	}
+
+	@Override
+	public void assignGroup(Resource resource, Group group) throws InternalErrorException {
+		DirContextOperations entry = findByDN(buildDN(resource));
+		entry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedGroupId, group.getId());
+		ldapTemplate.modifyAttributes(entry);
+		entry = perunGroup.findById(String.valueOf(group.getVoId()), String.valueOf(group.getId()));
+		entry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resource.getId());
+		ldapTemplate.modifyAttributes(entry);
+	}
+
+	@Override
+	public void removeGroup(Resource resource, Group group) throws InternalErrorException {
+		DirContextOperations entry = findByDN(buildDN(resource));
+		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedGroupId, group.getId());
+		ldapTemplate.modifyAttributes(entry);
+		entry = perunGroup.findById(String.valueOf(group.getVoId()), String.valueOf(group.getId()));
+		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resource.getId());
+		ldapTemplate.modifyAttributes(entry);
 	}
 
 	@Override

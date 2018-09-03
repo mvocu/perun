@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.ldapc.model;
 
+import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Resource;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 
@@ -22,5 +23,9 @@ public interface PerunResource extends PerunEntry<Resource> {
 	 */
 	public void addResource(Resource resource, String entityID) throws InternalErrorException;
 
-	public void updateResource(Resource resource) throws InternalErrorException; 
+	public void updateResource(Resource resource) throws InternalErrorException;
+	
+	public void assignGroup(Resource resource, Group group) throws InternalErrorException;
+	
+	public void removeGroup(Resource resource, Group group) throws InternalErrorException; 
 }

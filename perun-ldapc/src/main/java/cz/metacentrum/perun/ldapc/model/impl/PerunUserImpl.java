@@ -100,6 +100,20 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 	}
 
 	@Override
+	public void addPrincipal(User user, String login) throws InternalErrorException {
+		DirContextOperations entry = findByDN(buildDN(user));
+		entry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrEduPersonPrincipalNames, login);
+		ldapTemplate.modifyAttributes(entry);
+	}
+
+	@Override
+	public void removePrincipal(User user, String login) throws InternalErrorException {
+		DirContextOperations entry = findByDN(buildDN(user));
+		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrEduPersonPrincipalNames, login);
+		ldapTemplate.modifyAttributes(entry);
+	}
+
+	@Override
 	protected Name buildDN(User bean) {
 		return getEntryDN(String.valueOf(bean.getId()));
 	}

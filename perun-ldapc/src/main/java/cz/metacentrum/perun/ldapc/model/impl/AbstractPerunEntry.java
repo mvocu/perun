@@ -80,13 +80,13 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	
 	protected void modifyEntry(T bean, Iterable<PerunAttribute<T>> attrs, List<String> attrNames) throws InternalErrorException {
 		DirContextAdapter contextAdapter = new DirContextAdapter(buildDN(bean));
-		mapToContext(bean, contextAdapter, findAttributeDescriptions(attrs, attrNames));
+		mapToContext(bean, contextAdapter, findAttributeDescriptionsByLdapName(attrs, attrNames));
 		ldapTemplate.modifyAttributes(contextAdapter);
 	}
 
 	@Override
 	public void modifyEntry(T bean, AttributeDefinition attr) throws InternalErrorException {
-		PerunAttribute<T> attrDef = findAttributeDescription(getAttributeDescriptions(), attr);
+		PerunAttribute<T> attrDef = findAttributeDescriptionByPerunAttr(getAttributeDescriptions(), attr);
 		if(attrDef != null) {
 			modifyEntry(bean, attrDef, attr);
 		} else 
@@ -140,7 +140,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 		NamingEnumeration<String> attrNames = entry.getAttributes().getIDs();
 		while(attrNames.hasMoreElements()) {
 			String attrName = attrNames.nextElement();
-			Iterable<PerunAttribute<T>> attrDefs = findAttributeDescriptions(getAttributeDescriptions(), Arrays.asList(attrName));
+			Iterable<PerunAttribute<T>> attrDefs = findAttributeDescriptionsByLdapName(getAttributeDescriptions(), Arrays.asList(attrName));
 			for(PerunAttribute<T> attrDef: attrDefs) {
 				if(attrDef.requiresAttributeBean() && !attrDef.isRequired()) {
 					entry.setAttributeValues(attrName, null);
@@ -244,7 +244,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 		entry.setAttributeValues(attrDef.getName(attr), values);
 	}
 	
-	protected Iterable<PerunAttribute<T>> findAttributeDescriptions(Iterable<PerunAttribute<T>> attrs, Iterable<String> attrNames) {
+	protected Iterable<PerunAttribute<T>> findAttributeDescriptionsByLdapName(Iterable<PerunAttribute<T>> attrs, Iterable<String> attrNames) {
 		List<PerunAttribute<T>> result = new ArrayList<PerunAttribute<T>>();
 		for(PerunAttribute<T> attrDesc : attrs) {
 			String descName = attrDesc.getName();
@@ -269,7 +269,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	 * @param attr
 	 * @return
 	 */
-	protected PerunAttribute<T> findAttributeDescription(List<PerunAttribute<T>> attrs, AttributeDefinition attr) {
+	protected PerunAttribute<T> findAttributeDescriptionByPerunAttr(List<PerunAttribute<T>> attrs, AttributeDefinition attr) {
 		PerunAttribute<T> result = null;
 		for (PerunAttribute<T> attrDef : attrs) {
 			AttributeValueExtractor extractor = null;
