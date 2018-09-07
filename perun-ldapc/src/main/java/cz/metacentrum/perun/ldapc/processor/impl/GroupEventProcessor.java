@@ -1,9 +1,6 @@
 package cz.metacentrum.perun.ldapc.processor.impl;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -14,7 +11,6 @@ import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.MemberNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
-import cz.metacentrum.perun.ldapc.model.impl.PerunGroupImpl;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
 import cz.metacentrum.perun.rpclib.Rpc;
 
