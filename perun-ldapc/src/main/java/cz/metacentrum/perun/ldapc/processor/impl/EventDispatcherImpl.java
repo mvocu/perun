@@ -1,8 +1,5 @@
 package cz.metacentrum.perun.ldapc.processor.impl;
 
-import static org.junit.Assert.assertNull;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
