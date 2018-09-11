@@ -143,7 +143,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		</property>
 	</bean>
 	
-	<bean id="userAttributeEventProcessor" class="cz.metacentrum.perun.ldapc.processor.impl.UserAttributeEventProcessor">
+	<bean id="userAttributeEventProcessor" class="cz.metacentrum.perun.ldapc.processor.impl.UserAttributeProcessor">
 		<property name="dispatchConditions">
 			<list>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -199,7 +199,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		</property>
 	</bean>
 
-	<bean id="facilityAttributeEventProcessor" class="cz.metacentrum.perun.ldapc.processor.impl.facilityAttributeEventProcessor">
+	<bean id="facilityAttributeEventProcessor" class="cz.metacentrum.perun.ldapc.processor.impl.FacilityAttributeProcessor">
 		<property name="dispatchConditions">
 			<list>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -468,7 +468,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 		</property>
 	</bean>
 
-	<bean id="perunFacility" class="cz.metacentrum.perun.ldapc.model.impl.PerunFacilityImpl">
+	<bean id="perunResource" class="cz.metacentrum.perun.ldapc.model.impl.PerunResourceImpl">
 		<property name="attributeDescriptions">
 			<!--  this list will be added to built-in defaultAttributeDescriptions -->
 			<list>
