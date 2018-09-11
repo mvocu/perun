@@ -27,8 +27,10 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			return;
 		}
 		try {
+			log.debug("Adding member {} to group {}", beans.getMember(), beans.getGroup());
 			perunGroup.addMemberToGroup(beans.getMember(), beans.getGroup());
 		} catch (InternalErrorException e) {
+			log.error("Error adding member {} to group {}: {}", beans.getMember().getId(), beans.getGroup().getId(), e.getMessage());;
 		}
 	}
 
@@ -37,8 +39,10 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			return;
 		}
 		try {
+			log.debug("Adding subgroup {} to group {}", beans.getGroup(), beans.getParentGroup());
 			perunGroup.addGroupAsSubGroup(beans.getGroup(), beans.getParentGroup());
 		} catch (InternalErrorException e) {
+			log.error("Error adding subgroup {} to group {}: {}", beans.getGroup().getId(), beans.getParentGroup().getId(), e.getMessage());
 		}
 	}
 
@@ -47,8 +51,10 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			return;
 		}
 		try {
+			log.debug("Adding resource {} to group {}", beans.getResource(), beans.getGroup());
 			perunResource.assignGroup(beans.getResource(), beans.getGroup());
 		} catch (InternalErrorException e) {
+			log.error("Error adding resource {} to group {}: {}", beans.getResource().getId(), beans.getGroup().getId(), e.getMessage());
 		}
 	}
 
@@ -57,8 +63,10 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			return;
 		}
 		try {
+			log.debug("Removing resource {} from group {}", beans.getResource(), beans.getGroup());
 			perunResource.removeGroup(beans.getResource(), beans.getGroup());
 		} catch (InternalErrorException e) {
+			log.error("Error removing resource {} from group {}: {}", beans.getResource().getId(), beans.getGroup().getId(), e.getMessage());
 		}
 	}
 
@@ -68,12 +76,14 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		}
 		try {
 			// TODO move to PerunGroupImpl?
+			log.debug("Moving group {}", beans.getGroup());
 			perunGroup.modifyEntry(beans.getGroup(), 
 						PerunAttribute.PerunAttributeNames.ldapAttrCommonName,
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunUniqueGroupName,
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroup,
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroupId);
 		} catch (InternalErrorException e) {
+			log.error("Error moving group {}: {}", beans.getGroup().getId(), e.getMessage());
 		}
 		
 	}
@@ -84,16 +94,18 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		}
 		List<Group> memberGroups = new ArrayList<Group>();
 		try {
+			log.debug("Getting list of groups for member {}", beans.getMember().getId());
 			memberGroups = Rpc.GroupsManager.getAllMemberGroups(ldapcManager.getRpcCaller(), beans.getMember());
 			for(Group g: memberGroups) {
+				log.debug("Adding validated member {} to group {}", beans.getMember(), g);
 				perunGroup.addMemberToGroup(beans.getMember(), g);
 			}
 		} catch (MemberNotExistsException e) {
 			//IMPORTANT this is not problem, if member not exist, we expected that will be deleted in some message after that, in DB is deleted
 		} catch (PrivilegeException e) {
-			log.warn("There are no privilegies for getting member's groups", e);
+			log.warn("There are no privileges for getting member's groups", e);
 		} catch (InternalErrorException e) {
-			log.debug("", e);
+			log.error("Error adding validated member to group", e);
 		}
 	}
 
@@ -103,8 +115,10 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		}
 		List<Group> memberGroups = new ArrayList<Group>();
 		try {
+			log.debug("Getting list of groups for member {}", beans.getMember().getId());
 			memberGroups = Rpc.GroupsManager.getAllMemberGroups(ldapcManager.getRpcCaller(), beans.getMember());
 			for(Group g: memberGroups) {
+				log.debug("Removing invalidated member {} from group {}", beans.getMember(), g);
 				perunGroup.removeMemberFromGroup(beans.getMember(), g);
 			}
 		} catch (MemberNotExistsException e) {
@@ -112,7 +126,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		} catch (PrivilegeException e) {
 			log.warn("There are no privilegies for getting member's groups", e);
 		} catch (InternalErrorException e) {
-			log.debug("", e);
+			log.error("Error removing validated member from group", e);
 		}
 	}
 

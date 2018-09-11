@@ -24,18 +24,22 @@ public class CreationEventProcessor extends AbstractEventProcessor {
 			try {
 				switch(beanFlag) {
 				case MessageBeans.GROUP_F:
+					log.debug("Adding new group: {}", beans.getGroup());
 					perunGroup.addGroup(beans.getGroup());
 					break;
 					
 				case MessageBeans.RESOURCE_F:
+					log.debug("Adding new resource: {}", beans.getResource());
 					perunResource.addResource(beans.getResource(), getFacilityEntityIdValue(beans.getResource().getFacilityId()));
 					break;
 					
 				case MessageBeans.USER_F:
+					log.debug("Adding new user: {}", beans.getUser());
 					perunUser.addUser(beans.getUser());
 					break;
 					
 				case MessageBeans.VO_F:
+					log.debug("Adding new VO: {}", beans.getVo());
 					perunVO.addVo(beans.getVo());
 					break;
 					
@@ -43,7 +47,7 @@ public class CreationEventProcessor extends AbstractEventProcessor {
 					break;	
 				}
 			} catch(InternalErrorException e) {
-				
+				log.error("Error creating new entry: {}", e.getMessage());
 			}
 		}
 

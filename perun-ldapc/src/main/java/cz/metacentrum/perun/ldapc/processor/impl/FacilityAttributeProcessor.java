@@ -31,11 +31,14 @@ public class FacilityAttributeProcessor extends AbstractAttributeProcessor {
 			return;
 		}
 		try {
+			log.debug("Getting resources assigned to facility {}", beans.getFacility().getId());
 			List<Resource> resources = Rpc.FacilitiesManager.getAssignedResources(ldapcManager.getRpcCaller(), beans.getFacility());
 			for(Resource resource: resources) {
+				log.debug("Setting attribute {} for resource {}", beans.getAttribute(), resource);
 				perunResource.modifyEntry(resource, beans.getAttribute());
 			}
 		} catch (FacilityNotExistsException | InternalErrorException | PrivilegeException e) {
+				log.error("Error setting attribute:", e);
 		}
 	}
 
@@ -45,11 +48,14 @@ public class FacilityAttributeProcessor extends AbstractAttributeProcessor {
 			return;
 		}
 		try {
+			log.debug("Getting resources assigned to facility {}", beans.getFacility().getId());
 			List<Resource> resources = Rpc.FacilitiesManager.getAssignedResources(ldapcManager.getRpcCaller(), beans.getFacility());
 			for(Resource resource: resources) {
+				log.debug("Removing attribute {} from resource {}", beans.getAttributeDef(), resource);
 				perunResource.modifyEntry(resource, beans.getAttributeDef());
 			}
 		} catch (FacilityNotExistsException | InternalErrorException | PrivilegeException e) {
+			log.error("Error removing attribute:", e);
 		}
 	}
 
@@ -59,11 +65,14 @@ public class FacilityAttributeProcessor extends AbstractAttributeProcessor {
 			return;
 		}
 		try {
+			log.debug("Getting resources assigned to facility {}", beans.getFacility().getId());
 			List<Resource> resources = Rpc.FacilitiesManager.getAssignedResources(ldapcManager.getRpcCaller(), beans.getFacility());
 			for(Resource resource: resources) {
+				log.debug("Removing all attributes from resource {}", resource);
 				perunResource.removeAllAttributes(resource);
 			}
 		} catch (FacilityNotExistsException | InternalErrorException | PrivilegeException e) {
+			log.error("Error removing attributes:", e);
 		}
 	}	
 

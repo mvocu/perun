@@ -9,6 +9,8 @@ import java.util.List;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.NameNotFoundException;
@@ -25,6 +27,8 @@ import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.model.PerunEntry;
 
 public abstract class AbstractPerunEntry<T extends PerunBean> implements InitializingBean, PerunEntry<T> {
+
+	private final static Logger log = LoggerFactory.getLogger(AbstractPerunEntry.class);
 
 	@Autowired
 	protected LdapTemplate ldapTemplate;

@@ -16,18 +16,22 @@ public class UpdateEventProcessor extends AbstractEventProcessor {
 			try {
 				switch(beanFlag) {
 				case MessageBeans.GROUP_F:
+					log.debug("Updating group {}", beans.getGroup());
 					perunGroup.updateGroup(beans.getGroup());
 					break;
 					
 				case MessageBeans.RESOURCE_F:
+					log.debug("Updating resource {}", beans.getResource());
 					perunResource.updateResource(beans.getResource());
 					break;
 					
 				case MessageBeans.USER_F:
+					log.debug("Updating user {}", beans.getUser());
 					perunUser.updateUser(beans.getUser());
 					break;
 					
 				case MessageBeans.VO_F:
+					log.debug("Updating VO {}", beans.getVo());
 					perunVO.updateVo(beans.getVo());
 					break;
 					
@@ -35,7 +39,7 @@ public class UpdateEventProcessor extends AbstractEventProcessor {
 					break;	
 				}
 			} catch(InternalErrorException e) {
-				
+				log.error("Error updating entry: {}", e.getMessage());
 			}
 		}
 	}

@@ -16,18 +16,22 @@ public class DeletionEventProcessor extends AbstractEventProcessor {
 			try {
 				switch(beanFlag) {
 				case MessageBeans.GROUP_F:
+					log.debug("Removing group {}", beans.getGroup());
 					perunGroup.removeGroup(beans.getGroup());
 					break;
 					
 				case MessageBeans.RESOURCE_F:
+					log.debug("Removing resource {}", beans.getResource());
 					perunResource.deleteResource(beans.getResource());
 					break;
 					
 				case MessageBeans.USER_F:
+					log.debug("Removing user {}", beans.getUser());
 					perunUser.deleteUser(beans.getUser());
 					break;
 					
 				case MessageBeans.VO_F:
+					log.debug("Removing VO {}", beans.getVo());
 					perunVO.deleteVo(beans.getVo());
 					break;
 					
@@ -35,7 +39,7 @@ public class DeletionEventProcessor extends AbstractEventProcessor {
 					break;	
 				}
 			} catch(InternalErrorException e) {
-				
+				log.error("Error removing entry: {}", e.getMessage());
 			}
 		}
 	}
