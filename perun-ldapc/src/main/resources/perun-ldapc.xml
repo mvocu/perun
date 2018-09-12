@@ -360,10 +360,10 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<property name="name" value="preferredMail" />
 							<property name="namespace" value="urn:perun:user:attribute-def:def" />
 							<property name="valueTransformer">
-								<bean class="cz.metacentrum.perun.ldapc.bean.RegexpValueTransformer">
+								<bean class="cz.metacentrum.perun.ldapc.beans.RegexpValueTransformer">
 									<property name="replaceList">
 										<list>
-											<bean class="cz.metacentrum.perun.ldapc.beans.RegexpValueTransformer.RegexpSubst">
+											<bean class="cz.metacentrum.perun.ldapc.beans.RegexpSubst">
 												<property name="find" value="^[0-9]+[:]" />
 												<property name="replace" value="" />
 											</bean>	
