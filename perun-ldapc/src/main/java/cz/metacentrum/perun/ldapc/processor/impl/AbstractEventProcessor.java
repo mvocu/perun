@@ -37,10 +37,6 @@ public abstract class AbstractEventProcessor implements EventProcessor, Initiali
 	
 	protected Collection<DispatchEventCondition> dispatchConditions;
 	
-	public AbstractEventProcessor() {
-		dispatchConditions = new ArrayList<DispatchEventCondition>(10);
-	}
-
 	@Required
 	@Autowired
 	public void setEventDispatcher(EventDispatcher eventDispatcher) {
@@ -50,6 +46,7 @@ public abstract class AbstractEventProcessor implements EventProcessor, Initiali
 	@Required
 	@Override
 	public void setDispatchConditions(Collection<DispatchEventCondition> condition) {
+		if(dispatchConditions == null) dispatchConditions = new ArrayList<DispatchEventCondition>(10);
 		dispatchConditions.addAll(condition);
 	}
 
