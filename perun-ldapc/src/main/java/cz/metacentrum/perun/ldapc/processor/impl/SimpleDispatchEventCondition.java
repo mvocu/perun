@@ -32,7 +32,8 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 
 	@Override
 	public void setBeansCondition(List<String> names) throws InternalErrorException {
-		setBeansConditionByNames(names.toArray((String[])null));
+		if(names != null && !names.isEmpty())
+			setBeansConditionByNames(names.toArray((String[])null));
 	}
 
 	@Override
