@@ -495,7 +495,13 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 			</list>
 		</property>
 	</bean>
-	
+
+	<bean id="perunGroup" class="cz.metacentrum.perun.ldapc.model.impl.PerunGroupImpl">
+	</bean>
+		
+	<bean id="perunVO" class="cz.metacentrum.perun.ldapc.model.impl.PerunVOImpl">
+	</bean>
+		
     <bean id="ldapProperties" class="cz.metacentrum.perun.ldapc.beans.LdapProperties">
         <constructor-arg name="ldapConsumerName" index="0" value="${ldap.consumerName}" />
         <constructor-arg name="ldapBase" index="1" value="${ldap.base}" />
