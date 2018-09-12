@@ -1,6 +1,7 @@
 package cz.metacentrum.perun.ldapc.processor;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.aspectj.apache.bcel.classfile.Constant;
 
@@ -53,6 +54,7 @@ public interface EventDispatcher extends Runnable {
 		public void setBeansCondition(int presentBeansMask);
 		public void setBeansCondition(Class... beanClasses) throws InternalErrorException;
 		public void setBeansCondition(String... names) throws InternalErrorException;
+		public void setBeansCondition(List<String> names) throws InternalErrorException;
 		public void setHandlerMethodName(String name);
 		public String getHandlerMethodName();
 		

@@ -1,5 +1,7 @@
 package cz.metacentrum.perun.ldapc.processor.impl;
 
+import java.util.List;
+
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.DispatchEventCondition;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
@@ -26,6 +28,11 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 		for(String name: names) {
 			addFlagForBeanName(name);
 		}
+	}
+
+	@Override
+	public void setBeansCondition(List<String> names) throws InternalErrorException {
+		setBeansCondition(names.toArray((String[])null));
 	}
 
 	@Override
@@ -88,4 +95,5 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 		}
 
 	}
+
 }
