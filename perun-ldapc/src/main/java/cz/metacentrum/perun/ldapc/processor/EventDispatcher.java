@@ -51,9 +51,9 @@ public interface EventDispatcher extends Runnable {
 	
 	public interface DispatchEventCondition {
 			
-		public void setBeansCondition(int presentBeansMask);
-		public void setBeansCondition(Class... beanClasses) throws InternalErrorException;
-		public void setBeansCondition(String... names) throws InternalErrorException;
+		public void setBeansConditionByMask(int presentBeansMask);
+		public void setBeansConditionByClasses(Class... beanClasses) throws InternalErrorException;
+		public void setBeansConditionByNames(String... names) throws InternalErrorException;
 		public void setBeansCondition(List<String> names) throws InternalErrorException;
 		public void setHandlerMethodName(String name);
 		public String getHandlerMethodName();

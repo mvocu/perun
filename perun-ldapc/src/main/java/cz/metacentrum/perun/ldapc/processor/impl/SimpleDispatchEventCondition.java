@@ -12,19 +12,19 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 	private String handlerMethodName = null;
 	
 	@Override
-	public void setBeansCondition(int presentBeansMask) {
+	public void setBeansConditionByMask(int presentBeansMask) {
 		requiredBeans = presentBeansMask;
 	}
 
 	@Override
-	public void setBeansCondition(Class... beanClasses) throws InternalErrorException {
+	public void setBeansConditionByClasses(Class... beanClasses) throws InternalErrorException {
 		for (Class class1 : beanClasses) {
 			addFlagForBeanName(class1.getName());
 		}
 	}
 
 	@Override
-	public void setBeansCondition(String... names) throws InternalErrorException {
+	public void setBeansConditionByNames(String... names) throws InternalErrorException {
 		for(String name: names) {
 			addFlagForBeanName(name);
 		}
@@ -32,7 +32,7 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 
 	@Override
 	public void setBeansCondition(List<String> names) throws InternalErrorException {
-		setBeansCondition(names.toArray((String[])null));
+		setBeansConditionByNames(names.toArray((String[])null));
 	}
 
 	@Override
