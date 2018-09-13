@@ -58,6 +58,9 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 	}
 
 	private void addFlagForBeanName(String name) throws InternalErrorException {
+		if(name == null) {
+			return;
+		}
 		switch (name) {
 		case "cz.metacentrum.perun.core.api.Attribute":
 			requiredBeans |= MessageBeans.ATTRIBUTE_F;
