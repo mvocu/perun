@@ -261,6 +261,8 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 
 	@Override
 	public void registerProcessor(EventProcessor processor, DispatchEventCondition condition) {
+		if(registeredProcessors == null)
+			registeredProcessors = new ArrayList<Pair<DispatchEventCondition, EventProcessor>>(20);
 		registeredProcessors.add(new Pair<DispatchEventCondition, EventProcessor>(condition, processor));
 	}
 
