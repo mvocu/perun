@@ -179,7 +179,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					<property name="beansCondition">
 						<list>
 							<value>cz.metacentrum.perun.core.api.User</value>
-							<value>cz.metacentrum.perun.core.api.ExtSource</value>
+							<value>cz.metacentrum.perun.core.api.UserExtSource</value>
 						</list>
 					</property>
 					<property name="pattern" value="UserExtSource:\\[(.*)\\] added to User:\\[(.*)\\]" />
@@ -189,7 +189,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					<property name="beansCondition">
 						<list>
 							<value>cz.metacentrum.perun.core.api.User</value>
-							<value>cz.metacentrum.perun.core.api.ExtSource</value>
+							<value>cz.metacentrum.perun.core.api.UserExtSource</value>
 						</list>
 					</property>
 					<property name="pattern" value="UserExtSource:\\[(.*)\\] removed from User:\\[(.*)\\]" />
