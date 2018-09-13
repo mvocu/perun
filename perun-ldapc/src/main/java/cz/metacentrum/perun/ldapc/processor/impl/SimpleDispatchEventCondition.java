@@ -18,6 +18,7 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 
 	@Override
 	public void setBeansConditionByClasses(Class... beanClasses) throws InternalErrorException {
+		requiredBeans = 0;
 		for (Class class1 : beanClasses) {
 			addFlagForBeanName(class1.getName());
 		}
@@ -25,6 +26,7 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 
 	@Override
 	public void setBeansConditionByNames(String... names) throws InternalErrorException {
+		requiredBeans = 0;
 		for(String name: names) {
 			addFlagForBeanName(name);
 		}
