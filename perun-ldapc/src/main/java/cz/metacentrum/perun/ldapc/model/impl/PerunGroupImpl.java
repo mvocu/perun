@@ -123,7 +123,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		if(isMember(groupEntry, memberDN)) return;
 		
 		groupEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
-		ldapTemplate.update(groupEntry);
+		ldapTemplate.modifyAttributes(groupEntry);
 		
 		//Add member to vo if this group is membersGroup
 		if(group.getName().equals(VosManager.MEMBERS_GROUP) && group.getParentGroupId() == null) {
@@ -134,7 +134,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		// user->add('memberOf' => groupDN)
 		DirContextOperations userEntry = findByDN(memberDN);
 		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
-		ldapTemplate.update(userEntry);
+		ldapTemplate.modifyAttributes(userEntry);
 	}
 
 	public void removeMemberFromGroup(Member member, Group group) throws InternalErrorException {
@@ -145,7 +145,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		if(!isMember(groupEntry, memberDN)) return;
 		
 		groupEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
-		ldapTemplate.update(groupEntry);
+		ldapTemplate.modifyAttributes(groupEntry);
 
 		//Remove member from vo if this group is membersGroup
 		if(group.getName().equals(VosManager.MEMBERS_GROUP) && group.getParentGroupId() == null) {
@@ -155,7 +155,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		//Remove group info from member
 		DirContextOperations userEntry = findByDN(memberDN);
 		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
-		ldapTemplate.update(userEntry);
+		ldapTemplate.modifyAttributes(userEntry);
 	}
 
 	public boolean isMember(Member member, Group group) {

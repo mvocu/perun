@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -81,10 +82,10 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
 		voEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
-		ldapTemplate.update(voEntry);
+		ldapTemplate.modifyAttributes(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
 		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
-		ldapTemplate.update(userEntry);
+		ldapTemplate.modifyAttributes(userEntry);
 	}
 
 	@Override
@@ -92,10 +93,27 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
 		voEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
-		ldapTemplate.update(voEntry);
+		ldapTemplate.modifyAttributes(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
 		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
-		ldapTemplate.update(userEntry);
+		ldapTemplate.modifyAttributes(userEntry);
+	}
+
+	@Override
+	public void synchronizeMembers(Vo vo, List<Member> members) {
+		DirContextOperations voEntry = findByDN(buildDN(vo));
+		List<Name> memberList = new ArrayList<Name>(members.size());
+		for (Member member: members) {
+			memberList.add(user.getEntryDN(String.valueOf(member.getUserId())));
+		}
+		voEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberList.toArray());
+		ldapTemplate.modifyAttributes(voEntry);
+		int voId = vo.getId();
+		for (Name name : memberList) {
+			DirContextOperations userEntry = findByDN(name);
+			userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
+			ldapTemplate.modifyAttributes(userEntry);
+		}
 	}
 
 	@Override

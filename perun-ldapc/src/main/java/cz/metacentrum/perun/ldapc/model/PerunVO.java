@@ -1,5 +1,7 @@
 package cz.metacentrum.perun.ldapc.model;
 
+import java.util.List;
+
 import javax.naming.Name;
 import javax.naming.directory.ModificationItem;
 
@@ -41,5 +43,7 @@ public interface PerunVO extends PerunEntry<Vo> {
 	public void addMemberToVO(int voId, Member member);
 
 	public void removeMemberFromVO(int voId, Member member);
+
+	public void synchronizeMembers(Vo vo, List<Member> members);
 
 }

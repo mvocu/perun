@@ -118,6 +118,21 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	
 
 	@Override
+	public void synchronizeEntry(T bean) throws InternalErrorException {
+		if(entryExists(bean)) {
+			// this is basically the same as modifyEntry(bean), but not limited to updatableAttributes
+			// fetch current entry
+			DirContextOperations entry = findByDN(buildDN(bean));
+			// this sets the new attribute values, other remain intact
+			mapToContext(bean, entry);
+			ldapTemplate.update(entry);
+		} else {
+			// create new entry
+			addEntry(bean);
+		}
+	}
+
+	@Override
 	public DirContextOperations findByDN(Name dn) {
 		return ldapTemplate.lookupContext(dn);
 	}

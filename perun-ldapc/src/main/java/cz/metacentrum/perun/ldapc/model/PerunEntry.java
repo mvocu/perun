@@ -76,6 +76,13 @@ public interface PerunEntry<T extends PerunBean> {
 
 	/**
 	 * 
+	 * @param bean
+	 * @throws InternalErrorException
+	 */
+	void synchronizeEntry(T bean) throws InternalErrorException;
+	
+	/**
+	 * 
 	 * @param dn
 	 * @return
 	 */
