@@ -6,6 +6,7 @@ import javax.naming.directory.ModificationItem;
 
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Member;
+import cz.metacentrum.perun.core.api.Resource;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 
 public interface PerunGroup extends PerunEntry<Group> {
@@ -83,5 +84,9 @@ public interface PerunGroup extends PerunEntry<Group> {
 	 */
 	@Deprecated
 	public List<String> getAllUniqueMembersInGroup(int groupId, int voId);
+
+	public void synchronizeMembers(Group group, List<Member> members);
+
+	public void synchronizeResources(Group group, List<Resource> resources);
 
 }

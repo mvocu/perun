@@ -20,10 +20,12 @@ import org.springframework.ldap.support.LdapNameBuilder;
 
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Member;
+import cz.metacentrum.perun.core.api.Resource;
 import cz.metacentrum.perun.core.api.VosManager;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.model.PerunGroup;
+import cz.metacentrum.perun.ldapc.model.PerunResource;
 import cz.metacentrum.perun.ldapc.model.PerunUser;
 import cz.metacentrum.perun.ldapc.model.PerunVO;
 
@@ -35,6 +37,8 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 	private PerunVO vo;
 	@Autowired
 	private PerunUser user;
+	@Autowired
+	private PerunResource perunResource;
 
 	@Override
 	protected List<String> getDefaultUpdatableAttributes() {
@@ -156,6 +160,29 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		DirContextOperations userEntry = findByDN(memberDN);
 		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
 		ldapTemplate.modifyAttributes(userEntry);
+	}
+
+	@Override
+	public void synchronizeMembers(Group group, List<Member> members) {
+		DirContextOperations groupEntry = findByDN(buildDN(group));
+		List<Name> memberList = new ArrayList<Name>(members.size());
+		for (Member member: members) {
+			memberList.add(user.getEntryDN(String.valueOf(member.getUserId())));
+		}
+		groupEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberList.toArray());
+		ldapTemplate.modifyAttributes(groupEntry);
+		// user attributes are set when synchronizing users
+	}
+
+	@Override
+	public void synchronizeResources(Group group, List<Resource> resources) {
+		DirContextOperations groupEntry = findByDN(buildDN(group));
+		List<Name> resourceList = new ArrayList<Name>(resources.size());
+		for (Resource resource: resources) {
+			resourceList.add(perunResource.getEntryDN(String.valueOf(resource.getId())));
+		}
+		groupEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resourceList.toArray());
+		ldapTemplate.modifyAttributes(groupEntry);
 	}
 
 	public boolean isMember(Member member, Group group) {

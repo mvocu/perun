@@ -30,7 +30,8 @@ public class VOSynchronizer {
 			List<Vo> vos = Rpc.VosManager.getVos(ldapcManager.getRpcCaller());
 			for (Vo vo : vos) {
 				Map<String, Object> params = new HashMap<String, Object>();
-
+				params.put("vo", new Integer(vo.getId()));
+				
 				perunVO.synchronizeEntry(vo);
 				try {
 					List<Member> members = ldapcManager.getRpcCaller().call("membersManager", "getMembers", params).readList(Member.class);

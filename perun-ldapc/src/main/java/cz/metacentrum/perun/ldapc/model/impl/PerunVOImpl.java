@@ -108,12 +108,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 		}
 		voEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberList.toArray());
 		ldapTemplate.modifyAttributes(voEntry);
-		int voId = vo.getId();
-		for (Name name : memberList) {
-			DirContextOperations userEntry = findByDN(name);
-			userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
-			ldapTemplate.modifyAttributes(userEntry);
-		}
+		// user attributes are set when synchronizing users
 	}
 
 	@Override

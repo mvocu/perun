@@ -6,6 +6,7 @@ import javax.naming.Name;
 
 import org.springframework.ldap.core.DirContextOperations;
 
+import cz.metacentrum.perun.core.api.Attribute;
 import cz.metacentrum.perun.core.api.AttributeDefinition;
 import cz.metacentrum.perun.core.api.PerunBean;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
@@ -80,6 +81,13 @@ public interface PerunEntry<T extends PerunBean> {
 	 * @throws InternalErrorException
 	 */
 	void synchronizeEntry(T bean) throws InternalErrorException;
+	
+	/**
+	 * 
+	 * @param bean
+	 * @param attrs
+	 */
+	void synchronizeEntry(T bean, Iterable<Attribute> attrs);
 	
 	/**
 	 * 

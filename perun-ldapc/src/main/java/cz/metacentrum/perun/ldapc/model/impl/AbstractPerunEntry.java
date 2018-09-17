@@ -133,6 +133,12 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	}
 
 	@Override
+	public void synchronizeEntry(T bean, Iterable<Attribute> attrs) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public DirContextOperations findByDN(Name dn) {
 		return ldapTemplate.lookupContext(dn);
 	}
