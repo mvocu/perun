@@ -70,7 +70,7 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunUserId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> user.getId()
+						(PerunAttribute.SingleValueExtractor<User>)(user, attrs) -> String.valueOf(user.getId())
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrIsServiceUser, 

@@ -47,7 +47,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttribute.SingleValueExtractor<Vo>)(vo, attrs) -> vo.getId()
+						(PerunAttribute.SingleValueExtractor<Vo>)(vo, attrs) -> String.valueOf(vo.getId())
 						)
 				);
 	}

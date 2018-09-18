@@ -46,17 +46,17 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunResourceId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getId()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> String.valueOf(resource.getId())
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunFacilityId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getFacilityId()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> String.valueOf(resource.getFacilityId())
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, 
 						PerunAttribute.REQUIRED, 
-						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> resource.getVoId()
+						(PerunAttribute.SingleValueExtractor<Resource>)(resource, attrs) -> String.valueOf(resource.getVoId())
 						),
 				new PerunAttributeDesc<>(
 						PerunAttribute.PerunAttributeNames.ldapAttrDescription, 

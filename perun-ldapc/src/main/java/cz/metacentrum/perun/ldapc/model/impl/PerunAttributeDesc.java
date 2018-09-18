@@ -82,12 +82,12 @@ public class PerunAttributeDesc<T extends PerunBean> implements PerunAttribute<T
 	}
 
 	@Override
-	public Object getValue(T bean, Attribute...attributes) throws InternalErrorException {
+	public String getValue(T bean, Attribute...attributes) throws InternalErrorException {
 		return singleValueExtractor != null ? singleValueExtractor.getValue(bean, attributes) : null;
 	}
 
 	@Override
-	public Object[] getValues(T bean, Attribute...attributes) throws InternalErrorException {
+	public String[] getValues(T bean, Attribute...attributes) throws InternalErrorException {
 		return multipleValuesExtractor != null ? multipleValuesExtractor.getValues(bean, attributes) : null;
 	}
 

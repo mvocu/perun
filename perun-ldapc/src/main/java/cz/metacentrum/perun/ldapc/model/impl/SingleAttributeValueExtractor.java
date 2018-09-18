@@ -8,14 +8,14 @@ import cz.metacentrum.perun.ldapc.model.PerunAttribute.SingleValueExtractor;
 public class SingleAttributeValueExtractor<T extends PerunBean> extends AttributeValueExtractor implements SingleValueExtractor<T> {
 
 	@Override
-	public Object getValue(T bean, Attribute... attributes) throws InternalErrorException {
+	public String getValue(T bean, Attribute... attributes) throws InternalErrorException {
 		for (Attribute attribute : attributes) {
 			if(this.appliesToAttribute(attribute)) {
 				if(valueTransformer != null) 
 					// TODO check the cast
-					return valueTransformer.getValue((String)attribute.getValue(), attribute);
+					return valueTransformer.getValue(attribute.getValue().toString(), attribute);
 				else
-					return attribute.getValue();
+					return attribute.getValue().toString();
 			}
 		}
 		return null;

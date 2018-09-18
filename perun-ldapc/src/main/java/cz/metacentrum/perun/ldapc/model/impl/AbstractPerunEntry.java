@@ -260,12 +260,12 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 		for(PerunAttribute<T> attr: attrs) {
 			if(attr.requiresAttributeBean())
 				continue;
-			Object[] values;
+			String[] values;
 			if(attr.isMultiValued()) {
 				values = attr.getValues(bean);
 			} else {
 				if(attr.hasValue(bean)) {
-					values = Arrays.asList(attr.getValue(bean)).toArray();
+					values = new String[] { attr.getValue(bean) };
 				} else {
 					values = null;
 				}

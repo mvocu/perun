@@ -83,11 +83,11 @@ public interface PerunAttribute<T extends PerunBean> {
 	}
 
 	interface SingleValueExtractor<T> {
-		public Object getValue(T bean, Attribute... attributes) throws InternalErrorException;
+		public String getValue(T bean, Attribute... attributes) throws InternalErrorException;
 	}
 
 	interface MultipleValuesExtractor<T> {
-		public Object[] getValues(T bean, Attribute... attributes) throws InternalErrorException;
+		public String[] getValues(T bean, Attribute... attributes) throws InternalErrorException;
 	}
 
 	public static final boolean REQUIRED = true;
@@ -108,9 +108,9 @@ public interface PerunAttribute<T extends PerunBean> {
 
 	public boolean hasValue(T bean, Attribute... attributes) throws InternalErrorException;
 
-	public Object getValue(T bean, Attribute... attributes) throws InternalErrorException;
+	public String getValue(T bean, Attribute... attributes) throws InternalErrorException;
 
-	public Object[] getValues(T bean, Attribute... attributes) throws InternalErrorException;
+	public String[] getValues(T bean, Attribute... attributes) throws InternalErrorException;
 
 	SingleValueExtractor<T> getSingleValueExtractor();
 
