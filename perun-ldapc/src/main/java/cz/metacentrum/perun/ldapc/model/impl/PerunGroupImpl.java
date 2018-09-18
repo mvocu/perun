@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import javax.naming.Name;
 import javax.naming.directory.ModificationItem;
-import javax.swing.text.html.HTML.Attribute;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +107,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 			for(String memberDN: uniqueMembers) {
 				DirContextOperations memberEntry = user.findByDN(LdapNameBuilder.newInstance(memberDN).build());
 				memberEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
-				ldapTemplate.update(memberEntry);
+				ldapTemplate.modifyAttributes(memberEntry);
 			}
 		
 		deleteEntry(group);

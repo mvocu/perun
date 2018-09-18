@@ -135,7 +135,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 			ldapTemplate.bind(entry);
 		} else {
 			log.debug("Modifying entry {} ", entry.toString());
-			ldapTemplate.update(entry);
+			ldapTemplate.modifyAttributes(entry);
 		}
 	}
 
@@ -157,7 +157,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 		if(newEntry) {
 			ldapTemplate.bind(entry);
 		} else {
-			ldapTemplate.update(entry);
+			ldapTemplate.modifyAttributes(entry);
 		}
 	}
 
