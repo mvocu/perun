@@ -11,6 +11,7 @@ public class SingleAttributeValueExtractor<T extends PerunBean> extends Attribut
 	public String getValue(T bean, Attribute... attributes) throws InternalErrorException {
 		for (Attribute attribute : attributes) {
 			if(this.appliesToAttribute(attribute)) {
+				if(attribute == null || attribute.getValue() == null) return null;
 				if(valueTransformer != null) 
 					// TODO check the cast
 					return valueTransformer.getValue(attribute.getValue().toString(), attribute);
