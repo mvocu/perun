@@ -119,23 +119,42 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 
 	@Override
 	public void synchronizeEntry(T bean) throws InternalErrorException {
-		if(entryExists(bean)) {
-			// this is basically the same as modifyEntry(bean), but not limited to updatableAttributes
-			// fetch current entry
-			DirContextOperations entry = findByDN(buildDN(bean));
-			// this sets the new attribute values, other remain intact
-			mapToContext(bean, entry);
-			ldapTemplate.update(entry);
+		DirContextOperations entry;
+		boolean newEntry = false;
+		try {
+			entry = findByDN(buildDN(bean));
+		} catch(NameNotFoundException e) {
+			newEntry = true;
+			entry = new DirContextAdapter(buildDN(bean));
+		}
+		mapToContext(bean, entry);
+		if(newEntry) {
+			ldapTemplate.bind(entry);
 		} else {
-			// create new entry
-			addEntry(bean);
+			ldapTemplate.update(entry);
 		}
 	}
 
 	@Override
-	public void synchronizeEntry(T bean, Iterable<Attribute> attrs) {
-		// TODO Auto-generated method stub
-		
+	public void synchronizeEntry(T bean, Iterable<Attribute> attrs) throws InternalErrorException {
+		DirContextOperations entry;
+		boolean newEntry = false;
+		try {
+			entry = findByDN(buildDN(bean));
+		} catch(NameNotFoundException e) {
+			newEntry = true;
+			entry = new DirContextAdapter(buildDN(bean));
+		}
+		mapToContext(bean, entry);
+		for (Attribute attribute : attrs) {
+			PerunAttribute<T> attributeDesc = findAttributeDescriptionByPerunAttr(attributeDescriptions, attribute);
+			mapToContext(bean, entry, attributeDesc, attribute);
+		}
+		if(newEntry) {
+			ldapTemplate.bind(entry);
+		} else {
+			ldapTemplate.update(entry);
+		}
 	}
 
 	@Override
@@ -205,6 +224,16 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	@Override
 	public void setUpdatableAttributeNames(List<String> updatableAttributeNames) {
 		this.updatableAttributeNames = updatableAttributeNames;
+	}
+
+	@Override
+	public List<String> getPerunAttributeNames() {
+		List<String> attrNames = new ArrayList<String>();
+		for(PerunAttribute<T> attrDesc: getAttributeDescriptions()) {
+			AttributeValueExtractor extractor = attrDesc.isMultiValued() ? (AttributeValueExtractor)attrDesc.getMultipleValuesExtractor() : (AttributeValueExtractor)attrDesc.getSingleValueExtractor();
+			attrNames.add(extractor.getNamespace() + ":" + extractor.getName());
+		}
+		return attrNames;
 	}
 
 	protected String getBaseDN() {

@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.metacentrum.perun.core.api.Group;
+import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.MemberNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
@@ -93,9 +94,11 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			return;
 		}
 		List<Group> memberGroups = new ArrayList<Group>();
+		Perun perun = ldapcManager.getPerunBl();
 		try {
 			log.debug("Getting list of groups for member {}", beans.getMember().getId());
-			memberGroups = Rpc.GroupsManager.getAllMemberGroups(ldapcManager.getRpcCaller(), beans.getMember());
+			// memberGroups = Rpc.GroupsManager.getAllMemberGroups(ldapcManager.getRpcCaller(), beans.getMember());
+			memberGroups = perun.getGroupsManager().getAllMemberGroups(ldapcManager.getPerunSession(), beans.getMember());
 			for(Group g: memberGroups) {
 				log.debug("Adding validated member {} to group {}", beans.getMember(), g);
 				perunGroup.addMemberToGroup(beans.getMember(), g);
@@ -114,9 +117,11 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			return;
 		}
 		List<Group> memberGroups = new ArrayList<Group>();
+		Perun perun = ldapcManager.getPerunBl();
 		try {
 			log.debug("Getting list of groups for member {}", beans.getMember().getId());
-			memberGroups = Rpc.GroupsManager.getAllMemberGroups(ldapcManager.getRpcCaller(), beans.getMember());
+			// memberGroups = Rpc.GroupsManager.getAllMemberGroups(ldapcManager.getRpcCaller(), beans.getMember());
+			memberGroups = perun.getGroupsManager().getAllMemberGroups(ldapcManager.getPerunSession(), beans.getMember());
 			for(Group g: memberGroups) {
 				log.debug("Removing invalidated member {} from group {}", beans.getMember(), g);
 				perunGroup.removeMemberFromGroup(beans.getMember(), g);

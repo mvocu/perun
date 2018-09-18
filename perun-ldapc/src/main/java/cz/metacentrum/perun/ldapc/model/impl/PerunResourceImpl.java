@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -106,6 +107,17 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 		ldapTemplate.modifyAttributes(entry);
 		entry = perunGroup.findById(String.valueOf(group.getVoId()), String.valueOf(group.getId()));
 		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resource.getId());
+		ldapTemplate.modifyAttributes(entry);
+	}
+
+	@Override
+	public void synchronizeGroups(Resource resource, List<Group> assignedGroups) throws InternalErrorException {
+		DirContextOperations entry = findByDN(buildDN(resource));
+		List<String> groupIds = new ArrayList<String>();
+		for (Group group : assignedGroups) {
+			groupIds.add(String.valueOf(group.getId()));
+		}
+		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrAssignedGroupId, groupIds.toArray());
 		ldapTemplate.modifyAttributes(entry);
 	}
 

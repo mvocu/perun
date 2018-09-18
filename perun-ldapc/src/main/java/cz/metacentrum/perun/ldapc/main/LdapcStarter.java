@@ -1,5 +1,6 @@
 package cz.metacentrum.perun.ldapc.main;
 
+import org.apache.directory.api.ldap.aci.UserClass.ThisEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +8,11 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import cz.metacentrum.perun.core.api.ExtSourcesManager;
+import cz.metacentrum.perun.core.api.Perun;
+import cz.metacentrum.perun.core.api.PerunClient;
 import cz.metacentrum.perun.core.api.PerunPrincipal;
+import cz.metacentrum.perun.core.bl.PerunBl;
+import cz.metacentrum.perun.ldapc.beans.LdapProperties;
 import cz.metacentrum.perun.ldapc.service.LdapcManager;
 import cz.metacentrum.perun.rpclib.Rpc;
 import cz.metacentrum.perun.rpclib.api.RpcCaller;
@@ -21,10 +26,16 @@ public class LdapcStarter {
 
 	private LdapcManager ldapcManager;
 	private AbstractApplicationContext springCtx;
-
+	private PerunPrincipal perunPrincipal;
+	private Perun perunBl;
+	private LdapProperties ldapProperties;
+	
 	public LdapcStarter() {
+		this.perunPrincipal = new PerunPrincipal("perunLdapc", ExtSourcesManager.EXTSOURCE_NAME_INTERNAL, ExtSourcesManager.EXTSOURCE_INTERNAL);
 		springCtx = new ClassPathXmlApplicationContext("/perun-ldapc.xml");
 		this.ldapcManager = springCtx.getBean("ldapcManager", LdapcManager.class);
+		this.ldapProperties = springCtx.getBean("ldapProperties", LdapProperties.class);
+		this.perunBl = springCtx.getBean("perun", PerunBl.class);
 	}
 
 	/**
@@ -49,22 +60,28 @@ public class LdapcStarter {
 		}
 
 
-		PerunPrincipal pp = new PerunPrincipal("perunLdapc", ExtSourcesManager.EXTSOURCE_NAME_INTERNAL, ExtSourcesManager.EXTSOURCE_INTERNAL);
 
 		try {
-			RpcCaller rpcCaller = new RpcCallerImpl(pp);
-
 			LdapcStarter ldapcStarter = new LdapcStarter();
+
+			RpcCaller rpcCaller = new RpcCallerImpl(ldapcStarter.perunPrincipal);
 
 			// Just for the Spring IoC to exit gracefully...
 			ldapcStarter.springCtx.registerShutdownHook();
 
-			// Sets RPC Caller
+			// Sets RPC Caller and Perun
 			ldapcStarter.ldapcManager.setRpcCaller(rpcCaller);
+			ldapcStarter.ldapcManager.setPerunPrincipal(ldapcStarter.perunPrincipal);
+			ldapcStarter.ldapcManager.setPerunBl(ldapcStarter.perunBl);
 
+			// Synchronize before starting the audit consumer
+			ldapcStarter.ldapcManager.synchronize();
+			
 			//Set lastProcessedIdToSet if bigger than 0
 			if(lastProcessedIdToSet > 0) {
-				Rpc.AuditMessagesManager.setLastProcessedId(rpcCaller, "ldapcConsumer", lastProcessedIdToSet);
+				//Rpc.AuditMessagesManager.setLastProcessedId(rpcCaller, "ldapcConsumer", lastProcessedIdToSet);
+				ldapcStarter.perunBl.getAuditMessagesManager().setLastProcessedId(ldapcStarter.ldapcManager.getPerunSession(), 
+						ldapcStarter.ldapProperties.getLdapConsumerName(), lastProcessedIdToSet);
 			}
 
 			// Start processing events (run method in EventProcessorImpl)

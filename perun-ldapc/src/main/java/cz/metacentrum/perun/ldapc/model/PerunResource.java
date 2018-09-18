@@ -1,5 +1,7 @@
 package cz.metacentrum.perun.ldapc.model;
 
+import java.util.List;
+
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Resource;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
@@ -27,5 +29,7 @@ public interface PerunResource extends PerunEntry<Resource> {
 	
 	public void assignGroup(Resource resource, Group group) throws InternalErrorException;
 	
-	public void removeGroup(Resource resource, Group group) throws InternalErrorException; 
+	public void removeGroup(Resource resource, Group group) throws InternalErrorException;
+
+	public void synchronizeGroups(Resource resource, List<Group> assignedGroups) throws InternalErrorException;
 }

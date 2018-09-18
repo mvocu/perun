@@ -1,59 +1,80 @@
 package cz.metacentrum.perun.ldapc.beans;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import cz.metacentrum.perun.core.api.Attribute;
 import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Resource;
 import cz.metacentrum.perun.core.api.Vo;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PerunException;
+import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
+import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.ldapc.model.PerunResource;
-import cz.metacentrum.perun.ldapc.service.LdapcManager;
-import cz.metacentrum.perun.rpclib.Rpc;
 
-public class ResourceSynchronizer {
+@Component
+public class ResourceSynchronizer extends AbstractSynchronizer {
 
 	private final static Logger log = LoggerFactory.getLogger(ResourceSynchronizer.class);
 
 	@Autowired
-	protected LdapcManager ldapcManager;
-	@Autowired
 	protected PerunResource perunResource;
 	
 	public void synchronizeResources() {
+		Perun perun = ldapcManager.getPerunBl();
 		try {
-			List<Vo> vos = Rpc.VosManager.getVos(ldapcManager.getRpcCaller());
+			log.debug("Resource synchronization - getting list of VOs");
+			// List<Vo> vos = Rpc.VosManager.getVos(ldapcManager.getRpcCaller());
+			List<Vo> vos = perun.getVosManager().getVos(ldapcManager.getPerunSession());
 			for (Vo vo : vos) {
-				Map<String, Object> params = new HashMap <String, Object>();
-				params.put("vo", new Integer(vo.getId()));
+				// Map<String, Object> params = new HashMap <String, Object>();
+				// params.put("vo", new Integer(vo.getId()));
 				
 				try {
-					List<Resource> resources = ldapcManager.getRpcCaller().call("resourceManager", "getResources", params).readList(Resource.class);
+					log.debug("Getting list of resources for VO {}", vo);
+					//List<Resource> resources = ldapcManager.getRpcCaller().call("resourceManager", "getResources", params).readList(Resource.class);
+					List<Resource> resources = perun.getResourcesManager().getResources(ldapcManager.getPerunSession(), vo);
 
 					for(Resource resource: resources) {
 						
-						Facility facility = Rpc.ResourcesManager.getFacility(ldapcManager.getRpcCaller(), resource);
+						log.debug("Getting list of resources for resource {}", resource.getId());
+						// Facility facility = Rpc.ResourcesManager.getFacility(ldapcManager.getRpcCaller(), resource);
+						Facility facility = perun.getResourcesManager().getFacility(ldapcManager.getPerunSession(), resource);
 						
-						params.clear();
-						params.put("facility",  new Integer(facility.getId()));
+						// params.clear();
+						// params.put("facility",  new Integer(facility.getId()));
 						
-						List<Attribute> attrs = ldapcManager.getRpcCaller().call("attributesManager", "getAttributes", params).readList(Attribute.class);
+						log.debug("Getting list of attributes for resource {}", resource.getId());
+						List<Attribute> attrs = new ArrayList<Attribute>(); 
+						for(String attrName: fillPerunAttributeNames(perunResource.getPerunAttributeNames())) {
+							log.debug("Getting attribute {} for resource {}", attrName, resource.getId());
+							attrs.add(perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), facility, attrName));
+						}
 						
+						log.debug("Synchronizing resource {} with {} attrs", resource, attrs.size());
 						perunResource.synchronizeEntry(resource, attrs);
+
+						log.debug("Getting list of assigned group for resource {}", resource.getId());
+						List<Group> assignedGroups = perun.getResourcesManager().getAssignedGroups(ldapcManager.getPerunSession(), resource);
+
+						log.debug("Synchronizing {} groups for resource {}", assignedGroups.size(), resource.getId());
+						perunResource.synchronizeGroups(resource, assignedGroups);
 					}
+
+					
 				} catch (PerunException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error("Error synchronizing resources", e);
 				}
 			}
-		} catch (InternalErrorException e) {
+		} catch (InternalErrorException | PrivilegeException e) {
+			log.error("Error getting VO list", e);
 		}
 
 	}

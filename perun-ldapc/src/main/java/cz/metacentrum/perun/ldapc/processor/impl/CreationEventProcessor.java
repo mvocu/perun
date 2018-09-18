@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import cz.metacentrum.perun.core.api.AttributesManager;
 import cz.metacentrum.perun.core.api.Facility;
+import cz.metacentrum.perun.core.api.Perun;
+import cz.metacentrum.perun.core.api.PerunSession;
 import cz.metacentrum.perun.core.api.exceptions.AttributeNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.FacilityNotExistsException;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
@@ -61,9 +63,12 @@ public class CreationEventProcessor extends AbstractEventProcessor {
 	 * @throws InternalErrorException if some exception is thrown from RPC
 	 */
 	private String getFacilityEntityIdValue(int facilityId) throws InternalErrorException {
+		Perun perun = ldapcManager.getPerunBl();
+		PerunSession perunSession = ldapcManager.getPerunSession();
 		Facility facility = null;
 		try {
-			facility = Rpc.FacilitiesManager.getFacilityById(ldapcManager.getRpcCaller(), facilityId);
+			// facility = Rpc.FacilitiesManager.getFacilityById(ldapcManager.getRpcCaller(), facilityId);
+			facility = perun.getFacilitiesManager().getFacilityById(perunSession, facilityId);
 		} catch (PrivilegeException ex) {
 			throw new InternalErrorException("There are no privilegies for getting facility by id.", ex);
 		} catch (FacilityNotExistsException ex) {
@@ -73,7 +78,8 @@ public class CreationEventProcessor extends AbstractEventProcessor {
 
 		cz.metacentrum.perun.core.api.Attribute entityID = null;
 		try {
-			entityID = Rpc.AttributesManager.getAttribute(ldapcManager.getRpcCaller(), facility, AttributesManager.NS_FACILITY_ATTR_DEF + ":" + PerunAttribute.PerunAttributeNames.perunAttrEntityID);
+			// entityID = Rpc.AttributesManager.getAttribute(ldapcManager.getRpcCaller(), facility, AttributesManager.NS_FACILITY_ATTR_DEF + ":" + PerunAttribute.PerunAttributeNames.perunAttrEntityID);
+			entityID = perun.getAttributesManager().getAttribute(perunSession, facility, AttributesManager.NS_FACILITY_ATTR_DEF + ":" + PerunAttribute.PerunAttributeNames.perunAttrEntityID);
 		} catch(PrivilegeException ex) {
 			throw new InternalErrorException("There are no privilegies for getting facility attribute.", ex);
 		} catch(AttributeNotExistsException ex) {

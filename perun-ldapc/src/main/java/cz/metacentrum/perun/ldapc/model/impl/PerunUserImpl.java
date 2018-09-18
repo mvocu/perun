@@ -1,24 +1,32 @@
 package cz.metacentrum.perun.ldapc.model.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.naming.Name;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.support.LdapNameBuilder;
 
+import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.User;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
+import cz.metacentrum.perun.ldapc.model.PerunGroup;
 import cz.metacentrum.perun.ldapc.model.PerunUser;
 
 public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser {
 
 	private final static Logger log = LoggerFactory.getLogger(PerunUserImpl.class);
 
+	@Autowired
+	private PerunGroup perunGroup;
+	
 	@Override
 	protected List<String> getDefaultUpdatableAttributes() {
 		return Arrays.asList(
@@ -110,6 +118,18 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 	public void removePrincipal(User user, String login) throws InternalErrorException {
 		DirContextOperations entry = findByDN(buildDN(user));
 		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrEduPersonPrincipalNames, login);
+		ldapTemplate.modifyAttributes(entry);
+	}
+
+	@Override
+	public void synchronizeMembership(User user, Set<Integer> voIds, List<Group> groups) {
+		DirContextOperations entry = findByDN(buildDN(user));
+		List<Name> memberOfNames = new ArrayList<Name>();
+		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voIds.toArray());
+		for(Group group: groups) {
+			memberOfNames.add(perunGroup.getEntryDN(String.valueOf(group.getVoId()), String.valueOf(group.getId())));
+		}
+		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberOfNames.toArray());
 		ldapTemplate.modifyAttributes(entry);
 	}
 

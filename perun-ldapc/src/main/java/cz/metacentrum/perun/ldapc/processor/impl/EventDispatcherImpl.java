@@ -22,7 +22,9 @@ import cz.metacentrum.perun.core.api.Facility;
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Member;
 import cz.metacentrum.perun.core.api.Pair;
+import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.PerunBean;
+import cz.metacentrum.perun.core.api.PerunSession;
 import cz.metacentrum.perun.core.api.Resource;
 import cz.metacentrum.perun.core.api.User;
 import cz.metacentrum.perun.core.api.UserExtSource;
@@ -205,6 +207,9 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 		List<AuditMessage> messages;
 
 		try {
+			PerunSession perunSession = ldapcManager.getPerunSession();
+			Perun perun = ldapcManager.getPerunBl();
+			
 			//If running is true, then this process will be continuously
 			while (running) {
 
@@ -214,7 +219,8 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 				do {
 					try {
 						//IMPORTANT STEP1: Get new bulk of messages
-						messages = Rpc.AuditMessagesManager.pollConsumerMessagesForParser(ldapcManager.getRpcCaller(), ldapProperties.getLdapConsumerName());
+						messages = perun.getAuditMessagesManager().pollConsumerMessagesForParser(perunSession, ldapProperties.getLdapConsumerName());
+						// Rpc.AuditMessagesManager.pollConsumerMessagesForParser(ldapcManager.getRpcCaller(), ldapProperties.getLdapConsumerName());
 					} catch (InternalErrorException ex) {
 						log.error("Consumer failed due to {}. Sleeping for {} ms.",ex, sleepTime);
 						Thread.sleep(sleepTime);

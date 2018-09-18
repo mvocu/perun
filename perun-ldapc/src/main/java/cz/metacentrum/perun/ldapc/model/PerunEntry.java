@@ -86,8 +86,9 @@ public interface PerunEntry<T extends PerunBean> {
 	 * 
 	 * @param bean
 	 * @param attrs
+	 * @throws InternalErrorException 
 	 */
-	void synchronizeEntry(T bean, Iterable<Attribute> attrs);
+	void synchronizeEntry(T bean, Iterable<Attribute> attrs) throws InternalErrorException;
 	
 	/**
 	 * 
@@ -157,4 +158,10 @@ public interface PerunEntry<T extends PerunBean> {
 	 * @param updatableAttributeNames
 	 */
 	void setUpdatableAttributeNames(List<String> updatableAttributeNames);
+
+	/**
+	 * 
+	 * @return
+	 */
+	List<String> getPerunAttributeNames(); 
 }

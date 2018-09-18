@@ -1,9 +1,13 @@
 package cz.metacentrum.perun.ldapc.model;
 
+import java.util.List;
+import java.util.Set;
+
 import javax.naming.Name;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.ModificationItem;
 
+import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.User;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 
@@ -42,5 +46,8 @@ public interface PerunUser extends PerunEntry<User> {
 
 
 	public void removePrincipal(User user, String login) throws InternalErrorException;
+
+
+	public void synchronizeMembership(User user, Set<Integer> voIds, List<Group> groups);
 
 }
