@@ -3,6 +3,7 @@ package cz.metacentrum.perun.ldapc.model.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import cz.metacentrum.perun.core.api.Attribute;
 import cz.metacentrum.perun.core.api.BeansUtils;
@@ -16,12 +17,25 @@ public class MultipleAttributeValueExtractor<T extends PerunBean> extends Attrib
 	public String[] getValues(T bean, Attribute... attributes) throws InternalErrorException {
 		for (Attribute attribute : attributes) {
 			if(this.appliesToAttribute(attribute)) {
+				if(attribute == null) return null;
 				if (attribute.getType().equals(String.class.getName()) || attribute.getType().equals(BeansUtils.largeStringClassName)) {
-					return new String[] { attribute.getValue().toString() };
+					Object value = attribute.getValue();
+					if(value == null) 
+						return null;
+					else
+						return new String[] { (String)value };
 				} else if (attribute.getType().equals(ArrayList.class.getName()) || attribute.getType().equals(BeansUtils.largeArrayListClassName)) {
-					return attribute.valueAsList().toArray(new String[5]);
+					List<String> values = attribute.valueAsList();
+					if(values == null) 
+						return null;
+					else 
+						return values.toArray(new String[5]);
 				} else if (attribute.getType().equals(LinkedHashMap.class.getName())) {
-					return attribute.valueAsMap().entrySet().toArray(new String[5]);
+					LinkedHashMap<String, String> values = attribute.valueAsMap();
+					if(values == null || values.isEmpty()) 
+						return null;
+					else
+						return values.entrySet().toArray(new String[5]);
 				} else {
 					return null;
 				}
