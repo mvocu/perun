@@ -54,8 +54,12 @@ public class ResourceSynchronizer extends AbstractSynchronizer {
 						log.debug("Getting list of attributes for resource {}", resource.getId());
 						List<Attribute> attrs = new ArrayList<Attribute>(); 
 						for(String attrName: fillPerunAttributeNames(perunResource.getPerunAttributeNames())) {
-							log.debug("Getting attribute {} for resource {}", attrName, resource.getId());
-							attrs.add(perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), facility, attrName));
+							try {
+								log.debug("Getting attribute {} for resource {}", attrName, resource.getId());
+								attrs.add(perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), facility, attrName));
+							} catch (PerunException e) {
+								log.warn("No attribute {} found for resource {}: {}", attrName, resource.getId(), e.getMessage());
+							}
 						}
 						
 						log.debug("Synchronizing resource {} with {} attrs", resource, attrs.size());

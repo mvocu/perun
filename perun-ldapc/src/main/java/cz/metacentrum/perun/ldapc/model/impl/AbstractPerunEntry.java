@@ -247,7 +247,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	
 	protected Name addBaseDN(Name entryDN) {
 		try {
-			return entryDN.addAll(LdapNameBuilder.newInstance(getBaseDN()).build());
+			return LdapNameBuilder.newInstance(getBaseDN()).build().addAll(entryDN);
 		} catch (InvalidNameException e) {
 			return entryDN;
 		}
