@@ -14,6 +14,7 @@ import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.Vo;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.core.api.exceptions.PerunException;
+import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.ldapc.model.PerunVO;
 import cz.metacentrum.perun.rpclib.Rpc;
 
@@ -29,7 +30,8 @@ public class VOSynchronizer extends AbstractSynchronizer {
 		Perun perun = ldapcManager.getPerunBl();
 		try {
 			log.debug("Getting list of VOs");
-			List<Vo> vos = Rpc.VosManager.getVos(ldapcManager.getRpcCaller());
+			// List<Vo> vos = Rpc.VosManager.getVos(ldapcManager.getRpcCaller());
+			List<Vo> vos = perun.getVosManager().getVos(ldapcManager.getPerunSession());  
 			for (Vo vo : vos) {
 				// Map<String, Object> params = new HashMap<String, Object>();
 				// params.put("vo", new Integer(vo.getId()));
@@ -46,7 +48,7 @@ public class VOSynchronizer extends AbstractSynchronizer {
 					log.error("Error synchronizing members for VO " + vo.getId(), e);
 				}
 			}
-		} catch (InternalErrorException e) {
+		} catch (InternalErrorException | PrivilegeException e) {
 			log.error("Error synchronizing VOs", e);
 		}
 	}
