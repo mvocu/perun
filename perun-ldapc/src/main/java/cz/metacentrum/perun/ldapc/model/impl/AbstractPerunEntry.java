@@ -129,8 +129,10 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 		}
 		mapToContext(bean, entry);
 		if(newEntry) {
+			log.debug("Creating new entry {} ", entry.toString());
 			ldapTemplate.bind(entry);
 		} else {
+			log.debug("Modifying entry {} ", entry.toString());
 			ldapTemplate.update(entry);
 		}
 	}
