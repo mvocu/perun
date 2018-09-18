@@ -158,7 +158,7 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 	 */
 	@Override
 	public Name getEntryDN(String ...userId) {
-		return LdapNameBuilder.newInstance(getBaseDN())
+		return LdapNameBuilder.newInstance()
 				.add(PerunAttribute.PerunAttributeNames.organizationalUnitPeople)
 				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunUserId, userId[0])
 				.build();

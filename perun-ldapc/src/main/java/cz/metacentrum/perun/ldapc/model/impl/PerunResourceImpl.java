@@ -123,7 +123,7 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 
 	@Override
 	public Name getEntryDN(String... id) {
-		return LdapNameBuilder.newInstance(getBaseDN())
+		return LdapNameBuilder.newInstance()
 				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, id[0])
 				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunResourceId, id[1])
 				.build();

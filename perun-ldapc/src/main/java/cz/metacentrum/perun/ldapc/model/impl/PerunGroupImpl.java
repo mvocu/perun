@@ -228,7 +228,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 	 */
 	@Override
 	public Name getEntryDN(String ...id) {
-		return LdapNameBuilder.newInstance(getBaseDN())
+		return LdapNameBuilder.newInstance()
 				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, id[0])
 				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunGroupId, id[1])
 				.build();

@@ -126,7 +126,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 
 	@Override
 	public Name getEntryDN(String ...voId) {
-		return LdapNameBuilder.newInstance(getBaseDN())
+		return LdapNameBuilder.newInstance()
 				.add(PerunAttribute.PerunAttributeNames.ldapAttrPerunVoId, voId[0])
 				.build();
 	}
