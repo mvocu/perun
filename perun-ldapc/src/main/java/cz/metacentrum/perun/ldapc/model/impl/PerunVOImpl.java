@@ -81,7 +81,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	public void addMemberToVO(int voId, Member member) {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		voEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		voEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN));
 		ldapTemplate.modifyAttributes(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
 		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
@@ -92,7 +92,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	public void removeMemberFromVO(int voId, Member member) {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		voEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		voEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN));
 		ldapTemplate.modifyAttributes(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
 		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
@@ -104,7 +104,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 		DirContextOperations voEntry = findByDN(buildDN(vo));
 		List<Name> memberList = new ArrayList<Name>(members.size());
 		for (Member member: members) {
-			memberList.add(user.getEntryDN(String.valueOf(member.getUserId())));
+			memberList.add(addBaseDN(user.getEntryDN(String.valueOf(member.getUserId()))));
 		}
 		voEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberList.toArray());
 		ldapTemplate.modifyAttributes(voEntry);

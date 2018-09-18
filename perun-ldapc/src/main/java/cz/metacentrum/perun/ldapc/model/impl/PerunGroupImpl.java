@@ -126,7 +126,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
 		if(isMember(groupEntry, memberDN)) return;
 		
-		groupEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		groupEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN));
 		ldapTemplate.modifyAttributes(groupEntry);
 		
 		//Add member to vo if this group is membersGroup
@@ -137,7 +137,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		//Add group info to member
 		// user->add('memberOf' => groupDN)
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
+		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, addBaseDN(groupDN));
 		ldapTemplate.modifyAttributes(userEntry);
 	}
 
@@ -148,7 +148,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
 		if(!isMember(groupEntry, memberDN)) return;
 		
-		groupEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberDN);
+		groupEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN));
 		ldapTemplate.modifyAttributes(groupEntry);
 
 		//Remove member from vo if this group is membersGroup
@@ -158,7 +158,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		}
 		//Remove group info from member
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN);
+		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, addBaseDN(groupDN));
 		ldapTemplate.modifyAttributes(userEntry);
 	}
 
@@ -167,7 +167,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		DirContextOperations groupEntry = findByDN(buildDN(group));
 		List<Name> memberList = new ArrayList<Name>(members.size());
 		for (Member member: members) {
-			memberList.add(user.getEntryDN(String.valueOf(member.getUserId())));
+			memberList.add(addBaseDN(user.getEntryDN(String.valueOf(member.getUserId()))));
 		}
 		groupEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberList.toArray());
 		ldapTemplate.modifyAttributes(groupEntry);
@@ -187,7 +187,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 
 	public boolean isMember(Member member, Group group) {
 		DirContextOperations groupEntry = findByDN(buildDN(group));
-		Name userDN = user.getEntryDN(String.valueOf(member.getUserId()));
+		Name userDN = addBaseDN(user.getEntryDN(String.valueOf(member.getUserId())));
 		return isMember(groupEntry, userDN);
 	}
 

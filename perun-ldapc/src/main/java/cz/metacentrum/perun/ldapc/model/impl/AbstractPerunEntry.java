@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 
@@ -17,6 +18,7 @@ import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.support.LdapNameBuilder;
 
 import cz.metacentrum.perun.core.api.Attribute;
 import cz.metacentrum.perun.core.api.AttributeDefinition;
@@ -240,6 +242,14 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 
 	protected String getBaseDN() {
 		return ldapProperties.getLdapBase();
+	}
+	
+	protected Name addBaseDN(Name entryDN) {
+		try {
+			return entryDN.addAll(LdapNameBuilder.newInstance(getBaseDN()).build());
+		} catch (InvalidNameException e) {
+			return entryDN;
+		}
 	}
 	
 	abstract protected Name buildDN(T bean);
