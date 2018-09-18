@@ -234,6 +234,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	public List<String> getPerunAttributeNames() {
 		List<String> attrNames = new ArrayList<String>();
 		for(PerunAttribute<T> attrDesc: getAttributeDescriptions()) {
+			if(!attrDesc.requiresAttributeBean()) continue;
 			AttributeValueExtractor extractor = attrDesc.isMultiValued() ? (AttributeValueExtractor)attrDesc.getMultipleValuesExtractor() : (AttributeValueExtractor)attrDesc.getSingleValueExtractor();
 			attrNames.add(extractor.getNamespace() + ":" + extractor.getName());
 		}
