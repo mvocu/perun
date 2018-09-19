@@ -176,11 +176,7 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 	@Override
 	public void synchronizeResources(Group group, List<Resource> resources) {
 		DirContextOperations groupEntry = findByDN(buildDN(group));
-		List<Name> resourceList = new ArrayList<Name>(resources.size());
-		for (Resource resource: resources) {
-			resourceList.add(perunResource.getEntryDN(String.valueOf(resource.getId())));
-		}
-		groupEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resourceList.toArray());
+		groupEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resources.stream().map( resource -> String.valueOf(resource.getId())).toArray(String[]::new));
 		ldapTemplate.modifyAttributes(groupEntry);
 	}
 
