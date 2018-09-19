@@ -124,8 +124,8 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 	@Override
 	public void synchronizeMembership(User user, Set<Integer> voIds, List<Group> groups) {
 		DirContextOperations entry = findByDN(buildDN(user));
+		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voIds.stream().map(id -> String.valueOf(id)).toArray(String[]::new));
 		List<Name> memberOfNames = new ArrayList<Name>();
-		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voIds.toArray());
 		for(Group group: groups) {
 			memberOfNames.add(addBaseDN(perunGroup.getEntryDN(String.valueOf(group.getVoId()), String.valueOf(group.getId()))));
 		}
