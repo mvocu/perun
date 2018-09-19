@@ -12,7 +12,7 @@ public class PasswordValueTransformer implements AttributeValueTransformer {
 	
 	@Override
 	public String getValue(String value, Attribute attr) {
-		return "{SASL}" + attr.getValue() + "@" + ldapProperties.getLdapLoginNamespace();
+		return "{SASL}" + attr.getValue() + "@" + ldapProperties.getLdapLoginNamespace().toUpperCase();
 	}
 
 }

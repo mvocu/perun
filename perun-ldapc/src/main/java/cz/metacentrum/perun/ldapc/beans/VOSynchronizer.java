@@ -36,20 +36,24 @@ public class VOSynchronizer extends AbstractSynchronizer {
 				// Map<String, Object> params = new HashMap<String, Object>();
 				// params.put("vo", new Integer(vo.getId()));
 				
-				log.debug("Synchronizing VO entry {}", vo);
-				perunVO.synchronizeEntry(vo);
 				try {
-					log.debug("Getting list of VO {} members", vo.getId());
-					// List<Member> members = ldapcManager.getRpcCaller().call("membersManager", "getMembers", params).readList(Member.class);
-					List<Member> members = perun.getMembersManager().getMembers(ldapcManager.getPerunSession(), vo);
-					log.debug("Synchronizing {} members of VO {}", members.size(), vo.getId());
-					perunVO.synchronizeMembers(vo, members);
-				} catch (PerunException e) {
-					log.error("Error synchronizing members for VO " + vo.getId(), e);
+					log.debug("Synchronizing VO entry {}", vo);
+					perunVO.synchronizeEntry(vo);
+					try {
+						log.debug("Getting list of VO {} members", vo.getId());
+						// List<Member> members = ldapcManager.getRpcCaller().call("membersManager", "getMembers", params).readList(Member.class);
+						List<Member> members = perun.getMembersManager().getMembers(ldapcManager.getPerunSession(), vo);
+						log.debug("Synchronizing {} members of VO {}", members.size(), vo.getId());
+						perunVO.synchronizeMembers(vo, members);
+					} catch (PerunException e) {
+						log.error("Error synchronizing members for VO " + vo.getId(), e);
+					}
+				} catch (InternalErrorException e) {
+					log.error("Error synchronizing VO", e);
 				}
 			}
 		} catch (InternalErrorException | PrivilegeException e) {
-			log.error("Error synchronizing VOs", e);
+			log.error("Error getting list of VOs", e);
 		}
 	}
 }

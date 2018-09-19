@@ -281,6 +281,9 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 					values = null;
 				}
 			} 
+			if(attr.isRequired() && (values == null || values.length == 0)) {
+				throw new InternalErrorException("Value of required attribute " +  attr.getName() + " is empty");
+			}
 			context.setAttributeValues(attr.getName(), values);
 		}
 	}
@@ -304,6 +307,9 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 				} else {
 					values = null;
 				}
+			}
+			if(attrDef.isRequired() && (values == null || values.length == 0)) {
+				throw new InternalErrorException("Value of required attribute " +  attrDef.getName() + " is empty");
 			}
 		} else {
 			values = null;

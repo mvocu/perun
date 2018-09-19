@@ -44,32 +44,36 @@ public class ResourceSynchronizer extends AbstractSynchronizer {
 
 					for(Resource resource: resources) {
 						
-						log.debug("Getting list of resources for resource {}", resource.getId());
-						// Facility facility = Rpc.ResourcesManager.getFacility(ldapcManager.getRpcCaller(), resource);
-						Facility facility = perun.getResourcesManager().getFacility(ldapcManager.getPerunSession(), resource);
-						
-						// params.clear();
-						// params.put("facility",  new Integer(facility.getId()));
-						
-						log.debug("Getting list of attributes for resource {}", resource.getId());
-						List<Attribute> attrs = new ArrayList<Attribute>(); 
-						for(String attrName: fillPerunAttributeNames(perunResource.getPerunAttributeNames())) {
-							try {
-								log.debug("Getting attribute {} for resource {}", attrName, resource.getId());
-								attrs.add(perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), facility, attrName));
-							} catch (PerunException e) {
-								log.warn("No attribute {} found for resource {}: {}", attrName, resource.getId(), e.getMessage());
+						try { 
+							log.debug("Getting list of resources for resource {}", resource.getId());
+							// Facility facility = Rpc.ResourcesManager.getFacility(ldapcManager.getRpcCaller(), resource);
+							Facility facility = perun.getResourcesManager().getFacility(ldapcManager.getPerunSession(), resource);
+
+							// params.clear();
+							// params.put("facility",  new Integer(facility.getId()));
+
+							log.debug("Getting list of attributes for resource {}", resource.getId());
+							List<Attribute> attrs = new ArrayList<Attribute>(); 
+							for(String attrName: fillPerunAttributeNames(perunResource.getPerunAttributeNames())) {
+								try {
+									log.debug("Getting attribute {} for resource {}", attrName, resource.getId());
+									attrs.add(perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), facility, attrName));
+								} catch (PerunException e) {
+									log.warn("No attribute {} found for resource {}: {}", attrName, resource.getId(), e.getMessage());
+								}
 							}
+
+							log.debug("Synchronizing resource {} with {} attrs", resource, attrs.size());
+							perunResource.synchronizeEntry(resource, attrs);
+
+							log.debug("Getting list of assigned group for resource {}", resource.getId());
+							List<Group> assignedGroups = perun.getResourcesManager().getAssignedGroups(ldapcManager.getPerunSession(), resource);
+
+							log.debug("Synchronizing {} groups for resource {}", assignedGroups.size(), resource.getId());
+							perunResource.synchronizeGroups(resource, assignedGroups);
+						} catch (PerunException e) {
+							log.error("Error synchronizing resource", e);
 						}
-						
-						log.debug("Synchronizing resource {} with {} attrs", resource, attrs.size());
-						perunResource.synchronizeEntry(resource, attrs);
-
-						log.debug("Getting list of assigned group for resource {}", resource.getId());
-						List<Group> assignedGroups = perun.getResourcesManager().getAssignedGroups(ldapcManager.getPerunSession(), resource);
-
-						log.debug("Synchronizing {} groups for resource {}", assignedGroups.size(), resource.getId());
-						perunResource.synchronizeGroups(resource, assignedGroups);
 					}
 
 					

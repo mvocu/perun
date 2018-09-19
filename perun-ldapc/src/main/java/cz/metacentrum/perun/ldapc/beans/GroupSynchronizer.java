@@ -49,23 +49,27 @@ public class GroupSynchronizer extends AbstractSynchronizer {
 
 					for(Group group : groups) {
 
-						log.debug("Synchronizing group {}", group);
-						perunGroup.synchronizeEntry(group);
+						try {
+							log.debug("Synchronizing group {}", group);
+							perunGroup.synchronizeEntry(group);
 
-						// params.clear();
-						// params.put("group", new Integer(group.getId()));
+							// params.clear();
+							// params.put("group", new Integer(group.getId()));
 
-						log.debug("Getting list of members for group {}", group.getId());
-						// List<Member> members = ldapcManager.getRpcCaller().call("groupsManager",  "getGroupMembers", params).readList(Member.class);
-						List<Member> members = perun.getGroupsManager().getGroupMembers(ldapcManager.getPerunSession(), group);
-						log.debug("Synchronizing {} members of group {}", members.size(), group.getId());
-						perunGroup.synchronizeMembers(group, members);
-						
-						log.debug("Getting list of resources assigned to group {}", group.getId());
-						// List<Resource> resources = Rpc.ResourcesManager.getAssignedResources(ldapcManager.getRpcCaller(), group);
-						List<Resource> resources = perun.getResourcesManager().getAssignedResources(ldapcManager.getPerunSession(), group);
-						log.debug("Synchronizing {} resources assigned to group {}", resources.size(), group.getId());
-						perunGroup.synchronizeResources(group, resources);
+							log.debug("Getting list of members for group {}", group.getId());
+							// List<Member> members = ldapcManager.getRpcCaller().call("groupsManager",  "getGroupMembers", params).readList(Member.class);
+							List<Member> members = perun.getGroupsManager().getGroupMembers(ldapcManager.getPerunSession(), group);
+							log.debug("Synchronizing {} members of group {}", members.size(), group.getId());
+							perunGroup.synchronizeMembers(group, members);
+
+							log.debug("Getting list of resources assigned to group {}", group.getId());
+							// List<Resource> resources = Rpc.ResourcesManager.getAssignedResources(ldapcManager.getRpcCaller(), group);
+							List<Resource> resources = perun.getResourcesManager().getAssignedResources(ldapcManager.getPerunSession(), group);
+							log.debug("Synchronizing {} resources assigned to group {}", resources.size(), group.getId());
+							perunGroup.synchronizeResources(group, resources);
+						} catch (PerunException e) {
+							log.error("Error synchronizing group", e);
+						}
 					}
 				} catch (PerunException e) {
 					log.error("Error synchronizing groups", e);

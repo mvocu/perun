@@ -54,23 +54,27 @@ public class UserSynchronizer extends AbstractSynchronizer {
 					}
 				}
 
-				log.debug("Synchronizing user {} with {} attrs", user, attrs.size());
-				perunUser.synchronizeEntry(user, attrs);
+				try {
+					log.debug("Synchronizing user {} with {} attrs", user, attrs.size());
+					perunUser.synchronizeEntry(user, attrs);
 
 
-				log.debug("Getting list of member groups for user {}", user.getId());
-				Set<Integer> voIds = new HashSet<>();
-				List<Member> members = perun.getMembersManager().getMembersByUser(ldapcManager.getPerunSession(), user);
-				List<Group> groups = new ArrayList<Group>();
-				for(Member member: members) {
-					if(member.getStatus().equals(Status.VALID)) {
-						voIds.add(member.getVoId());
-						groups.addAll(perun.getGroupsManager().getAllMemberGroups(ldapcManager.getPerunSession(), member));
+					log.debug("Getting list of member groups for user {}", user.getId());
+					Set<Integer> voIds = new HashSet<>();
+					List<Member> members = perun.getMembersManager().getMembersByUser(ldapcManager.getPerunSession(), user);
+					List<Group> groups = new ArrayList<Group>();
+					for(Member member: members) {
+						if(member.getStatus().equals(Status.VALID)) {
+							voIds.add(member.getVoId());
+							groups.addAll(perun.getGroupsManager().getAllMemberGroups(ldapcManager.getPerunSession(), member));
+						}
 					}
+
+					log.debug("Synchronizing user {} with {} VOs and {} groups", user.getId(), voIds.size(), groups.size());
+					perunUser.synchronizeMembership(user, voIds, groups);
+				} catch (PerunException e) {
+					log.error("Error synchronizing user", e);
 				}
-				
-				log.debug("Synchronizing user {} with {} VOs and {} groups", user.getId(), voIds.size(), groups.size());
-				perunUser.synchronizeMembership(user, voIds, groups);
 			}
 			
 		} catch (PerunException e) {
