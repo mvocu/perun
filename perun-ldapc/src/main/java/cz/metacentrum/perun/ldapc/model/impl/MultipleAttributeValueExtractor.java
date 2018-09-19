@@ -26,16 +26,16 @@ public class MultipleAttributeValueExtractor<T extends PerunBean> extends Attrib
 						return new String[] { (String)value };
 				} else if (attribute.getType().equals(ArrayList.class.getName()) || attribute.getType().equals(BeansUtils.largeArrayListClassName)) {
 					List<String> values = attribute.valueAsList();
-					if(values == null) 
+					if(values == null || values.size() == 0) 
 						return null;
 					else 
-						return values.toArray(new String[5]);
+						return values.toArray(new String[1]);
 				} else if (attribute.getType().equals(LinkedHashMap.class.getName())) {
 					LinkedHashMap<String, String> values = attribute.valueAsMap();
 					if(values == null || values.isEmpty()) 
 						return null;
 					else
-						return values.entrySet().toArray(new String[5]);
+						return values.entrySet().toArray(new String[1]);
 				} else {
 					return null;
 				}
