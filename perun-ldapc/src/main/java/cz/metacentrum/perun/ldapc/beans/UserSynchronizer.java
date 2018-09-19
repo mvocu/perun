@@ -40,7 +40,9 @@ public class UserSynchronizer extends AbstractSynchronizer {
 				for(String attrName: fillPerunAttributeNames(perunUser.getPerunAttributeNames())) {
 					try {
 						log.debug("Getting attribute {} for user {}", attrName, user.getId());
-						attrs.add(perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), user, attrName));
+						Attribute attr = perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), user, attrName);
+						log.debug("Got attribute {} with value {}", attrName, attr.getValue().toString());
+						attrs.add(attr);
 					} catch (PerunException e) {
 						log.warn("No attribute {} found for user {}: {}", attrName, user.getId(), e.getMessage());
 					}
