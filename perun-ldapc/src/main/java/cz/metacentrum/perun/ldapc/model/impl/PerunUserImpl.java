@@ -129,7 +129,7 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 		for(Group group: groups) {
 			memberOfNames.add(addBaseDN(perunGroup.getEntryDN(String.valueOf(group.getVoId()), String.valueOf(group.getId()))));
 		}
-		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberOfNames.toArray());
+		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, memberOfNames.toArray());
 		ldapTemplate.modifyAttributes(entry);
 	}
 
