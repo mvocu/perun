@@ -19,6 +19,7 @@ import cz.metacentrum.perun.rpclib.api.RpcCaller;
 import cz.metacentrum.perun.rpclib.impl.RpcCallerImpl;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 public class LdapcStarter {
@@ -75,7 +76,13 @@ public class LdapcStarter {
 			ldapcStarter.ldapcManager.setPerunBl(ldapcStarter.perunBl);
 
 			// Synchronize before starting the audit consumer
-			ldapcStarter.ldapcManager.synchronize();
+			boolean doSync = false;
+			if(args.length > 0) {
+				for(String arg : args) {
+					if(args.equals("--sync")) doSync = true;
+				}
+			}
+			if(doSync) ldapcStarter.ldapcManager.synchronize();
 			
 			//Set lastProcessedIdToSet if bigger than 0
 			if(lastProcessedIdToSet > 0) {

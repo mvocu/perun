@@ -18,7 +18,7 @@ import cz.metacentrum.perun.rpclib.Rpc;
 
 public class CreationEventProcessor extends AbstractEventProcessor {
 
-	private final static Logger log = LoggerFactory.getLogger(DeletionEventProcessor.class);
+	private final static Logger log = LoggerFactory.getLogger(CreationEventProcessor.class);
 	
 	@Override
 	public void processEvent(String msg, MessageBeans beans) {

@@ -8,7 +8,7 @@ import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
 
 public class UpdateEventProcessor extends AbstractEventProcessor {
 
-	private final static Logger log = LoggerFactory.getLogger(DeletionEventProcessor.class);
+	private final static Logger log = LoggerFactory.getLogger(UpdateEventProcessor.class);
 
 	@Override
 	public void processEvent(String msg, MessageBeans beans) {
