@@ -39,8 +39,9 @@ public class UserSynchronizer extends AbstractSynchronizer {
 				List<Attribute> attrs = new ArrayList<Attribute>(); 
 				for(String attrName: fillPerunAttributeNames(perunUser.getPerunAttributeNames())) {
 					try {
-						log.debug("Getting attribute {} for user {}", attrName, user.getId());
+						//log.debug("Getting attribute {} for user {}", attrName, user.getId());
 						Attribute attr = perun.getAttributesManager().getAttribute(ldapcManager.getPerunSession(), user, attrName);
+						/* very chatty
 						if(attr == null) {
 							log.debug("Got null for attribute {}", attrName);
 						} else if (attr.getValue() == null) {
@@ -48,11 +49,13 @@ public class UserSynchronizer extends AbstractSynchronizer {
 						} else {
 							log.debug("Got attribute {} with value {}", attrName, attr.getValue().toString());
 						}
+						*/
 						attrs.add(attr);
 					} catch (PerunException e) {
 						log.warn("No attribute {} found for user {}: {}", attrName, user.getId(), e.getMessage());
 					}
 				}
+				log.debug("Got attributes {}", attrs.toString());
 
 				try {
 					log.debug("Synchronizing user {} with {} attrs", user, attrs.size());
