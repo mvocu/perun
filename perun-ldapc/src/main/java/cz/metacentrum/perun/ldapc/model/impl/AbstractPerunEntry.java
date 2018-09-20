@@ -92,11 +92,14 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 
 	@Override
 	public void modifyEntry(T bean, AttributeDefinition attr) throws InternalErrorException {
-		PerunAttribute<T> attrDef = findAttributeDescriptionByPerunAttr(getAttributeDescriptions(), attr);
-		if(attrDef != null) {
-			modifyEntry(bean, attrDef, attr);
-		} else 
+		DirContextAdapter contextAdapter = new DirContextAdapter(buildDN(bean));
+		List<PerunAttribute<T>> attrDefs = findAttributeDescriptionsByPerunAttr(getAttributeDescriptions(), attr);
+		if(attrDefs.isEmpty())
 			throw new InternalErrorException("Attribute description for attribute " + attr.getName() + " not found");
+		for(PerunAttribute<T> attrDef : attrDefs) {
+			mapToContext(bean, contextAdapter, attrDef, attr);
+		}
+		ldapTemplate.modifyAttributes(contextAdapter);
 	}
 
 	@Override
@@ -151,8 +154,9 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 		}
 		mapToContext(bean, entry);
 		for (Attribute attribute : attrs) {
-			PerunAttribute<T> attributeDesc = findAttributeDescriptionByPerunAttr(attributeDescriptions, attribute);
-			mapToContext(bean, entry, attributeDesc, attribute);
+			for(PerunAttribute<T> attributeDesc : findAttributeDescriptionsByPerunAttr(attributeDescriptions, attribute)) {
+				mapToContext(bean, entry, attributeDesc, attribute);
+			}
 		}
 		if(newEntry) {
 			ldapTemplate.bind(entry);
@@ -342,8 +346,8 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	 * @param attr
 	 * @return
 	 */
-	protected PerunAttribute<T> findAttributeDescriptionByPerunAttr(List<PerunAttribute<T>> attrs, AttributeDefinition attr) {
-		PerunAttribute<T> result = null;
+	protected List<PerunAttribute<T>> findAttributeDescriptionsByPerunAttr(List<PerunAttribute<T>> attrs, AttributeDefinition attr) {
+		List<PerunAttribute<T>> result = new ArrayList<PerunAttribute<T>>();
 		for (PerunAttribute<T> attrDef : attrs) {
 			AttributeValueExtractor extractor = null;
 			if(attrDef.isMultiValued()) {
@@ -358,8 +362,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 				}
 			}
 			if(extractor != null && extractor.appliesToAttribute(attr)) {
-				result = attrDef;
-				break;
+				result.add(attrDef);
 			}
 		}
 		return result;
