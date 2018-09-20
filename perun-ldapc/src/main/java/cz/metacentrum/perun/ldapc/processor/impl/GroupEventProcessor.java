@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ldap.NamingException;
 
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Perun;
@@ -30,7 +31,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		try {
 			log.debug("Adding member {} to group {}", beans.getMember(), beans.getGroup());
 			perunGroup.addMemberToGroup(beans.getMember(), beans.getGroup());
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error adding member {} to group {}: {}", beans.getMember().getId(), beans.getGroup().getId(), e.getMessage());;
 		}
 	}
@@ -42,7 +43,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		try {
 			log.debug("Adding subgroup {} to group {}", beans.getGroup(), beans.getParentGroup());
 			perunGroup.addGroupAsSubGroup(beans.getGroup(), beans.getParentGroup());
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error adding subgroup {} to group {}: {}", beans.getGroup().getId(), beans.getParentGroup().getId(), e.getMessage());
 		}
 	}
@@ -54,7 +55,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		try {
 			log.debug("Adding resource {} to group {}", beans.getResource(), beans.getGroup());
 			perunResource.assignGroup(beans.getResource(), beans.getGroup());
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error adding resource {} to group {}: {}", beans.getResource().getId(), beans.getGroup().getId(), e.getMessage());
 		}
 	}
@@ -66,7 +67,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 		try {
 			log.debug("Removing resource {} from group {}", beans.getResource(), beans.getGroup());
 			perunResource.removeGroup(beans.getResource(), beans.getGroup());
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error removing resource {} from group {}: {}", beans.getResource().getId(), beans.getGroup().getId(), e.getMessage());
 		}
 	}
@@ -83,7 +84,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunUniqueGroupName,
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroup,
 						PerunAttribute.PerunAttributeNames.ldapAttrPerunParentGroupId);
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error moving group {}: {}", beans.getGroup().getId(), e.getMessage());
 		}
 		
@@ -107,7 +108,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			//IMPORTANT this is not problem, if member not exist, we expected that will be deleted in some message after that, in DB is deleted
 		} catch (PrivilegeException e) {
 			log.warn("There are no privileges for getting member's groups", e);
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error adding validated member to group", e);
 		}
 	}
@@ -130,7 +131,7 @@ public class GroupEventProcessor extends AbstractEventProcessor {
 			//IMPORTANT this is not problem, if member not exist, we expected that will be deleted in some message after that, in DB is deleted
 		} catch (PrivilegeException e) {
 			log.warn("There are no privilegies for getting member's groups", e);
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error removing validated member from group", e);
 		}
 	}

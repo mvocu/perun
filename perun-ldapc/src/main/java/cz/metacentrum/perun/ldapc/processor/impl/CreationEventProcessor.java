@@ -2,6 +2,7 @@ package cz.metacentrum.perun.ldapc.processor.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ldap.NamingException;
 
 import cz.metacentrum.perun.core.api.AttributesManager;
 import cz.metacentrum.perun.core.api.Facility;
@@ -48,7 +49,7 @@ public class CreationEventProcessor extends AbstractEventProcessor {
 				default:
 					break;	
 				}
-			} catch(InternalErrorException e) {
+			} catch(NamingException | InternalErrorException e) {
 				log.error("Error creating new entry: {}", e.getMessage());
 			}
 		}

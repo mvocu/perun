@@ -2,6 +2,7 @@ package cz.metacentrum.perun.ldapc.processor.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ldap.NamingException;
 
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
@@ -38,7 +39,7 @@ public class UpdateEventProcessor extends AbstractEventProcessor {
 				default:
 					break;	
 				}
-			} catch(InternalErrorException e) {
+			} catch(NamingException | InternalErrorException e) {
 				log.error("Error updating entry: {}", e.getMessage());
 			}
 		}

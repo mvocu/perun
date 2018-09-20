@@ -67,15 +67,16 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 	}
 
 	public void addResource(Resource resource, String entityID) throws InternalErrorException {
-		DirContextAdapter context = new DirContextAdapter(buildDN(resource));
-		mapToContext(resource, context);
+		addEntry(resource);
 		// get info about entityID attribute if exists
-		if(entityID != null) 
-			context.setAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrEntityID, entityID);
-		try {
-			ldapTemplate.bind(context);
-		} catch (NameNotFoundException e) {
-			throw new InternalErrorException(e);
+		if(entityID != null) { 
+			try {
+				DirContextOperations context = findByDN(buildDN(resource));
+				context.setAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrEntityID, entityID);
+				ldapTemplate.modifyAttributes(context);
+			} catch (Exception e) {
+				throw new InternalErrorException(e);
+			}
 		}
 	}
 

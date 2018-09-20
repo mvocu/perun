@@ -8,6 +8,7 @@ import javax.mail.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.NamingException;
 
 import cz.metacentrum.perun.core.api.ExtSourcesManager;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
@@ -43,7 +44,7 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 		try {
 			log.debug("Setting attribute {} for user {}", beans.getAttribute(), beans.getUser());
 			perunUser.modifyEntry(beans.getUser(), beans.getAttribute());
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error setting attribute {} for user {}: {}", beans.getAttribute().getId(), beans.getUser().getId(), e);
 		}
 	}
@@ -56,7 +57,7 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 		try {
 			log.debug("Removing attribute {} for user {}", beans.getAttributeDef(), beans.getUser());
 			perunUser.modifyEntry(beans.getUser(), beans.getAttributeDef());
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error removing attribute {} from user {}: {}", beans.getAttributeDef().getId(), beans.getUser().getId(), e);
 		}
 	}
@@ -66,8 +67,12 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 		if(beans.getUser() == null) {
 			return;
 		}
-		log.debug("Removing all attributes from user {}", beans.getUser());
-		perunUser.removeAllAttributes(beans.getUser());
+		try {
+			log.debug("Removing all attributes from user {}", beans.getUser());
+			perunUser.removeAllAttributes(beans.getUser());
+		} catch (NamingException e) {
+			log.error("Error removing attributes from user {}: {}", beans.getUser().getId(), e);
+		}
 	}	
 
 	public void processExtSourceSet(String msg, MessageBeans beans) {
@@ -80,7 +85,7 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 				log.debug("Adding ExtSource {} for user {}", beans.getUserExtSource(), beans.getUser());
 				perunUser.addPrincipal(beans.getUser(), beans.getUserExtSource().getLogin());
 			}
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error adding ExtSource {} for user {}: {}", beans.getUserExtSource().getId(), beans.getUser().getId(), e);
 		}
 	}
@@ -95,7 +100,7 @@ public class UserAttributeProcessor extends AbstractAttributeProcessor {
 				log.debug("Removing ExtSource {} from user {}", beans.getUserExtSource(), beans.getUser());
 				perunUser.removePrincipal(beans.getUser(), beans.getUserExtSource().getLogin());
 			}
-		} catch (InternalErrorException e) {
+		} catch (NamingException | InternalErrorException e) {
 			log.error("Error removing ExtSource {} from user {}: {}", beans.getUserExtSource().getId(), beans.getUser().getId(), e);
 		}
 	}

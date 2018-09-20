@@ -61,7 +61,7 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	 */
 	@Override
 	public void addEntry(T bean) throws InternalErrorException {
-		DirContextAdapter context = new DirContextAdapter(buildDN(bean));
+		DirContextOperations context = new DirContextAdapter(buildDN(bean));
 		mapToContext(bean, context);
 		ldapTemplate.bind(context);
 	}
@@ -206,12 +206,16 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 
 	@Override
 	public Boolean entryExists(T bean) {
+		DirContextOperations entry;
 		try {
-			DirContextOperations entry = findByDN(buildDN(bean));
+			entry = findByDN(buildDN(bean));
 		} catch (NameNotFoundException e) {
 			return false;
 		}
-		return true; 
+		if(entry == null) 
+			return false;
+		else
+			return true; 
 	}
 	
 	@Override
