@@ -10,6 +10,7 @@ import cz.metacentrum.perun.core.api.PerunPrincipal;
 import cz.metacentrum.perun.core.api.PerunSession;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.beans.GroupSynchronizer;
+import cz.metacentrum.perun.ldapc.beans.LdapProperties;
 import cz.metacentrum.perun.ldapc.beans.ResourceSynchronizer;
 import cz.metacentrum.perun.ldapc.beans.UserSynchronizer;
 import cz.metacentrum.perun.ldapc.beans.VOSynchronizer;
@@ -33,6 +34,8 @@ public class LdapcManagerImpl implements LdapcManager {
 	private GroupSynchronizer groupSynchronizer;
 	@Autowired
 	private UserSynchronizer userSynchronizer;
+	@Autowired
+	private LdapProperties ldapProperties;
 	
 	private RpcCaller rpcCaller;
 	private PerunPrincipal perunPrincipal;
@@ -58,6 +61,13 @@ public class LdapcManagerImpl implements LdapcManager {
 		userSynchronizer.synchronizeUsers();
 		resourceSynchronizer.synchronizeResources();
 		groupSynchronizer.synchronizeGroups();
+		
+		try {
+			int lastProcessedMessageId = getPerunBl().getAuditer().getLastMessageId();
+			getPerunBl().getAuditer().setLastProcessedId(ldapProperties.getLdapConsumerName(), lastProcessedMessageId);
+		} catch (InternalErrorException e) {
+			log.error("Could not set last processed message id after synchronization", e);
+		}
 	}
 	
 	public void setRpcCaller(RpcCaller rpcCaller) {
