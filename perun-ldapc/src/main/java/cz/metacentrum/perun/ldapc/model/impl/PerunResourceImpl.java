@@ -94,20 +94,20 @@ public class PerunResourceImpl extends AbstractPerunEntry<Resource> implements P
 	@Override
 	public void assignGroup(Resource resource, Group group) throws InternalErrorException {
 		DirContextOperations entry = findByDN(buildDN(resource));
-		entry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedGroupId, group.getId());
+		entry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedGroupId, String.valueOf(group.getId()));
 		ldapTemplate.modifyAttributes(entry);
 		entry = perunGroup.findById(String.valueOf(group.getVoId()), String.valueOf(group.getId()));
-		entry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resource.getId());
+		entry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, String.valueOf(resource.getId()));
 		ldapTemplate.modifyAttributes(entry);
 	}
 
 	@Override
 	public void removeGroup(Resource resource, Group group) throws InternalErrorException {
 		DirContextOperations entry = findByDN(buildDN(resource));
-		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedGroupId, group.getId());
+		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedGroupId, String.valueOf(group.getId()));
 		ldapTemplate.modifyAttributes(entry);
 		entry = perunGroup.findById(String.valueOf(group.getVoId()), String.valueOf(group.getId()));
-		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, resource.getId());
+		entry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrAssignedToResourceId, String.valueOf(resource.getId()));
 		ldapTemplate.modifyAttributes(entry);
 	}
 

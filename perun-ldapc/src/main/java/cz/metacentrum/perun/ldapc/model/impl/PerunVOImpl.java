@@ -81,10 +81,10 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	public void addMemberToVO(int voId, Member member) {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		voEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN));
+		voEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN).toString());
 		ldapTemplate.modifyAttributes(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
+		userEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, String.valueOf(voId));
 		ldapTemplate.modifyAttributes(userEntry);
 	}
 
@@ -92,10 +92,10 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 	public void removeMemberFromVO(int voId, Member member) {
 		DirContextOperations voEntry = findById(String.valueOf(voId));
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		voEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN));
+		voEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN).toString());
 		ldapTemplate.modifyAttributes(voEntry);
 		DirContextOperations userEntry = findByDN(memberDN);
-		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, voId);
+		userEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOfPerunVo, String.valueOf(voId));
 		ldapTemplate.modifyAttributes(userEntry);
 	}
 
@@ -106,7 +106,7 @@ public class PerunVOImpl extends AbstractPerunEntry<Vo> implements PerunVO {
 		for (Member member: members) {
 			memberList.add(addBaseDN(user.getEntryDN(String.valueOf(member.getUserId()))));
 		}
-		voEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberList.toArray());
+		voEntry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, memberList.stream().map( name -> name.toString()).toArray(String[]::new));
 		ldapTemplate.modifyAttributes(voEntry);
 		// user attributes are set when synchronizing users
 	}
