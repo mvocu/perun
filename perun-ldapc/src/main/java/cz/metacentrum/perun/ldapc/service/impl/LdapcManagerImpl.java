@@ -57,16 +57,16 @@ public class LdapcManagerImpl implements LdapcManager {
 	}
 
 	public void synchronize() {
-		voSynchronizer.synchronizeVOs();
-		userSynchronizer.synchronizeUsers();
-		resourceSynchronizer.synchronizeResources();
-		groupSynchronizer.synchronizeGroups();
-		
 		try {
+			voSynchronizer.synchronizeVOs();
+			userSynchronizer.synchronizeUsers();
+			resourceSynchronizer.synchronizeResources();
+			groupSynchronizer.synchronizeGroups();
+
 			int lastProcessedMessageId = getPerunBl().getAuditer().getLastMessageId();
 			getPerunBl().getAuditer().setLastProcessedId(ldapProperties.getLdapConsumerName(), lastProcessedMessageId);
-		} catch (InternalErrorException e) {
-			log.error("Could not set last processed message id after synchronization", e);
+		} catch (Exception  e) {
+			log.error("Error synchronizing to LDAP", e);
 		}
 	}
 	

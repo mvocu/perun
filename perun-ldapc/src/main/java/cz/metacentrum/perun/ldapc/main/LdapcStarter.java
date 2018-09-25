@@ -80,15 +80,18 @@ public class LdapcStarter {
 			ldapcStarter.ldapcManager.setPerunBl(ldapcStarter.perunBl);
 
 			// Synchronize before starting the audit consumer
-			if(doSync) ldapcStarter.ldapcManager.synchronize();
+			if(doSync) 
+				ldapcStarter.ldapcManager.synchronize();
+			else {
 			
-			//Set lastProcessedIdToSet if bigger than 0
-			if(lastProcessedIdToSet > 0) {
-				//Rpc.AuditMessagesManager.setLastProcessedId(rpcCaller, "ldapcConsumer", lastProcessedIdToSet);
-				ldapcStarter.perunBl.getAuditMessagesManager().setLastProcessedId(ldapcStarter.ldapcManager.getPerunSession(), 
-						ldapcStarter.ldapProperties.getLdapConsumerName(), lastProcessedIdToSet);
+				//Set lastProcessedIdToSet if bigger than 0
+				if(lastProcessedIdToSet > 0) {
+					//Rpc.AuditMessagesManager.setLastProcessedId(rpcCaller, "ldapcConsumer", lastProcessedIdToSet);
+					ldapcStarter.perunBl.getAuditMessagesManager().setLastProcessedId(ldapcStarter.ldapcManager.getPerunSession(), 
+							ldapcStarter.ldapProperties.getLdapConsumerName(), lastProcessedIdToSet);
+				}
 			}
-
+			
 			// Start processing events (run method in EventProcessorImpl)
 			ldapcStarter.ldapcManager.startProcessingEvents();
 		} catch (Exception e) {
