@@ -80,7 +80,7 @@ public class LdapcStarter {
 			ldapcStarter.ldapcManager.setPerunBl(ldapcStarter.perunBl);
 
 			// Synchronize before starting the audit consumer
-			if(doSync) ldapcStarter.ldapcManager.synchronize();
+			ldapcStarter.ldapcManager.synchronize();
 			
 			//Set lastProcessedIdToSet if bigger than 0
 			if(lastProcessedIdToSet > 0) {
