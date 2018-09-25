@@ -48,13 +48,17 @@ public class LdapcStarter {
 		System.out.println("Starting Perun-Ldapc...");
 
 		int lastProcessedIdToSet = 0;
+		boolean doSync = false;
 
 		if(args.length == 0) {
 			//This is normal behavior, do nothing special, just start ldapc
 		} else if (args.length == 1) {
 			//This behavior is special, set lastProcessedId
 			String argument = args[0];
-			lastProcessedIdToSet = Integer.valueOf(argument);
+			if(argument.equals("--sync")) 
+				doSync = true;
+			else		
+				lastProcessedIdToSet = Integer.valueOf(argument);
 		} else {
 			System.out.println("Too much arguments, can't understand what to do, exit starting!");
 			return;
@@ -76,12 +80,6 @@ public class LdapcStarter {
 			ldapcStarter.ldapcManager.setPerunBl(ldapcStarter.perunBl);
 
 			// Synchronize before starting the audit consumer
-			boolean doSync = false;
-			if(args.length > 0) {
-				for(String arg : args) {
-					if(args.equals("--sync")) doSync = true;
-				}
-			}
 			if(doSync) ldapcStarter.ldapcManager.synchronize();
 			
 			//Set lastProcessedIdToSet if bigger than 0
