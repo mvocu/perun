@@ -294,9 +294,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 							processor.processEvent(msg, beans);
 						}
 					} catch (InvocationTargetException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
-						log.debug("Exception {} caught when dispatching to handler, dispatching message {} to processor {}", 
-								e.getMessage(), msg, processor.getClass().getName());
-						processor.processEvent(msg, beans);
+						log.error("Error dispatching to handler " + handlerName + ": ", e);
 					}
 					
 				} else {
