@@ -70,6 +70,9 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 
 		@Override
 		public void addBean(PerunBean perunBean) throws InternalErrorException {
+			if(perunBean == null) {
+				log.warn("Not adding unknown (null) bean");
+			}
 			if(perunBean instanceof Group) {
 				if(this.group == null) this.group = (Group) perunBean;
 				else this.parentGroup = (Group) perunBean;
@@ -314,10 +317,11 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 			int i=0;
 			for(PerunBean p: listOfBeans) {
 				i++;
-				if(p!=null) log.debug("There is object number " + i + ") " + p.serializeToString());
-				else log.debug("There is unknow object which is null");
+				// if(p!=null) log.debug("There is object number " + i + ") " + p.serializeToString());
+				// else log.debug("There is unknow object which is null");
 				beans.addBean(p);
 			}
+			log.debug("Resolved beans {}", beans.toString());
 		}
 		return beans;
 	}
