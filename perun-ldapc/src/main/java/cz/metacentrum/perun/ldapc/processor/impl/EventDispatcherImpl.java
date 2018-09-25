@@ -321,7 +321,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 				// else log.debug("There is unknow object which is null");
 				beans.addBean(p);
 			}
-			log.debug("Resolved beans {}", beans.toString());
+			//log.debug("Resolved{} beans ", beans.getBeansCount());
 		}
 		return beans;
 	}
