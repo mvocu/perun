@@ -285,7 +285,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 				String handlerName = condition.getHandlerMethodName();
 				if(handlerName != null) {
 					try {
-						Method handler = processor.getClass().getMethod(handlerName, msg.getClass(), beans.getClass());
+						Method handler = processor.getClass().getMethod(handlerName, String.class, MessageBeans.class);
 						if(handler != null) {
 							log.debug("Dispatching message {} to method {}", msg, handler.toString());
 							handler.invoke(processor, msg, beans);
