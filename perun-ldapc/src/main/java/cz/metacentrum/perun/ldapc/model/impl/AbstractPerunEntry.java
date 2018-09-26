@@ -132,12 +132,15 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 			newEntry = true;
 			entry = new DirContextAdapter(buildDN(bean));
 		}
-		mapToContext(bean, entry);
 		if(newEntry) {
 			log.debug("Creating new entry {} ", entry.toString());
+			// map with objectclasses
+			mapToContext(bean, entry);
 			ldapTemplate.bind(entry);
 		} else {
 			log.debug("Modifying entry {} ", entry.toString());
+			// map without objectclasses (entry exists)
+			mapToContext(bean, entry, getAttributeDescriptions());
 			ldapTemplate.modifyAttributes(entry);
 		}
 	}
