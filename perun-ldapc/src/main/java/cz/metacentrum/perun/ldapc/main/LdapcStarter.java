@@ -69,13 +69,13 @@ public class LdapcStarter {
 		try {
 			LdapcStarter ldapcStarter = new LdapcStarter();
 
-			RpcCaller rpcCaller = new RpcCallerImpl(ldapcStarter.perunPrincipal);
+			// RpcCaller rpcCaller = new RpcCallerImpl(ldapcStarter.perunPrincipal);
 
 			// Just for the Spring IoC to exit gracefully...
 			ldapcStarter.springCtx.registerShutdownHook();
 
 			// Sets RPC Caller and Perun
-			ldapcStarter.ldapcManager.setRpcCaller(rpcCaller);
+			// ldapcStarter.ldapcManager.setRpcCaller(rpcCaller);
 			ldapcStarter.ldapcManager.setPerunPrincipal(ldapcStarter.perunPrincipal);
 			ldapcStarter.ldapcManager.setPerunBl(ldapcStarter.perunBl);
 
