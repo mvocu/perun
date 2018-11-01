@@ -72,6 +72,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 		public void addBean(PerunBean perunBean) throws InternalErrorException {
 			if(perunBean == null) {
 				log.warn("Not adding unknown (null) bean");
+				return;
 			}
 			if(perunBean instanceof Group) {
 				if(this.group == null) this.group = (Group) perunBean;
@@ -161,7 +162,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 
 		@Override
 		public User getUser() {
-			return user;
+			return (user == null) ? specificUser : user;
 		}
 
 		@Override
