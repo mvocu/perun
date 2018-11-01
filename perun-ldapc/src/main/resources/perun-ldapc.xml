@@ -169,7 +169,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Attribute</value>
 						</list>
 					</property>
-					<property name="pattern" value=" set for User:\\[(.*)\\]" />
+					<property name="pattern" value=" set for User:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processAttributeSet" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -179,7 +179,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.AttributeDefinition</value>
 						</list>
 					</property>
-					<property name="pattern" value=" removed for User:\\[(.*)\\]" />
+					<property name="pattern" value=" removed for User:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processAttributeRemoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -188,7 +188,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.User</value>
 						</list>
 					</property>
-					<property name="pattern" value="All attributes removed for User:\\[(.*)\\]" />
+					<property name="pattern" value="All attributes removed for User:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processAllAttributesRemoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -198,7 +198,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.UserExtSource</value>
 						</list>
 					</property>
-					<property name="pattern" value="UserExtSource:\\[(.*)\\] added to User:\\[(.*)\\]" />
+					<property name="pattern" value="UserExtSource:\\[(.|\\s)*\\] added to User:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processExtSourceAdded" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -208,7 +208,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.UserExtSource</value>
 						</list>
 					</property>
-					<property name="pattern" value="UserExtSource:\\[(.*)\\] removed from User:\\[(.*)\\]" />
+					<property name="pattern" value="UserExtSource:\\[(.|\\s)*\\] removed from User:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processExtSourceRemoved" />
 				</bean>
 			</list>
@@ -225,7 +225,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Attribute</value>
 						</list>
 					</property>
-					<property name="pattern" value=" set for Facility:\\[(.*)\\]" />
+					<property name="pattern" value=" set for Facility:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processAttributeSet" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -235,7 +235,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.AttributeDefinition</value>
 						</list>
 					</property>
-					<property name="pattern" value=" removed for Facility:\\[(.*)\\]" />
+					<property name="pattern" value=" removed for Facility:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processAttributeRemoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -244,7 +244,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Facility</value>
 						</list>
 					</property>
-					<property name="pattern" value="All attributes removed for Facility:\\[(.*)\\]" />
+					<property name="pattern" value="All attributes removed for Facility:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processAllAttributesRemoved" />
 				</bean>
 			</list>
@@ -261,7 +261,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Member</value>
 						</list>
 					</property>
-					<property name="pattern" value=" added to Group:\\[(.*)\\]" />
+					<property name="pattern" value=" added to Group:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processMemberAdded" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -270,7 +270,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Group</value>
 						</list>
 					</property>
-					<property name="pattern" value=" created in Vo:\\[(.*)\\] as subgroup of Group:\\[(.*)\\]" />
+					<property name="pattern" value=" created in Vo:\\[(.|\\s)*\\] as subgroup of Group:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processSubgroupAdded" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -280,7 +280,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Resource</value>
 						</list>
 					</property>
-					<property name="pattern" value="Group:\\[(.*)\\] assigned to Resource:\\[(.*)\\]" />
+					<property name="pattern" value="Group:\\[(.|\\s)*\\] assigned to Resource:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processResourceAssigned" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -290,7 +290,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Resource</value>
 						</list>
 					</property>
-					<property name="pattern" value="Group:\\[(.*)\\] removed from Resource:\\[(.*)\\]" />
+					<property name="pattern" value="Group:\\[(.|\\s)*\\] removed from Resource:\\[(.|\\s)*\\]" />
 					<property name="handlerMethodName" value="processResourceRemoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -299,7 +299,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Group</value>
 						</list>
 					</property>
-					<property name="pattern" value="Group:\\[(.*)\\] was moved" />
+					<property name="pattern" value="Group:\\[(.|\\s)*\\] was moved" />
 					<property name="handlerMethodName" value="processGroupMoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">

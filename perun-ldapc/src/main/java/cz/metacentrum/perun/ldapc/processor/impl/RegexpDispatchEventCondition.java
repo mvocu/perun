@@ -13,7 +13,7 @@ public class RegexpDispatchEventCondition extends SimpleDispatchEventCondition {
 
 	@Required
 	public void setPattern(String regexp) {
-		this.pattern = Pattern.compile(regexp);
+		this.pattern = Pattern.compile(regexp, Pattern.MULTILINE);
 	}
 
 	@Override
