@@ -85,28 +85,28 @@ public abstract class AbstractPerunEntry<T extends PerunBean> implements Initial
 	}
 	
 	protected void modifyEntry(T bean, Iterable<PerunAttribute<T>> attrs, List<String> attrNames) throws InternalErrorException {
-		DirContextAdapter contextAdapter = new DirContextAdapter(buildDN(bean));
-		mapToContext(bean, contextAdapter, findAttributeDescriptionsByLdapName(attrs, attrNames));
-		ldapTemplate.modifyAttributes(contextAdapter);
+		DirContextOperations entry = findByDN(buildDN(bean));
+		mapToContext(bean, entry, findAttributeDescriptionsByLdapName(attrs, attrNames));
+		ldapTemplate.modifyAttributes(entry);
 	}
 
 	@Override
 	public void modifyEntry(T bean, AttributeDefinition attr) throws InternalErrorException {
-		DirContextAdapter contextAdapter = new DirContextAdapter(buildDN(bean));
+		DirContextOperations entry = findByDN(buildDN(bean));
 		List<PerunAttribute<T>> attrDefs = findAttributeDescriptionsByPerunAttr(getAttributeDescriptions(), attr);
 		if(attrDefs.isEmpty())
 			throw new InternalErrorException("Attribute description for attribute " + attr.getName() + " not found");
 		for(PerunAttribute<T> attrDef : attrDefs) {
-			mapToContext(bean, contextAdapter, attrDef, attr);
+			mapToContext(bean, entry, attrDef, attr);
 		}
-		ldapTemplate.modifyAttributes(contextAdapter);
+		ldapTemplate.modifyAttributes(entry);
 	}
 
 	@Override
 	public void modifyEntry(T bean, PerunAttribute<T> attrDef, AttributeDefinition attr) throws InternalErrorException {
-		DirContextAdapter contextAdapter = new DirContextAdapter(buildDN(bean));
-		mapToContext(bean, contextAdapter, attrDef, attr);
-		ldapTemplate.modifyAttributes(contextAdapter);
+		DirContextOperations entry = findByDN(buildDN(bean));
+		mapToContext(bean, entry, attrDef, attr);
+		ldapTemplate.modifyAttributes(entry);
 	}
 
 	/* (non-Javadoc)
