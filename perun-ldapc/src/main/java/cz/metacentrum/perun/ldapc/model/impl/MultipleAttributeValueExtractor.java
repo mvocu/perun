@@ -15,6 +15,7 @@ public class MultipleAttributeValueExtractor<T extends PerunBean> extends Attrib
 
 	@Override
 	public String[] getValues(T bean, Attribute... attributes) throws InternalErrorException {
+		String[] result = null;
 		for (Attribute attribute : attributes) {
 			if(this.appliesToAttribute(attribute)) {
 				if(attribute == null) return null;
@@ -23,22 +24,27 @@ public class MultipleAttributeValueExtractor<T extends PerunBean> extends Attrib
 					if(value == null) 
 						return null;
 					else
-						return new String[] { (String)value };
+						result = new String[] { (String)value };
 				} else if (attribute.getType().equals(ArrayList.class.getName()) || attribute.getType().equals(BeansUtils.largeArrayListClassName)) {
 					List<String> values = attribute.valueAsList();
 					if(values == null || values.size() == 0) 
 						return null;
 					else 
-						return values.toArray(new String[1]);
+						result = values.toArray(new String[1]);
 				} else if (attribute.getType().equals(LinkedHashMap.class.getName())) {
 					LinkedHashMap<String, String> values = attribute.valueAsMap();
 					if(values == null || values.isEmpty()) 
 						return null;
 					else
-						return values.keySet().toArray(new String[values.size()]);
+						result = values.keySet().toArray(new String[values.size()]);
 				} else {
 					return null;
 				}
+
+				return valueTransformer == null ? result : 
+					Arrays.stream(result)
+						.map(value -> valueTransformer.getValue(value, attribute))
+						.toArray(String[]::new);
 			}
 		}
 		return null;

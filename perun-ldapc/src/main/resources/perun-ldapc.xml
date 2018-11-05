@@ -467,7 +467,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					<property name="singleValueExtractor">
 						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
 							<property name="nameRegexp" value="urn:perun:user:attribute-def:def:login-namespace:" />
-							<property name="namespace" value="urn:perun:user:attribute-def:def:uid-namespace" />
+							<property name="namespace" value="urn:perun:user:attribute-def:def:login-namespace" />
 							<property name="name" value="" />
 						</bean>
 					</property> 
