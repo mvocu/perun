@@ -9,6 +9,7 @@ import javax.naming.directory.ModificationItem;
 
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.User;
+import cz.metacentrum.perun.core.api.UserExtSource;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 
 public interface PerunUser extends PerunEntry<User> {
@@ -49,5 +50,7 @@ public interface PerunUser extends PerunEntry<User> {
 
 
 	public void synchronizeMembership(User user, Set<Integer> voIds, List<Group> groups);
+	
+	public void synchronizePrincipals(User user, List<UserExtSource> extSources);
 
 }

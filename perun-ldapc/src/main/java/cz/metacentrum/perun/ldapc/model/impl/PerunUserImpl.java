@@ -13,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.support.LdapNameBuilder;
 
+
+import cz.metacentrum.perun.core.api.ExtSourcesManager;
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.User;
+import cz.metacentrum.perun.core.api.UserExtSource;
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.model.PerunGroup;
@@ -130,6 +133,21 @@ public class PerunUserImpl extends AbstractPerunEntry<User> implements PerunUser
 			memberOfNames.add(addBaseDN(perunGroup.getEntryDN(String.valueOf(group.getVoId()), String.valueOf(group.getId()))));
 		}
 		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, memberOfNames.toArray());
+		ldapTemplate.modifyAttributes(entry);
+	}
+
+	@Override
+	public void synchronizePrincipals(User user, List<UserExtSource> extSources) {
+		DirContextOperations entry = findByDN(buildDN(user));
+		entry.setAttributeValues(PerunAttribute.PerunAttributeNames.ldapAttrEduPersonPrincipalNames, 
+				extSources.stream()
+					.filter(ues -> ues != null && ues.getExtSource() != null 
+						&& ues.getExtSource().getType() != null 
+						&& ues.getExtSource().getType().equals(ExtSourcesManager.EXTSOURCE_IDP))
+					.map(ues ->  ues.getLogin())
+					.filter(login -> login != null)
+					.toArray(String[]::new)
+					);
 		ldapTemplate.modifyAttributes(entry);
 	}
 

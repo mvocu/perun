@@ -11,11 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.metacentrum.perun.core.api.Attribute;
+import cz.metacentrum.perun.core.api.ExtSourcesManager;
 import cz.metacentrum.perun.core.api.Group;
 import cz.metacentrum.perun.core.api.Member;
 import cz.metacentrum.perun.core.api.Perun;
 import cz.metacentrum.perun.core.api.Status;
 import cz.metacentrum.perun.core.api.User;
+import cz.metacentrum.perun.core.api.UserExtSource;
 import cz.metacentrum.perun.core.api.exceptions.PerunException;
 import cz.metacentrum.perun.ldapc.model.PerunUser;
 
@@ -75,6 +77,12 @@ public class UserSynchronizer extends AbstractSynchronizer {
 
 					log.debug("Synchronizing user {} with {} VOs and {} groups", user.getId(), voIds.size(), groups.size());
 					perunUser.synchronizeMembership(user, voIds, groups);
+					
+					log.debug("Getting list of extSources for user {}", user.getId());
+					List<UserExtSource> userExtSources = perun.getUsersManager().getUserExtSources(ldapcManager.getPerunSession(), user);
+					log.debug("Synchronizing user {} with {} extSources", user.getId(), userExtSources.size());
+					perunUser.synchronizePrincipals(user, userExtSources);
+					
 				} catch (PerunException e) {
 					log.error("Error synchronizing user", e);
 				}

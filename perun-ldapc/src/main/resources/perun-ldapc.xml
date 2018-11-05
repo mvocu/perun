@@ -373,8 +373,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 					<property name="required" value="false" />
 					<property name="multipleValuesExtractor">
 						<bean class="cz.metacentrum.perun.ldapc.model.impl.MultipleAttributeValueExtractor">
-							<property name="name" value="preferredMail" />
-							<property name="namespace" value="urn:perun:user:attribute-def:def" />
+							<property name="name" value="userCertDNs" />
+							<property name="namespace" value="urn:perun:user:attribute-def:virt" />
 							<property name="valueTransformer">
 								<bean class="cz.metacentrum.perun.ldapc.beans.RegexpValueTransformer">
 									<property name="replaceList">
@@ -483,6 +483,16 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<property name="valueTransformer">
 								<bean class="cz.metacentrum.perun.ldapc.beans.PasswordValueTransformer" />
 							</property>
+						</bean>
+					</property> 
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.model.impl.PerunAttributeDesc">
+					<property name="name" value="bonaFideStatus" />
+					<property name="required" value="false" />
+					<property name="singleValueExtractor">
+						<bean class="cz.metacentrum.perun.ldapc.model.impl.SingleAttributeValueExtractor">
+							<property name="namespace" value="urn:perun:user:attribute-def:virt" />
+							<property name="name" value="elixirBonaFideStatus" />
 						</bean>
 					</property> 
 				</bean>

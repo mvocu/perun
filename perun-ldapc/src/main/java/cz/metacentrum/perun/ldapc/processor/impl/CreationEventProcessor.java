@@ -15,7 +15,6 @@ import cz.metacentrum.perun.core.api.exceptions.PrivilegeException;
 import cz.metacentrum.perun.core.api.exceptions.WrongAttributeAssignmentException;
 import cz.metacentrum.perun.ldapc.model.PerunAttribute;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
-import cz.metacentrum.perun.rpclib.Rpc;
 
 public class CreationEventProcessor extends AbstractEventProcessor {
 
