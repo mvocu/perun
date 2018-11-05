@@ -35,7 +35,7 @@ public class MultipleAttributeValueExtractor<T extends PerunBean> extends Attrib
 					if(values == null || values.isEmpty()) 
 						return null;
 					else
-						return values.entrySet().toArray(new String[1]);
+						return values.keySet().toArray(new String[values.size()]);
 				} else {
 					return null;
 				}
