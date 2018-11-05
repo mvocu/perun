@@ -21,7 +21,7 @@ public class RegexpValueTransformer implements AttributeValueTransformer {
 	public String getValue(String value, Attribute attr) {
 		String result = value;
 		for (RegexpSubst regexpSubst : replaceList) {
-			result.replaceAll(regexpSubst.getFind(), regexpSubst.getReplace());
+			result = result.replaceAll(regexpSubst.getFind(), regexpSubst.getReplace());
 		}
 		return result;
 	}
