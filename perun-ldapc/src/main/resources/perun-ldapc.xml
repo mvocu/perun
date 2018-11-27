@@ -103,6 +103,14 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
 					<property name="beansCondition">
 						<list>
+							<value>cz.metacentrum.perun.core.api.Group</value>
+						</list>
+					</property>
+					<property name="pattern" value=" created in Vo:\\[(.*)\\]" />
+				</bean>
+				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
+					<property name="beansCondition">
+						<list>
 							<value>cz.metacentrum.perun.core.api.Vo</value>
 						</list>
 					</property>
