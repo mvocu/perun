@@ -2,11 +2,16 @@ package cz.metacentrum.perun.ldapc.processor.impl;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.metacentrum.perun.core.api.exceptions.InternalErrorException;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.DispatchEventCondition;
 import cz.metacentrum.perun.ldapc.processor.EventDispatcher.MessageBeans;
 
 public class SimpleDispatchEventCondition implements DispatchEventCondition {
+
+	private final static Logger log = LoggerFactory.getLogger(SimpleDispatchEventCondition.class);
 
 	private int requiredBeans = 0;
 	private String handlerMethodName = null;
@@ -54,6 +59,7 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 	public boolean isApplicable(MessageBeans beans, String msg) {
 		int presentMask = beans.getPresentBeansMask();
 		
+		log.debug("Checking present beans {} against required {}", presentMask, requiredBeans);
 		return (requiredBeans & presentMask) == requiredBeans; 
 	}
 
