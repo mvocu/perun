@@ -231,6 +231,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 					if(messages == null) Thread.sleep(1000);
 				} while(messages == null);
 				//If new messages exist, resolve them all
+				log.debug("Got {} new messages.", messages.size());
 				Iterator<AuditMessage> messagesIterator = messages.iterator();
 				while(messagesIterator.hasNext()) {
 					message = messagesIterator.next();
