@@ -235,6 +235,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 				while(messagesIterator.hasNext()) {
 					message = messagesIterator.next();
 					messagesIterator.remove();
+					log.debug("Got message {}", message.getMsg());
 					//Warning when two consecutive messages are separated by more than 15 ids
 					if(lastProcessedIdNumber > 0 && lastProcessedIdNumber < message.getId()) {
 						if((message.getId() - lastProcessedIdNumber) > 15) log.debug("SKIP FLAG WARNING: lastProcessedIdNumber: " + lastProcessedIdNumber + " - newMessageNumber: " + message.getId() + " = " + (lastProcessedIdNumber - message.getId()));
