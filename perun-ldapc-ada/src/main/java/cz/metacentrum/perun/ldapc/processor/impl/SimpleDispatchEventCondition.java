@@ -59,7 +59,7 @@ public class SimpleDispatchEventCondition implements DispatchEventCondition {
 	public boolean isApplicable(MessageBeans beans, String msg) {
 		int presentMask = beans.getPresentBeansMask();
 		
-		log.debug("Checking present beans {} against required {}", presentMask, requiredBeans);
+		// log.debug("Checking present beans {} against required {}", presentMask, requiredBeans);
 		return (requiredBeans & presentMask) == requiredBeans; 
 	}
 

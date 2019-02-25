@@ -300,7 +300,7 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 					processor.processEvent(msg, beans);
 				}
 			} else {
-				log.debug("No handler for message {}", msg);
+				// log.debug("No handler for message {}", msg);
 			}
 		}
 	}

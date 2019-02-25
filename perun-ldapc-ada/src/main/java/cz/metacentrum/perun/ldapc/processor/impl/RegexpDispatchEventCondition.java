@@ -24,7 +24,7 @@ public class RegexpDispatchEventCondition extends SimpleDispatchEventCondition {
 	public boolean isApplicable(MessageBeans beans, String msg) {
 		Matcher matcher = pattern.matcher(msg);
 		boolean match = matcher.find();
-		log.debug("Matching {} against {} returned {}", this.pattern.toString(), msg, match);
+		// log.debug("Matching {} against {} returned {}", this.pattern.toString(), msg, match);
 		return super.isApplicable(beans, msg) && match;
 	}
 }
