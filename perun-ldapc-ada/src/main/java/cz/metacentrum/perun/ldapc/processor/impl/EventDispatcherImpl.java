@@ -298,6 +298,8 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 					log.debug("Dispatching message {} to processor {}", msg, processor.getClass().getName());
 					processor.processEvent(msg, beans);
 				}
+			} else {
+				log.debug("No handler for message {}", msg);
 			}
 		}
 	}
