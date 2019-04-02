@@ -258,6 +258,10 @@ public class EventDispatcherImpl implements EventDispatcher, Runnable {
 			running = false;
 			Thread.currentThread().interrupt();
 			//If some other exception is thrown
+		} catch (RuntimeException e) {
+			Date date = new Date();
+			log.error("Last message has ID='" + message.getId() + "' and was bad PARSED or EXECUTE at " + DATE_FORMAT.format(date) + " due to exception " + e.toString());
+			throw e;
 		} catch (Exception e) {
 			Date date = new Date();
 			log.error("Last message has ID='" + message.getId() + "' and was bad PARSED or EXECUTE at " + DATE_FORMAT.format(date) + " due to exception " + e.toString());
