@@ -101,12 +101,13 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 
 	public void removeGroup(Group group) throws InternalErrorException {
 		Name groupDN = buildDN(group);
+		Name fullGroupDN = this.addBaseDN(groupDN);
 		DirContextOperations groupEntry = findByDN(groupDN);
 		String[] uniqueMembers = groupEntry.getStringAttributes(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember);
 		if(uniqueMembers != null)
 			for(String memberDN: uniqueMembers) {
 				DirContextOperations memberEntry = user.findByDN(LdapNameBuilder.newInstance(memberDN).build());
-				memberEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, groupDN.toString());
+				memberEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrMemberOf, fullGroupDN.toString());
 				ldapTemplate.modifyAttributes(memberEntry);
 			}
 		
