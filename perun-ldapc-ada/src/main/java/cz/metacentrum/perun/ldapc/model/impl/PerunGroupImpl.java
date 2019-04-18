@@ -123,9 +123,10 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name groupDN = buildDN(group);
 		DirContextOperations groupEntry = findByDN(groupDN);
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		if(isMember(groupEntry, memberDN)) return;
+		Name fullMemberDN = addBaseDN(memberDN);
+		if(isMember(groupEntry, fullMemberDN)) return;
 		
-		groupEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN).toString());
+		groupEntry.addAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, fullMemberDN.toString());
 		ldapTemplate.modifyAttributes(groupEntry);
 		
 		//Add member to vo if this group is membersGroup
@@ -145,9 +146,10 @@ public class PerunGroupImpl extends AbstractPerunEntry<Group> implements PerunGr
 		Name groupDN = buildDN(group);
 		DirContextOperations groupEntry = findByDN(groupDN);
 		Name memberDN = user.getEntryDN(String.valueOf(member.getUserId()));
-		if(!isMember(groupEntry, memberDN)) return;
+		Name fullMemberDN = addBaseDN(memberDN);
+		if(!isMember(groupEntry, fullMemberDN)) return;
 		
-		groupEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, addBaseDN(memberDN).toString());
+		groupEntry.removeAttributeValue(PerunAttribute.PerunAttributeNames.ldapAttrUniqueMember, fullMemberDN.toString());
 		ldapTemplate.modifyAttributes(groupEntry);
 
 		//Remove member from vo if this group is membersGroup
