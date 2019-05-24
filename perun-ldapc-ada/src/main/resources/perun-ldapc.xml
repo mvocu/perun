@@ -269,7 +269,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Member</value>
 						</list>
 					</property>
-					<property name="pattern" value=" added to Group:\[.*\]$" />
+					<property name="pattern" value=" added to Group:\[.*\]" />
 					<property name="handlerMethodName" value="processMemberAdded" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -289,7 +289,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Member</value>
 						</list>
 					</property>
-					<property name="pattern" value=" was removed from Group:\[.*\] totally$" />
+					<property name="pattern" value=" was removed from Group:\[.*\] totally" />
 					<property name="handlerMethodName" value="processMemberRemoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -308,7 +308,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Group</value>
 						</list>
 					</property>
-					<property name="pattern" value=" created in Vo:\[.*\] as subgroup of Group:\[.*\]$" />
+					<property name="pattern" value=" created in Vo:\[.*\] as subgroup of Group:\[.*\]" />
 					<property name="handlerMethodName" value="processSubgroupAdded" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -318,7 +318,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Resource</value>
 						</list>
 					</property>
-					<property name="pattern" value="Group:\[.*\] assigned to Resource:\[.*\]$" />
+					<property name="pattern" value="Group:\[.*\] assigned to Resource:\[.*\]" />
 					<property name="handlerMethodName" value="processResourceAssigned" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -328,7 +328,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Resource</value>
 						</list>
 					</property>
-					<property name="pattern" value="Group:\[.*\] removed from Resource:\[.*\]$" />
+					<property name="pattern" value="Group:\[.*\] removed from Resource:\[.*\]" />
 					<property name="handlerMethodName" value="processResourceRemoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
@@ -337,7 +337,7 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 							<value>cz.metacentrum.perun.core.api.Group</value>
 						</list>
 					</property>
-					<property name="pattern" value="Group:\[.*\] was moved$" />
+					<property name="pattern" value="Group:\[.*\] was moved" />
 					<property name="handlerMethodName" value="processGroupMoved" />
 				</bean>
 				<bean class="cz.metacentrum.perun.ldapc.processor.impl.RegexpDispatchEventCondition">
